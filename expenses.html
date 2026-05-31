@@ -376,17 +376,6 @@ button { font-family: inherit; cursor: pointer; border: none; }
   <!-- CONTENT -->
   <div class="scroll-area">
 
-    <!-- MONTH NAV -->
-    <div style="background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:14px 18px;margin-bottom:12px;">
-      <div style="font-size:11px;font-weight:700;color:var(--text-2);margin-bottom:10px;letter-spacing:0.5px;">月份選擇</div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <button onclick="navExpYear(-1)" style="width:28px;height:28px;border-radius:6px;background:var(--bg);border:1px solid var(--border);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text);flex-shrink:0;">‹</button>
-        <span id="exp-year-lbl" style="font-size:14px;font-weight:700;min-width:60px;text-align:center;color:var(--text);"></span>
-        <button id="btn-exp-year-next" onclick="navExpYear(1)" style="width:28px;height:28px;border-radius:6px;background:var(--bg);border:1px solid var(--border);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text);flex-shrink:0;">›</button>
-        <div id="exp-month-chips" style="display:flex;flex:1;gap:4px;overflow-x:auto;scrollbar-width:none;"></div>
-      </div>
-    </div>
-
     <!-- KPI ROW -->
     <div class="kpi-row">
       <div class="kpi-card">
@@ -459,7 +448,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
                 <div class="card-title">支出分類</div>
                 <div class="card-sub" id="cat-total-sub">本月 $0</div>
               </div>
-              <span id="donut-month-lbl" style="font-size:11px;color:var(--text-3);"></span>
+              <select id="donut-month-sel" onchange="renderExpenseDonut()" style="border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:11px;background:var(--card);color:var(--text);outline:none;cursor:pointer;"></select>
             </div>
             <div class="card-body">
               <div id="expense-donut-wrap" style="margin-bottom:12px;"></div>
@@ -1628,9 +1617,19 @@ function renderTrendChart(transactions, period, year) {
 function renderExpenseDonut() {
   const wrap = document.getElementById('expense-donut-wrap');
   if (!wrap) return;
+  const sel = document.getElementById('donut-month-sel');
   const saved = loadExpenses();
   const txs = saved ? saved.transactions : [];
-  const ym = activeExpYM;
+
+  // Populate month selector
+  const months = [...new Set(txs.filter(t=>t.type==='expense').map(t=>t.date.replace(/\//g,'-').slice(0,7)))].sort().reverse();
+  if (sel && sel.options.length === 0) {
+    sel.innerHTML = months.map(m=>{
+      const [y,mo]=m.split('-');
+      return `<option value="${m}">${y}年${parseInt(mo)}月</option>`;
+    }).join('') || `<option value="${new Date().toISOString().slice(0,7)}">本月</option>`;
+  }
+  const ym = sel?.value || new Date().toISOString().slice(0,7);
 
   const expTx = txs.filter(t=>t.type==='expense' && t.date.replace(/\//g,'-').startsWith(ym));
   const total = expTx.reduce((s,t)=>s+t.amount,0);
@@ -1859,9 +1858,8 @@ function syncQfMonth() {
    INIT
    ══════════════════════════════════════════ */
 (function init() {
-  renderExpMonthNav();
   const monthEl = document.getElementById('qf-month');
-  if (monthEl) monthEl.value = activeExpYM;
+  if (monthEl) monthEl.value = new Date().toISOString().slice(0, 7);
   const saved = loadExpenses();
   const txs = saved ? saved.transactions : DEFAULT_TX;
   populateYearSelects(txs);
