@@ -1152,6 +1152,61 @@ function handleLiabTypeChange() {
   calcLiabPreview();
 }
 
+function calcLiabPreview() {
+  const type      = document.getElementById('lm-type').value;
+  const cfg       = LIAB_TYPE_GROUPS[type] || { group:'A' };
+  const totalAmt  = parseFloat(document.getElementById('lm-total-amt').value)  || 0;
+  const monthly   = parseFloat(document.getElementById('lm-monthly').value)    || 0;
+  const termsEl   = document.getElementById('lm-terms');
+  const terms     = cfg.group === 'C' ? 0 : (parseInt(termsEl.value) || 0);
+  const remaining = parseFloat(document.getElementById('lm-remaining').value)  || 0;
+
+  /* 更新 info box 文字 */
+  const fmtM = v => v ? `$${v.toLocaleString()}` : '金額';
+  const infoEl = document.getElementById('lm-info-text');
+  if (cfg.group === 'A') {
+    infoEl.textContent = `儲存後將在每月支出中預扣 ${fmtM(monthly)}，並自動追蹤剩餘本金`;
+  } else if (cfg.group === 'B') {
+    infoEl.textContent = `儲存後將在每月支出中預扣 ${fmtM(monthly)}，扣滿 ${terms || 'N'} 期後自動停止`;
+  } else {
+    infoEl.textContent = `儲存後將在每月支出中預扣 ${fmtM(monthly)}，直到欠款全數清償`;
+  }
+
+  /* 計算並顯示 chip */
+  const calcBox = document.getElementById('lm-calc-box');
+  if (!totalAmt || !remaining) { calcBox.style.display = 'none'; return; }
+
+  const paidAmt = totalAmt - remaining;
+  const paidPct = Math.max(0, Math.round((paidAmt / totalAmt) * 100));
+  let chipsHtml = `<span class="lm-chip">已還 ${paidPct}%</span>`;
+
+  if (cfg.group === 'A') {
+    if (monthly > 0) {
+      const paidTerms = Math.ceil(Math.max(0, paidAmt) / monthly);
+      chipsHtml += `<span class="lm-chip">已繳 ~${paidTerms} 期</span>`;
+      if (terms > 0) {
+        const remTerms = Math.max(0, terms - paidTerms);
+        chipsHtml += `<span class="lm-chip">剩 ${remTerms} 期</span>`;
+      }
+    }
+  } else if (cfg.group === 'B') {
+    if (monthly > 0) {
+      const paidTerms = Math.ceil(Math.max(0, paidAmt) / monthly);
+      const remTerms  = Math.max(0, terms - paidTerms);
+      chipsHtml += `<span class="lm-chip">已繳 ${paidTerms} 期</span>`;
+      if (remTerms > 0) chipsHtml += `<span class="lm-chip">剩 ${remTerms} 期</span>`;
+    }
+  } else {
+    if (monthly > 0) {
+      const remMonths = Math.ceil(Math.max(0, remaining) / monthly);
+      chipsHtml += `<span class="lm-chip">約剩 ${remMonths} 個月</span>`;
+    }
+  }
+
+  document.getElementById('lm-calc-chips').innerHTML = chipsHtml;
+  calcBox.style.display = '';
+}
+
 let addModalType = 'asset';
 let editingId = null;
 
