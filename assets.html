@@ -1647,7 +1647,7 @@ function openEditModal(type, id) {
   _setupModal(type, true);
   catSel.innerHTML = (isLiab ? LIAB_CATS : Object.keys(CAT_STYLE)).map(v => `<option${v===item.category?' selected':''}>${v}</option>`).join('');
   document.getElementById('am-name').value   = item.name || '';
-  document.getElementById('am-amount').value = item.amount != null ? item.amount : '';
+  document.getElementById('am-amount').value = item.amount ?? '';
   document.getElementById('am-sub').value    = item.sub || '';
   const monthEl = document.getElementById('am-month'); if (monthEl) monthEl.value = item.month || curYM();
   if (!isLiab) {
@@ -1668,8 +1668,7 @@ function confirmAdd() {
   const cat  = document.getElementById('am-category').value;
   const sub  = document.getElementById('am-sub').value.trim();
   const month = document.getElementById('am-month')?.value || curYM();
-  const amtRaw = document.getElementById('am-amount').value.trim();
-  if (!name || amtRaw === '') { alert('請填入名稱和金額'); return; }
+  if (!name || document.getElementById('am-amount').value === '') { alert('請填入名稱和金額'); return; }
   const data = loadData() || JSON.parse(JSON.stringify(DEFAULT_DATA));
   if (editingId) {
     const arr  = addModalType === 'asset' ? data.assets : data.liabilities;
