@@ -883,14 +883,37 @@ function ymDiff(fromYM, toYM) {
   return (ty - fy) * 12 + (tm - fm);
 }
 
-function estimateLiabAt(liab, ym) {
+function calcAmortized(principal, annualRatePct, monthly, periods) {
+  const r = (annualRatePct || 0) / 100 / 12;
+  let bal = principal;
+  for (let i = 0; i < periods; i++) {
+    bal -= r > 0 ? (monthly - bal * r) : monthly;
+    if (bal <= 0) return 0;
+  }
+  return Math.round(bal);
+}
+
+function estimateLiabAt(liab, ym, data) {
   const monthly  = liab.monthly  || 0;
   const totalAmt = liab.totalAmt || 0;
   const start    = liab.startMonth;
+  const apr      = liab.apr || 0;
+  const overrides = data?.liabOverrides || {};
+  const snapshots = data?.snapshots    || {};
   if (!start || !monthly || !totalAmt) return liab.amount || 0;
   if (ym < start) return 0;
-  const elapsed = ymDiff(start, ym);
-  return Math.max(0, totalAmt - monthly * elapsed);
+  /* Find the most recent anchor (manual override takes priority over auto-snapshot) */
+  let anchorYM = start, anchorAmt = totalAmt;
+  const prior = [...new Set([
+    ...Object.keys(overrides).filter(m => m < ym && m >= start && overrides[m]?.[liab.id] != null),
+    ...Object.keys(snapshots).filter(m => m < ym && m >= start && snapshots[m]?.[liab.id] != null),
+  ])].sort();
+  if (prior.length) {
+    const latest = prior[prior.length - 1];
+    anchorYM  = latest;
+    anchorAmt = overrides[latest]?.[liab.id] ?? snapshots[latest]?.[liab.id];
+  }
+  return calcAmortized(anchorAmt, apr, monthly, ymDiff(anchorYM, ym));
 }
 
 /* ── 月份導航狀態 ── */
@@ -982,9 +1005,12 @@ function renderAll(data) {
   let dispAssets = data.assets;
   let dispLiabs  = data.liabilities;
   if (!isNow) {
+    const overrides = (data.liabOverrides || {})[activeMonth] || {};
     dispAssets = data.assets.map(a => ({...a, amount: snap?.[a.id] != null ? snap[a.id] : 0}));
     dispLiabs  = data.liabilities.map(l => {
-      const amt = snap?.[l.id] != null ? snap[l.id] : estimateLiabAt(l, activeMonth);
+      const amt = overrides[l.id] != null ? overrides[l.id]
+                : snap?.[l.id]   != null ? snap[l.id]
+                : estimateLiabAt(l, activeMonth, data);
       const paidPct = l.totalAmt ? Math.max(0, Math.round((1 - amt / l.totalAmt) * 100)) : (l.paidPct || 0);
       return {...l, amount: amt, paidPct};
     });
@@ -1162,7 +1188,7 @@ function renderLiabilities(liabs, total, prevSnap) {
     const icon    = LIAB_ICONS[l.debtType] || '💳';
     const metaStr = [l.startMonth, l.totalTerms ? `${l.totalTerms} 期` : ''].filter(Boolean).join(' · ');
     const subLine = l.sub || '';
-    return `<div class="liab-item" ondblclick="openLiabModal('${l.id}')" title="雙擊編輯" style="cursor:pointer;"><div class="liab-icon" style="background:#FDEAEA;">${icon}</div><div class="liab-info"><div class="liab-name">${l.name}</div><div class="liab-sub">${subLine}</div>${metaStr ? `<div style="font-size:10px;color:var(--text-3);margin-top:1px;">${metaStr}</div>` : ''}<div class="liab-progress"><div class="liab-fill" style="width:${l.paidPct||0}%;background:${color};"></div></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;"><div class="liab-amount" style="color:${color};">$${l.amount.toLocaleString()}</div>${deltaHtml}</div><span onclick="event.stopPropagation();deleteItem('liab','${l.id}')" style="cursor:pointer;color:var(--text-3);font-size:13px;margin-left:4px;" title="刪除">✕</span></div>`;
+    return `<div class="liab-item" ondblclick="openLiabModal('${l.id}')" title="雙擊編輯全部 / 點擊金額修改本月餘額" style="cursor:pointer;"><div class="liab-icon" style="background:#FDEAEA;">${icon}</div><div class="liab-info"><div class="liab-name">${l.name}</div><div class="liab-sub">${subLine}</div>${metaStr ? `<div style="font-size:10px;color:var(--text-3);margin-top:1px;">${metaStr}</div>` : ''}<div class="liab-progress"><div class="liab-fill" style="width:${l.paidPct||0}%;background:${color};"></div></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;"><div class="liab-amount" style="color:${color};cursor:pointer;" onclick="event.stopPropagation();editAmt('liab','${l.id}',this)" title="點擊修改本月餘額">$${l.amount.toLocaleString()}</div>${deltaHtml}</div><span onclick="event.stopPropagation();deleteItem('liab','${l.id}')" style="cursor:pointer;color:var(--text-3);font-size:13px;margin-left:4px;" title="刪除">✕</span></div>`;
   }).join('');
 }
 
@@ -1182,10 +1208,19 @@ function editAmt(type, id, el) {
   function done() {
     const val = parseInt(inp.value) || 0;
     const data = loadData() || JSON.parse(JSON.stringify(DEFAULT_DATA));
-    const arr = type === 'asset' ? data.assets : data.liabilities;
-    const item = arr.find(x => x.id === id);
-    if (item) { item.delta = val - item.amount; item.amount = val; }
-    renderAll(data);
+    if (type === 'liab' && activeMonth !== curYM()) {
+      /* Past month: store in liabOverrides only, never touch master amount */
+      if (!data.liabOverrides) data.liabOverrides = {};
+      if (!data.liabOverrides[activeMonth]) data.liabOverrides[activeMonth] = {};
+      data.liabOverrides[activeMonth][id] = val;
+      localStorage.setItem(ASSETS_KEY, JSON.stringify(data));
+      renderAll(data);
+    } else {
+      const arr = type === 'asset' ? data.assets : data.liabilities;
+      const item = arr.find(x => x.id === id);
+      if (item) { item.delta = val - item.amount; item.amount = val; }
+      renderAll(data);
+    }
   }
   inp.onblur = done;
   inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); if (e.key === 'Escape') { inp.value = cur; inp.blur(); } };
