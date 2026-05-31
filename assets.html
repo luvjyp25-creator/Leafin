@@ -996,6 +996,37 @@ function makeDonut(items, total, getColor) {
   });
 }
 
+/* ── LIAB MODAL V1b helpers ── */
+let _liabAdvOpen = false;
+
+function getLiabTerms() {
+  const sel = document.getElementById('lm-terms-select');
+  if (!sel || document.getElementById('lm-terms-row')?.style.display === 'none') return 0;
+  return sel.value === 'custom'
+    ? (parseInt(document.getElementById('lm-terms-custom')?.value) || 0)
+    : (parseInt(sel.value) || 0);
+}
+
+function handleTermsSelectChange() {
+  const isCustom = document.getElementById('lm-terms-select')?.value === 'custom';
+  const customCol = document.getElementById('lm-custom-terms-col');
+  if (customCol) customCol.style.display = isCustom ? '' : 'none';
+  calcLiabPreview();
+}
+
+function toggleLiabAdvanced() {
+  _liabAdvOpen = !_liabAdvOpen;
+  document.getElementById('lm-advanced-body')?.classList.toggle('open', _liabAdvOpen);
+  document.getElementById('lm-adv-chevron')?.classList.toggle('open', _liabAdvOpen);
+}
+
+function handlePrepayChange() {
+  const hasPlan = document.getElementById('lm-prepay')?.value === 'yes';
+  const wrap = document.getElementById('lm-prepay-date-wrap');
+  if (wrap) wrap.style.visibility = hasPlan ? 'visible' : 'hidden';
+  if (!hasPlan) { const el = document.getElementById('lm-prepay-date'); if(el) el.value=''; }
+}
+
 const _collapsedAssetGroups = new Set();
 function toggleAssetGroup(hd) {
   const items = hd.nextElementSibling;
