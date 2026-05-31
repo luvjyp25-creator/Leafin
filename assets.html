@@ -1249,47 +1249,48 @@ function handleLiabTypeChange() {
   const box = document.getElementById('lm-box');
   box.className = `am-box lm-box${cfg.theme !== 'a' ? ' lm-theme-' + cfg.theme : ''}`;
 
-  /* 自動帶入預設期數 */
-  const termsEl = document.getElementById('lm-terms');
-  if (cfg.group === 'C') {
-    /* 信用卡卡債：總期數欄位唯讀，顯示說明文字 */
-    document.getElementById('lm-terms-wrap').style.display = '';
-    document.getElementById('lm-terms-wrap').className = 'lm-terms-readonly';
-    termsEl.type = 'text';
-    termsEl.readOnly = true;
-    termsEl.value = '系統自動推算';
-  } else {
-    document.getElementById('lm-terms-wrap').style.display = '';
-    document.getElementById('lm-terms-wrap').className = '';
-    termsEl.type = 'number';
-    termsEl.readOnly = false;
-    if (termsEl.value === '系統自動推算') termsEl.value = '';
-    if (cfg.terms && !termsEl.dataset.userEdited) termsEl.value = cfg.terms;
-    else if (cfg.terms === null && !termsEl.dataset.userEdited) termsEl.value = '';
+  /* 年限/期數列：group C 隱藏 */
+  const termsRow = document.getElementById('lm-terms-row');
+  if (termsRow) termsRow.style.display = cfg.group === 'C' ? 'none' : '';
+
+  /* 自動選入預設期數（若用戶未手動修改） */
+  if (cfg.group !== 'C') {
+    const sel = document.getElementById('lm-terms-select');
+    if (sel && !sel.dataset.userEdited && cfg.terms) {
+      const vals = Array.from(sel.options).map(o => o.value);
+      if (vals.includes(String(cfg.terms))) {
+        sel.value = String(cfg.terms);
+      } else {
+        sel.value = 'custom';
+        const customEl = document.getElementById('lm-terms-custom');
+        if (customEl) customEl.value = cfg.terms;
+      }
+    }
+    handleTermsSelectChange();
   }
 
   /* 依 group 更新 label */
+  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
   if (cfg.group === 'A') {
-    document.getElementById('lm-start-label').textContent    = '貸款起始年月（撥款日）';
-    document.getElementById('lm-cond-label').textContent     = '貸款條件';
-    document.getElementById('lm-total-label').textContent    = '貸款總額';
-    document.getElementById('lm-monthly-label').textContent  = '每月還款（元）';
-    document.getElementById('lm-status-label').textContent   = '目前狀態';
-    document.getElementById('lm-remaining-label').textContent= '目前剩餘本金';
+    set('lm-start-label',    '貸款起始年月（撥款日）');
+    set('lm-cond-label',     '貸款條件');
+    set('lm-total-label',    '貸款總額');
+    set('lm-monthly-label',  '每月還款（元）');
+    set('lm-terms-label',    '貸款年限 / 期數');
+    set('lm-remaining-label','目前剩餘本金');
   } else if (cfg.group === 'B') {
-    document.getElementById('lm-start-label').textContent    = '分期起始年月';
-    document.getElementById('lm-cond-label').textContent     = '分期條件';
-    document.getElementById('lm-total-label').textContent    = '商品總價';
-    document.getElementById('lm-monthly-label').textContent  = '每期期款';
-    document.getElementById('lm-status-label').textContent   = '目前狀態';
-    document.getElementById('lm-remaining-label').textContent= '目前剩餘未繳金額';
+    set('lm-start-label',    '分期起始年月');
+    set('lm-cond-label',     '分期條件');
+    set('lm-total-label',    '商品總價');
+    set('lm-monthly-label',  '每期期款');
+    set('lm-terms-label',    '分期總期數');
+    set('lm-remaining-label','目前剩餘未繳金額');
   } else if (cfg.group === 'C') {
-    document.getElementById('lm-start-label').textContent    = '起始年月';
-    document.getElementById('lm-cond-label').textContent     = '還款計畫';
-    document.getElementById('lm-total-label').textContent    = '帳單總欠款';
-    document.getElementById('lm-monthly-label').textContent  = '預計每月還款';
-    document.getElementById('lm-status-label').textContent   = '目前狀態';
-    document.getElementById('lm-remaining-label').textContent= '目前剩餘欠款';
+    set('lm-start-label',    '起始年月');
+    set('lm-cond-label',     '還款計畫');
+    set('lm-total-label',    '帳單總欠款');
+    set('lm-monthly-label',  '預計每月還款');
+    set('lm-remaining-label','目前剩餘欠款');
   }
 
   calcLiabPreview();
