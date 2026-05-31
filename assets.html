@@ -1085,6 +1085,7 @@ function openLiabModal(editId = null) {
       document.getElementById('lm-total-amt').value    = item.totalAmt || item.amount || '';
       document.getElementById('lm-monthly').value      = item.monthly || '';
       document.getElementById('lm-terms').value        = item.totalTerms || '';
+      if (item.totalTerms) document.getElementById('lm-terms').dataset.userEdited = '1';
       document.getElementById('lm-remaining').value    = item.remainingAmt != null ? item.remainingAmt : (item.amount || '');
       document.getElementById('lm-note').value         = item.note || '';
     }
