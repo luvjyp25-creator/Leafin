@@ -415,6 +415,10 @@ button { font-family: inherit; cursor: pointer; border: none; }
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         匯入
       </button>
+      <button onclick="openClearAssetsModal()" style="background:var(--bg);border:1px solid #FFBBBB;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:500;color:var(--danger);cursor:pointer;display:flex;align-items:center;gap:6px;" title="快速清除資產資料">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        清除
+      </button>
       <div class="icon-btn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       </div>
@@ -770,6 +774,39 @@ function setPeriod(el) {
     <div class="am-actions">
       <button class="am-cancel" onclick="closeImportModal()">取消</button>
       <button class="am-submit" onclick="confirmImport()">確認帶入</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLEAR ASSETS MODAL -->
+<div class="am-overlay" id="clear-assets-modal" onclick="if(event.target===this)closeClearAssetsModal()">
+  <div class="am-box" style="max-width:380px;">
+    <div class="am-title" style="color:var(--danger);">🗑 清除資產資料</div>
+    <p style="font-size:13px;color:var(--text-2);margin:0 0 16px;line-height:1.6;">選擇要清除的範圍。清除後無法復原，請確認後再執行。</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+      <button onclick="executeClearAssets('imported')" style="padding:10px 14px;border-radius:9px;border:1.5px solid #FFBBBB;background:#FFF5F5;color:var(--danger);font-size:13px;font-weight:600;cursor:pointer;text-align:left;">
+        🧹 只清除匯入的資產<br>
+        <span style="font-size:11px;font-weight:400;color:var(--text-3);">移除所有 imp_ 開頭的匯入資產及其歷史快照</span>
+      </button>
+      <button onclick="executeClearAssets('all')" style="padding:10px 14px;border-radius:9px;border:1.5px solid #FFBBBB;background:#FFF0F0;color:var(--danger);font-size:13px;font-weight:700;cursor:pointer;text-align:left;">
+        ⚠️ 清除全部資產<br>
+        <span style="font-size:11px;font-weight:400;color:var(--text-3);">移除所有資產、歷史快照（負債保留）</span>
+      </button>
+    </div>
+    <div class="am-actions">
+      <button class="am-cancel" onclick="closeClearAssetsModal()" style="flex:1;">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT PREVIEW MODAL -->
+<div class="am-overlay" id="import-preview-modal" onclick="if(event.target===this)cancelImportPreview()">
+  <div class="am-box" style="max-width:420px;">
+    <div class="am-title">📊 確認匯入資料</div>
+    <div id="import-preview-body" style="margin-bottom:16px;"></div>
+    <div class="am-actions">
+      <button class="am-cancel" onclick="cancelImportPreview()">取消</button>
+      <button class="am-submit" onclick="confirmImportPreview()">確認匯入</button>
     </div>
   </div>
 </div>
@@ -2116,6 +2153,67 @@ function renderAssetTable(data) {
 }
 
 /* ══════════════════════════════════════════
+   CLEAR ASSETS
+   ══════════════════════════════════════════ */
+function openClearAssetsModal()  { document.getElementById('clear-assets-modal').classList.add('open'); }
+function closeClearAssetsModal() { document.getElementById('clear-assets-modal').classList.remove('open'); }
+
+function executeClearAssets(type) {
+  const label = type === 'all' ? '全部資產（負債保留）' : '所有匯入資產（imp_ 開頭）';
+  if (!confirm(`確定要清除${label}？此動作無法復原。`)) return;
+  const data = loadData() || JSON.parse(JSON.stringify(DEFAULT_DATA));
+  const toRemove = type === 'all'
+    ? new Set(data.assets.map(a => a.id))
+    : new Set(data.assets.filter(a => a.id.startsWith('imp_')).map(a => a.id));
+
+  data.assets = data.assets.filter(a => !toRemove.has(a.id));
+  Object.values(data.snapshots || {}).forEach(snap => { toRemove.forEach(id => delete snap[id]); });
+  closeClearAssetsModal();
+  renderAll(data);
+}
+
+/* ══════════════════════════════════════════
+   IMPORT PREVIEW
+   ══════════════════════════════════════════ */
+let _pendingImport = null;
+
+function showImportPreview(summary, data) {
+  _pendingImport = data;
+  const { updates, adds, months, range } = summary;
+  const body = document.getElementById('import-preview-body');
+  if (body) {
+    body.innerHTML = `
+      <div style="background:var(--primary-s);border-radius:10px;padding:12px 14px;margin-bottom:10px;">
+        <div style="font-size:12px;font-weight:700;color:var(--primary-d);margin-bottom:8px;">📅 月份範圍：${range}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <div style="text-align:center;"><div style="font-size:18px;font-weight:800;color:var(--primary);">${months}</div><div style="font-size:10px;color:var(--text-2);">個月份</div></div>
+          <div style="text-align:center;"><div style="font-size:18px;font-weight:800;color:var(--primary);">${updates}</div><div style="font-size:10px;color:var(--text-2);">項資產更新</div></div>
+          <div style="text-align:center;"><div style="font-size:18px;font-weight:800;color:var(--primary);">${adds}</div><div style="font-size:10px;color:var(--text-2);">項新增</div></div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text-3);margin:0;line-height:1.6;">
+        ${updates > 0 ? `⚠️ <b>${updates} 項同名資產</b>的歷史快照將被覆蓋。` : ''}
+        ${adds > 0 ? `✅ <b>${adds} 項新資產</b>將被新增。` : ''}
+      </p>`;
+  }
+  document.getElementById('import-preview-modal').classList.add('open');
+}
+
+function cancelImportPreview() {
+  _pendingImport = null;
+  document.getElementById('import-preview-modal').classList.remove('open');
+}
+
+function confirmImportPreview() {
+  if (!_pendingImport) return;
+  const data = _pendingImport;
+  _pendingImport = null;
+  document.getElementById('import-preview-modal').classList.remove('open');
+  renderAll(data);
+  alert('✅ 匯入完成！');
+}
+
+/* ══════════════════════════════════════════
    EXPORT / IMPORT CSV
    ══════════════════════════════════════════ */
 function exportAssetsCSV() {
@@ -2219,7 +2317,7 @@ function importWideFormat(rows) {
   if (!data.snapshots) data.snapshots = {};
   validMonths.forEach(ym => { if (!data.snapshots[ym]) data.snapshots[ym] = {}; });
 
-  let added = 0;
+  let updates = 0, adds = 0;
   rows.slice(1).forEach(row => {
     const name = (row[0] || '').trim();
     if (!name) return;
@@ -2228,7 +2326,6 @@ function importWideFormat(rows) {
     const amounts = row.slice(dataStart).map(v => parseFloat(String(v||'0').replace(/[^0-9.-]/g,''))||0);
     const latestAmt = amounts[amounts.length - 1] || 0;
 
-    /* Match existing asset by name+currency to reuse its ID */
     const existing = data.assets.find(a =>
       a.name.trim().toLowerCase() === name.toLowerCase() &&
       (a.currency || 'TWD') === currency
@@ -2236,20 +2333,22 @@ function importWideFormat(rows) {
     let id;
     if (existing) {
       id = existing.id;
-      existing.amount = latestAmt; // update current value
+      existing.amount = latestAmt;
+      updates++;
     } else {
       id = 'imp_' + name.replace(/\s/g,'_') + '_' + Math.random().toString(36).slice(2,6);
       data.assets.push({ id, name, category: currency==='TWD'?'現金/儲蓄':'外幣', amount: latestAmt, currency, sub: '' });
-      added++;
+      adds++;
     }
     amounts.forEach((amt, i) => {
       const ym = monthKeys[i];
-      if (ym) data.snapshots[ym][id] = amt; // overwrite any stale snapshot value
+      if (ym) data.snapshots[ym][id] = amt;
     });
   });
 
-  renderAll(data);
-  alert(`✅ 成功匯入 ${validMonths.length} 個月份歷史記錄！${added > 0 ? `（新增 ${added} 項資產）` : ''}`);
+  const sorted = validMonths.slice().sort();
+  const range = sorted.length ? `${sorted[0]} ～ ${sorted[sorted.length-1]}` : '—';
+  showImportPreview({ updates, adds, months: validMonths.length, range }, data);
 }
 
 /* 格式 2（縱向）：每月一行，資產為欄 */
@@ -2282,20 +2381,22 @@ function importLongFormat(rows) {
 
   // Update or add assets with latest values
   const lastRow = monthRows[monthRows.length - 1];
-  let added = 0;
+  let updates = 0, adds = 0;
   assetNames.forEach((name, i) => {
     const latestAmt = parseFloat(String(lastRow[i+1]||'0').replace(/[^0-9.-]/g,''))||0;
     const existing = data.assets.find(a => a.id === assetIds[i]);
     if (existing) {
       existing.amount = latestAmt;
+      updates++;
     } else {
       data.assets.push({ id: assetIds[i], name, category: '現金/儲蓄', amount: latestAmt, currency: 'TWD', sub: '' });
-      added++;
+      adds++;
     }
   });
 
-  renderAll(data);
-  alert(`✅ 成功匯入 ${validMonths.length} 個月份歷史記錄！${added > 0 ? `（新增 ${added} 項資產）` : ''}`);
+  const sorted = validMonths.slice().sort();
+  const range = sorted.length ? `${sorted[0]} ～ ${sorted[sorted.length-1]}` : '—';
+  showImportPreview({ updates, adds, months: validMonths.length, range }, data);
 }
 
 function showAssetsColMap(rows) {
