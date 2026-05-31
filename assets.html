@@ -288,6 +288,18 @@ button { font-family: inherit; cursor: pointer; border: none; }
 /* Toast */
 .lm-toast { position:fixed; top:16px; right:16px; background:white; border:1.5px solid #C8EEE0; border-left:4px solid #3EC193; border-radius:12px; padding:12px 18px; font-size:13px; font-weight:600; color:var(--text); z-index:500; box-shadow:0 4px 16px rgba(0,0,0,0.12); transform:translateX(120%); transition:transform 0.3s ease; pointer-events:none; }
 .lm-toast.lm-toast-show { transform:translateX(0); }
+/* ── ASSET GROUPS ── */
+.asset-group-hd { display:flex; align-items:center; gap:8px; padding:7px 6px 5px; cursor:pointer; user-select:none; border-radius:8px; transition:background 0.15s; margin-top:6px; }
+.asset-group-hd:first-child { margin-top:0; }
+.asset-group-hd:hover { background:var(--bg); }
+.ag-icon { width:22px; height:22px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; }
+.ag-title { font-size:11px; font-weight:700; color:var(--text-2); flex:1; letter-spacing:0.2px; }
+.ag-count { font-size:9px; color:var(--text-3); background:var(--bg); border-radius:10px; padding:1px 7px; font-weight:600; }
+.ag-total { font-size:12px; font-weight:700; color:var(--text); }
+.ag-chevron { color:var(--text-3); transition:transform 0.2s ease; display:flex; align-items:center; }
+.ag-chevron.closed { transform:rotate(-90deg); }
+.ag-items { overflow:hidden; max-height:4000px; transition:max-height 0.3s ease; }
+.ag-items.closed { max-height:0; }
 </style>
 </head>
 <body>
@@ -966,6 +978,18 @@ function makeDonut(items, total, getColor) {
   });
 }
 
+const _collapsedAssetGroups = new Set();
+function toggleAssetGroup(hd) {
+  const items = hd.nextElementSibling;
+  const chevron = hd.querySelector('.ag-chevron');
+  const wasClosed = items.classList.contains('closed');
+  items.classList.toggle('closed');
+  chevron.classList.toggle('closed');
+  const cat = hd.dataset.cat;
+  if (wasClosed) _collapsedAssetGroups.delete(cat);
+  else _collapsedAssetGroups.add(cat);
+}
+
 function renderAssets(assets, total, prevSnap) {
   const wrap = document.getElementById('asset-donut-wrap');
   if (wrap) {
@@ -975,17 +999,29 @@ function renderAssets(assets, total, prevSnap) {
     const legend = twdAssets.map((a,i) => { const cs = CAT_STYLE[a.category]||CAT_STYLE['其他']; return `<div class="leg-row"><div class="leg-dot" style="background:${cs.color};"></div><span class="leg-label">${a.category}</span><span class="leg-val">$${a.amount.toLocaleString()}</span><span class="leg-pct">${slices[i].pct}%</span></div>`; }).join('');
     wrap.innerHTML = `<svg width="90" height="90" viewBox="0 0 90 90" style="flex-shrink:0;"><circle cx="45" cy="45" r="35" fill="none" stroke="#E4EBE6" stroke-width="14"/>${svgCircles}<text x="45" y="49" text-anchor="middle" font-size="11" font-weight="800" fill="#2D3436" font-family="Inter">${fmtM(total)}</text></svg><div class="legend-col">${legend}</div>`;
   }
-  document.getElementById('asset-list-render').innerHTML = assets.map(a => {
-    const cs = CAT_STYLE[a.category]||CAT_STYLE['其他'];
-    // 動態算 delta：目前金額 − 前一個月快照金額
-    const prevAmt = prevSnap && prevSnap[a.id] != null ? prevSnap[a.id] : null;
-    const d = prevAmt != null ? a.amount - prevAmt : 0;
-    const isForeign = a.currency && a.currency !== 'TWD';
-    const amtDisplay = isForeign
-      ? `${a.amount.toLocaleString()} ${a.currency} <span style="font-size:10px;color:var(--text-3);">≈ $${toTWD(a).toLocaleString()}</span>`
-      : `$${a.amount.toLocaleString()}`;
-    const monthBadge = a.month ? `<span style="font-size:10px;color:var(--text-3);margin-left:4px;">${fmtYM(a.month)}</span>` : '';
-    return `<div class="asset-item" ondblclick="openEditModal('asset','${a.id}')" title="雙擊編輯"><div class="asset-icon" style="background:${cs.bg}">${cs.icon}</div><div class="asset-info"><div class="asset-name">${a.name}${monthBadge}</div><div class="asset-sub">${a.sub||a.category}</div></div><div class="asset-right"><div class="asset-amount">${amtDisplay}</div>${d?`<div class="asset-delta ${d>=0?'up':'down'}">${d>=0?'↑ +':'↓ -'}$${Math.abs(d).toLocaleString()}</div>`:''}</div><span onclick="deleteItem('asset','${a.id}')" style="cursor:pointer;color:var(--text-3);font-size:13px;padding:0 4px;" title="刪除">✕</span></div>`;
+  /* ── 依類型分組 ── */
+  const _catOrder = Object.keys(CAT_STYLE);
+  const _groups = {};
+  assets.forEach(a => { const c = a.category || '其他'; (_groups[c] = _groups[c]||[]).push(a); });
+  const _sortedCats = [..._catOrder.filter(c => _groups[c]), ...Object.keys(_groups).filter(c => !_catOrder.includes(c))];
+  const _chev = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+
+  document.getElementById('asset-list-render').innerHTML = _sortedCats.map(cat => {
+    const items = _groups[cat];
+    const cs = CAT_STYLE[cat] || CAT_STYLE['其他'];
+    const groupTwd = items.reduce((s,a) => s + toTWD(a), 0);
+    const isClosed = _collapsedAssetGroups.has(cat);
+    const itemsHtml = items.map(a => {
+      const prevAmt = prevSnap && prevSnap[a.id] != null ? prevSnap[a.id] : null;
+      const d = prevAmt != null ? a.amount - prevAmt : 0;
+      const isForeign = a.currency && a.currency !== 'TWD';
+      const amtDisplay = isForeign
+        ? `${a.amount.toLocaleString()} ${a.currency} <span style="font-size:10px;color:var(--text-3);">≈ $${toTWD(a).toLocaleString()}</span>`
+        : `$${a.amount.toLocaleString()}`;
+      const monthBadge = a.month ? `<span style="font-size:10px;color:var(--text-3);margin-left:4px;">${fmtYM(a.month)}</span>` : '';
+      return `<div class="asset-item" ondblclick="openEditModal('asset','${a.id}')" title="雙擊編輯"><div class="asset-icon" style="background:${cs.bg}">${cs.icon}</div><div class="asset-info"><div class="asset-name">${a.name}${monthBadge}</div><div class="asset-sub">${a.sub||a.category}</div></div><div class="asset-right"><div class="asset-amount">${amtDisplay}</div>${d?`<div class="asset-delta ${d>=0?'up':'down'}">${d>=0?'↑ +':'↓ -'}$${Math.abs(d).toLocaleString()}</div>`:''}</div><span onclick="event.stopPropagation();deleteItem('asset','${a.id}')" style="cursor:pointer;color:var(--text-3);font-size:13px;padding:0 4px;" title="刪除">✕</span></div>`;
+    }).join('');
+    return `<div class="asset-group-hd" data-cat="${cat.replace(/"/g,'&quot;')}" onclick="toggleAssetGroup(this)"><div class="ag-icon" style="background:${cs.bg}">${cs.icon}</div><span class="ag-title">${cat}</span><span class="ag-count">${items.length} 項</span><span class="ag-total">$${groupTwd.toLocaleString()}</span><span class="ag-chevron${isClosed?' closed':''}">${_chev}</span></div><div class="ag-items${isClosed?' closed':''}">${itemsHtml}</div>`;
   }).join('');
 }
 
