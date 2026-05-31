@@ -1010,9 +1010,9 @@ function renderAll(data) {
     const overrides = (data.liabOverrides || {})[activeMonth] || {};
     dispAssets = data.assets.map(a => ({...a, amount: snap?.[a.id] != null ? snap[a.id] : 0}));
     dispLiabs  = data.liabilities.map(l => {
-      const amt = overrides[l.id] != null ? overrides[l.id]
-                : snap?.[l.id]   != null ? snap[l.id]
-                : estimateLiabAt(l, activeMonth, data);
+      /* Snapshots may contain stale master amounts — never use them for
+         liability estimation. Only liabOverrides (manual) or estimateLiabAt. */
+      const amt = overrides[l.id] != null ? overrides[l.id] : estimateLiabAt(l, activeMonth, data);
       const paidPct = l.totalAmt ? Math.max(0, Math.round((1 - amt / l.totalAmt) * 100)) : (l.paidPct || 0);
       return {...l, amount: amt, paidPct};
     });
