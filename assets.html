@@ -1200,10 +1200,29 @@ let _liabSaveTimer = null;
 
 function openLiabModal(editId = null) {
   liabEditingId = editId;
-  ['lm-name','lm-total-amt','lm-monthly','lm-terms','lm-remaining','lm-note'].forEach(id => {
+  ['lm-name','lm-total-amt','lm-monthly','lm-remaining','lm-note','lm-apr','lm-prepay-date'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
-  delete document.getElementById('lm-terms').dataset.userEdited;
+  /* 重置年限下拉 */
+  const termsSel = document.getElementById('lm-terms-select');
+  if (termsSel) { termsSel.value = '240'; delete termsSel.dataset.userEdited; }
+  const termsCustom = document.getElementById('lm-terms-custom');
+  if (termsCustom) { termsCustom.value = ''; }
+  const customCol = document.getElementById('lm-custom-terms-col');
+  if (customCol) customCol.style.display = 'none';
+  /* 重置進階設定 */
+  const rateFixed = document.getElementById('lm-rate-fixed');
+  if (rateFixed) rateFixed.checked = true;
+  const prepayEl = document.getElementById('lm-prepay');
+  if (prepayEl) prepayEl.value = 'none';
+  const prepayDateWrap = document.getElementById('lm-prepay-date-wrap');
+  if (prepayDateWrap) prepayDateWrap.style.visibility = 'hidden';
+  /* 關閉進階設定折疊 */
+  _liabAdvOpen = false;
+  const advBody = document.getElementById('lm-advanced-body');
+  if (advBody) advBody.classList.remove('open');
+  const advChev = document.getElementById('lm-adv-chevron');
+  if (advChev) advChev.classList.remove('open');
   document.getElementById('lm-start-month').value = curYM();
   document.getElementById('lm-type').value = '房屋貸款';
   document.getElementById('lm-calc-box').style.display = 'none';
@@ -1220,10 +1239,34 @@ function openLiabModal(editId = null) {
       document.getElementById('lm-start-month').value  = item.startMonth || item.month || curYM();
       document.getElementById('lm-total-amt').value    = item.totalAmt || item.amount || '';
       document.getElementById('lm-monthly').value      = item.monthly || '';
-      document.getElementById('lm-terms').value        = item.totalTerms || '';
-      if (item.totalTerms) document.getElementById('lm-terms').dataset.userEdited = '1';
+      /* 設定年限下拉 */
+      if (item.totalTerms) {
+        const sel = document.getElementById('lm-terms-select');
+        if (sel) {
+          const vals = Array.from(sel.options).map(o => o.value);
+          if (vals.includes(String(item.totalTerms))) {
+            sel.value = String(item.totalTerms);
+          } else {
+            sel.value = 'custom';
+            const customEl = document.getElementById('lm-terms-custom');
+            if (customEl) customEl.value = item.totalTerms;
+          }
+          sel.dataset.userEdited = '1';
+        }
+      }
       document.getElementById('lm-remaining').value    = item.remainingAmt != null ? item.remainingAmt : (item.amount || '');
       document.getElementById('lm-note').value         = item.note || '';
+      /* 進階設定回填 */
+      if (item.apr) { const e = document.getElementById('lm-apr'); if(e) e.value = item.apr; }
+      if (item.rateType) {
+        const r = document.querySelector(`input[name="lm-rate-type"][value="${item.rateType}"]`);
+        if (r) r.checked = true;
+      }
+      if (item.prepayPlan) { const e = document.getElementById('lm-prepay'); if(e) e.value = item.prepayPlan; }
+      if (item.prepayDate) {
+        const e = document.getElementById('lm-prepay-date'); if(e) e.value = item.prepayDate;
+        const w = document.getElementById('lm-prepay-date-wrap'); if(w) w.style.visibility = 'visible';
+      }
     }
   } else {
     document.getElementById('lm-title').textContent = '新增負債項目';
