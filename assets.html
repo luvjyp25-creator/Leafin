@@ -471,7 +471,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
 
           <div id="liab-list-render"></div>
 
-          <button class="add-asset-btn" style="border-color:#FDEAEA;color:#FF7B7B;" onclick="openAddModal('liab')">
+          <button class="add-asset-btn" style="border-color:#FDEAEA;color:#FF7B7B;" onclick="openLiabModal()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             新增負債項目
           </button>
@@ -1040,6 +1040,64 @@ function deleteItem(type, id) {
   renderAll(data);
 }
 
+/* ── LIAB MODAL ── */
+const LIAB_TYPE_GROUPS = {
+  '房屋貸款':  { group:'A', terms:240,  theme:'a' },
+  '汽車貸款':  { group:'A', terms:60,   theme:'a' },
+  '信用貸款':  { group:'A', terms:84,   theme:'a' },
+  '就學貸款':  { group:'A', terms:120,  theme:'a' },
+  '購物分期':  { group:'B', terms:12,   theme:'b' },
+  '信用卡卡債':{ group:'C', terms:null, theme:'c' },
+  '其他負債':  { group:'A', terms:null, theme:'a' },
+};
+
+const LIAB_ICONS = {
+  '房屋貸款':'🏠','汽車貸款':'🚗','信用貸款':'💳',
+  '就學貸款':'🎓','購物分期':'🛍️','信用卡卡債':'💳','其他負債':'📋',
+};
+
+let liabEditingId = null;
+
+function openLiabModal(editId = null) {
+  liabEditingId = editId;
+  ['lm-name','lm-total-amt','lm-monthly','lm-terms','lm-remaining','lm-note'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('lm-start-month').value = curYM();
+  document.getElementById('lm-type').value = '房屋貸款';
+  document.getElementById('lm-calc-box').style.display = 'none';
+  const btn = document.getElementById('lm-submit');
+
+  if (editId) {
+    document.getElementById('lm-title').textContent = '編輯負債項目';
+    btn.textContent = '更新 ✓';
+    const data = loadData() || JSON.parse(JSON.stringify(DEFAULT_DATA));
+    const item = data.liabilities.find(l => l.id === editId);
+    if (item) {
+      document.getElementById('lm-name').value         = item.name || '';
+      document.getElementById('lm-type').value         = item.debtType || item.category || '房屋貸款';
+      document.getElementById('lm-start-month').value  = item.startMonth || item.month || curYM();
+      document.getElementById('lm-total-amt').value    = item.totalAmt || item.amount || '';
+      document.getElementById('lm-monthly').value      = item.monthly || '';
+      document.getElementById('lm-terms').value        = item.totalTerms || '';
+      document.getElementById('lm-remaining').value    = item.remainingAmt != null ? item.remainingAmt : (item.amount || '');
+      document.getElementById('lm-note').value         = item.note || '';
+    }
+  } else {
+    document.getElementById('lm-title').textContent = '新增負債項目';
+    btn.textContent = '儲存並開始追蹤 ✓';
+  }
+
+  btn.disabled = false; btn.style.transform = '';
+  handleLiabTypeChange();
+  document.getElementById('liab-modal').classList.add('open');
+}
+
+function closeLiabModal() {
+  liabEditingId = null;
+  document.getElementById('liab-modal').classList.remove('open');
+}
+
 let addModalType = 'asset';
 let editingId = null;
 
@@ -1070,6 +1128,7 @@ function openAddModal(type) {
 }
 
 function openEditModal(type, id) {
+  if (type === 'liab') { openLiabModal(id); return; }
   editingId = id;
   addModalType = type;
   const isLiab = type === 'liab';
