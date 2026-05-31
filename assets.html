@@ -2219,25 +2219,37 @@ function importWideFormat(rows) {
   if (!data.snapshots) data.snapshots = {};
   validMonths.forEach(ym => { if (!data.snapshots[ym]) data.snapshots[ym] = {}; });
 
-  const newAssets = [];
+  let added = 0;
   rows.slice(1).forEach(row => {
     const name = (row[0] || '').trim();
     if (!name) return;
     const rawCur = hasCurCol ? (row[1] || 'TWD').trim() : 'TWD';
     const currency = rawCur === 'NT' ? 'TWD' : rawCur;
-    const id = 'imp_' + name.replace(/\s/g,'_') + '_' + Math.random().toString(36).slice(2,6);
     const amounts = row.slice(dataStart).map(v => parseFloat(String(v||'0').replace(/[^0-9.-]/g,''))||0);
     const latestAmt = amounts[amounts.length - 1] || 0;
-    newAssets.push({ id, name, category: currency==='TWD'?'現金/儲蓄':'外幣', amount: latestAmt, currency, sub: '' });
+
+    /* Match existing asset by name+currency to reuse its ID */
+    const existing = data.assets.find(a =>
+      a.name.trim().toLowerCase() === name.toLowerCase() &&
+      (a.currency || 'TWD') === currency
+    );
+    let id;
+    if (existing) {
+      id = existing.id;
+      existing.amount = latestAmt; // update current value
+    } else {
+      id = 'imp_' + name.replace(/\s/g,'_') + '_' + Math.random().toString(36).slice(2,6);
+      data.assets.push({ id, name, category: currency==='TWD'?'現金/儲蓄':'外幣', amount: latestAmt, currency, sub: '' });
+      added++;
+    }
     amounts.forEach((amt, i) => {
       const ym = monthKeys[i];
-      if (ym) data.snapshots[ym][id] = amt;
+      if (ym) data.snapshots[ym][id] = amt; // overwrite any stale snapshot value
     });
   });
 
-  data.assets = [...data.assets, ...newAssets];
   renderAll(data);
-  alert(`✅ 成功匯入 ${newAssets.length} 項資產、${validMonths.length} 個月份的歷史記錄！\n趨勢圖已更新。`);
+  alert(`✅ 成功匯入 ${validMonths.length} 個月份歷史記錄！${added > 0 ? `（新增 ${added} 項資產）` : ''}`);
 }
 
 /* 格式 2（縱向）：每月一行，資產為欄 */
@@ -2250,10 +2262,13 @@ function importLongFormat(rows) {
   const data = loadData() || JSON.parse(JSON.stringify(DEFAULT_DATA));
   if (!data.snapshots) data.snapshots = {};
 
-  // Generate stable IDs for assets
-  const assetIds = assetNames.map(n => 'imp_' + n.replace(/\s/g,'_') + '_' + Math.random().toString(36).slice(2,6));
-  const validMonths = [];
+  /* Match existing assets by name; create new ones only if not found */
+  const assetIds = assetNames.map(name => {
+    const existing = data.assets.find(a => a.name.trim().toLowerCase() === name.toLowerCase());
+    return existing ? existing.id : 'imp_' + name.replace(/\s/g,'_') + '_' + Math.random().toString(36).slice(2,6);
+  });
 
+  const validMonths = [];
   monthRows.forEach(row => {
     const ym = parseMonthStr(row[0]);
     if (!ym) return;
@@ -2261,20 +2276,26 @@ function importLongFormat(rows) {
     if (!data.snapshots[ym]) data.snapshots[ym] = {};
     assetNames.forEach((_, i) => {
       const amt = parseFloat(String(row[i+1]||'0').replace(/[^0-9.-]/g,''))||0;
-      data.snapshots[ym][assetIds[i]] = amt;
+      data.snapshots[ym][assetIds[i]] = amt; // overwrite stale values
     });
   });
 
-  // Use last row as current asset values
+  // Update or add assets with latest values
   const lastRow = monthRows[monthRows.length - 1];
-  const newAssets = assetNames.map((name, i) => ({
-    id: assetIds[i], name, category: '現金/儲蓄',
-    amount: parseFloat(String(lastRow[i+1]||'0').replace(/[^0-9.-]/g,''))||0,
-    currency: 'TWD', sub: ''
-  }));
-  data.assets = [...data.assets, ...newAssets];
+  let added = 0;
+  assetNames.forEach((name, i) => {
+    const latestAmt = parseFloat(String(lastRow[i+1]||'0').replace(/[^0-9.-]/g,''))||0;
+    const existing = data.assets.find(a => a.id === assetIds[i]);
+    if (existing) {
+      existing.amount = latestAmt;
+    } else {
+      data.assets.push({ id: assetIds[i], name, category: '現金/儲蓄', amount: latestAmt, currency: 'TWD', sub: '' });
+      added++;
+    }
+  });
+
   renderAll(data);
-  alert(`✅ 成功匯入 ${newAssets.length} 項資產、${validMonths.length} 個月份！\n注意：縱向格式無貨幣資訊，已預設為 TWD。`);
+  alert(`✅ 成功匯入 ${validMonths.length} 個月份歷史記錄！${added > 0 ? `（新增 ${added} 項資產）` : ''}`);
 }
 
 function showAssetsColMap(rows) {
