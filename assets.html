@@ -837,8 +837,13 @@ const DEFAULT_DATA = {
 };
 
 function loadData() {
-  try { const d = JSON.parse(localStorage.getItem(ASSETS_KEY)); return d && d.assets ? d : null; }
-  catch { return null; }
+  try {
+    const d = JSON.parse(localStorage.getItem(ASSETS_KEY));
+    if (!d || !d.assets) return null;
+    if (!Array.isArray(d.assets))      d.assets      = [];
+    if (!Array.isArray(d.liabilities)) d.liabilities = [];
+    return d;
+  } catch { return null; }
 }
 function saveData(data) {
   const ym = activeMonth || curYM();
