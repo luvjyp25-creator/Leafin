@@ -1389,10 +1389,13 @@ function confirmLiab() {
   const startMonth= document.getElementById('lm-start-month').value;
   const totalAmt  = parseFloat(document.getElementById('lm-total-amt').value)  || 0;
   const monthly   = parseFloat(document.getElementById('lm-monthly').value)    || 0;
-  const termsEl   = document.getElementById('lm-terms');
-  const terms     = parseInt(termsEl.value) || 0;
+  const terms     = getLiabTerms();
   const remaining = parseFloat(document.getElementById('lm-remaining').value)  || 0;
-  const note      = document.getElementById('lm-note').value.trim();
+  const note      = document.getElementById('lm-note')?.value.trim() || '';
+  const apr       = parseFloat(document.getElementById('lm-apr')?.value) || null;
+  const rateType  = document.getElementById('lm-rate-fixed')?.checked ? 'fixed' : 'floating';
+  const prepayPlan= document.getElementById('lm-prepay')?.value || 'none';
+  const prepayDate= document.getElementById('lm-prepay-date')?.value || '';
 
   if (!name || !totalAmt) { alert('請填入名稱和金額'); return; }
   if (remaining > totalAmt) { alert('剩餘金額不能大於貸款總額'); return; }
@@ -1415,6 +1418,9 @@ function confirmLiab() {
       totalTerms: cfg.group === 'C' ? (monthly ? Math.ceil(remaining / monthly) : 0) : terms,
       remainingAmt: remaining, paidPct, paidTerms, sub,
       amount: remaining, category: type, recurring: true, note,
+      ...(apr != null ? { apr } : {}),
+      rateType, prepayPlan,
+      ...(prepayDate ? { prepayDate } : {}),
     };
 
     if (liabEditingId) {
