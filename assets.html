@@ -1207,6 +1207,53 @@ function calcLiabPreview() {
   calcBox.style.display = '';
 }
 
+function confirmLiab() {
+  const name      = document.getElementById('lm-name').value.trim();
+  const type      = document.getElementById('lm-type').value;
+  const startMonth= document.getElementById('lm-start-month').value;
+  const totalAmt  = parseFloat(document.getElementById('lm-total-amt').value)  || 0;
+  const monthly   = parseFloat(document.getElementById('lm-monthly').value)    || 0;
+  const termsEl   = document.getElementById('lm-terms');
+  const terms     = parseInt(termsEl.value) || 0;
+  const remaining = parseFloat(document.getElementById('lm-remaining').value)  || 0;
+  const note      = document.getElementById('lm-note').value.trim();
+
+  if (!name || !totalAmt) { alert('請填入名稱和金額'); return; }
+
+  const cfg      = LIAB_TYPE_GROUPS[type] || { group:'A' };
+  const paidAmt  = Math.max(0, totalAmt - remaining);
+  const paidPct  = totalAmt ? Math.round((paidAmt / totalAmt) * 100) : 0;
+  const paidTerms= monthly ? Math.ceil(paidAmt / monthly) : 0;
+  const sub = note || (monthly ? `月付 $${monthly.toLocaleString()} · 已還 ${paidPct}%` : `已還 ${paidPct}%`);
+
+  /* loading 動畫 */
+  const btn = document.getElementById('lm-submit');
+  btn.textContent = '追蹤中…'; btn.disabled = true; btn.style.transform = 'scale(0.97)';
+
+  setTimeout(() => {
+    const data  = loadData() || JSON.parse(JSON.stringify(DEFAULT_DATA));
+    const entry = {
+      name, debtType: type, startMonth, totalAmt, monthly,
+      totalTerms: cfg.group === 'C' ? (monthly ? Math.ceil(remaining / monthly) : 0) : terms,
+      remainingAmt: remaining, paidPct, paidTerms, sub,
+      amount: remaining, category: type, recurring: true, note,
+    };
+
+    if (liabEditingId) {
+      const item = data.liabilities.find(l => l.id === liabEditingId);
+      if (item) Object.assign(item, entry);
+    } else {
+      entry.id = 'l' + Date.now();
+      data.liabilities.push(entry);
+    }
+
+    saveData(data);
+    renderAll(data);
+    closeLiabModal();
+    showLiabToast();
+  }, 500);
+}
+
 let addModalType = 'asset';
 let editingId = null;
 
