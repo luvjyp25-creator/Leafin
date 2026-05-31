@@ -1280,12 +1280,64 @@ function editAmt(type, id, el) {
   inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); if (e.key === 'Escape') { inp.value = cur; inp.blur(); } };
 }
 
+let _undoBuffer = null;
+let _undoTimer  = null;
+
 function deleteItem(type, id) {
-  if (!confirm('確定刪除？')) return;
   const data = loadData() || JSON.parse(JSON.stringify(DEFAULT_DATA));
+  const arr  = type === 'asset' ? data.assets : data.liabilities;
+  const item = arr.find(x => x.id === id);
+  if (!item) return;
+
+  /* Save undo buffer — capture item + its snapshot entries */
+  const snapEntries = {};
+  Object.entries(data.snapshots || {}).forEach(([ym, snap]) => {
+    if (snap[id] != null) snapEntries[ym] = snap[id];
+  });
+  _undoBuffer = { type, item: JSON.parse(JSON.stringify(item)), snapEntries };
+
   if (type === 'asset') data.assets = data.assets.filter(a => a.id !== id);
   else data.liabilities = data.liabilities.filter(l => l.id !== id);
+  /* Remove snapshot entries too */
+  Object.keys(data.snapshots || {}).forEach(ym => { delete data.snapshots[ym][id]; });
+
   renderAll(data);
+  _showUndoToast(`已刪除「${item.name}」`);
+}
+
+function _showUndoToast(msg) {
+  const toast = document.getElementById('undo-toast');
+  const label = document.getElementById('undo-toast-msg');
+  if (!toast || !label) return;
+  label.textContent = msg;
+  toast.style.pointerEvents = 'auto';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  if (_undoTimer) clearTimeout(_undoTimer);
+  _undoTimer = setTimeout(_hideUndoToast, 6000);
+}
+
+function _hideUndoToast() {
+  const toast = document.getElementById('undo-toast');
+  if (toast) { toast.style.transform = 'translateX(-50%) translateY(80px)'; toast.style.pointerEvents = 'none'; }
+  _undoBuffer = null;
+  _undoTimer  = null;
+}
+
+function undoDelete() {
+  if (!_undoTimer) clearTimeout(_undoTimer);
+  if (!_undoBuffer) { _hideUndoToast(); return; }
+  const { type, item, snapEntries } = _undoBuffer;
+  _undoBuffer = null;
+  const data = loadData() || JSON.parse(JSON.stringify(DEFAULT_DATA));
+  if (type === 'asset') data.assets.push(item);
+  else data.liabilities.push(item);
+  if (!data.snapshots) data.snapshots = {};
+  Object.entries(snapEntries).forEach(([ym, val]) => {
+    if (!data.snapshots[ym]) data.snapshots[ym] = {};
+    data.snapshots[ym][item.id] = val;
+  });
+  renderAll(data);
+  _hideUndoToast();
 }
 
 /* ── LIAB MODAL ── */
@@ -1595,7 +1647,7 @@ function openEditModal(type, id) {
   _setupModal(type, true);
   catSel.innerHTML = (isLiab ? LIAB_CATS : Object.keys(CAT_STYLE)).map(v => `<option${v===item.category?' selected':''}>${v}</option>`).join('');
   document.getElementById('am-name').value   = item.name || '';
-  document.getElementById('am-amount').value = item.amount || '';
+  document.getElementById('am-amount').value = item.amount != null ? item.amount : '';
   document.getElementById('am-sub').value    = item.sub || '';
   const monthEl = document.getElementById('am-month'); if (monthEl) monthEl.value = item.month || curYM();
   if (!isLiab) {
@@ -1616,7 +1668,8 @@ function confirmAdd() {
   const cat  = document.getElementById('am-category').value;
   const sub  = document.getElementById('am-sub').value.trim();
   const month = document.getElementById('am-month')?.value || curYM();
-  if (!name || !amt) { alert('請填入名稱和金額'); return; }
+  const amtRaw = document.getElementById('am-amount').value.trim();
+  if (!name || amtRaw === '') { alert('請填入名稱和金額'); return; }
   const data = loadData() || JSON.parse(JSON.stringify(DEFAULT_DATA));
   if (editingId) {
     const arr  = addModalType === 'asset' ? data.assets : data.liabilities;
@@ -2492,5 +2545,9 @@ function applyAssetsColMap() {
 })();
 </script>
 <div id="liab-toast" class="lm-toast">✨ 負債已同步至您的人生時間軸！</div>
+<div id="undo-toast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#2D3436;color:#fff;border-radius:12px;padding:12px 18px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:12px;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,0.2);transition:transform 0.3s ease;pointer-events:none;white-space:nowrap;">
+  <span id="undo-toast-msg">已刪除</span>
+  <button id="undo-toast-btn" onclick="undoDelete()" style="background:var(--primary);border:none;border-radius:7px;padding:4px 12px;font-size:12px;font-weight:700;color:#fff;cursor:pointer;">還原</button>
+</div>
 </body>
 </html>
