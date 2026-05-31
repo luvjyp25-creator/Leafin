@@ -761,8 +761,12 @@ function setPeriod(el) {
 <div class="am-overlay" id="import-modal" onclick="if(event.target===this)closeImportModal()">
   <div class="am-box" style="max-height:80vh;overflow-y:auto;">
     <div class="am-title">帶入上月金額</div>
-    <div id="import-source" style="font-size:11px;color:var(--text-2);margin-bottom:12px;"></div>
-    <div id="import-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:4px;"></div>
+    <div id="import-source" style="font-size:11px;color:var(--text-2);margin-bottom:8px;"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <span style="font-size:11px;color:var(--text-3);">勾選要帶入的項目</span>
+      <button onclick="toggleImportAll()" id="import-all-btn" style="font-size:11px;font-weight:600;color:var(--primary);background:none;border:none;cursor:pointer;padding:2px 4px;">全選</button>
+    </div>
+    <div id="import-list" style="display:flex;flex-direction:column;gap:5px;margin-bottom:4px;"></div>
     <div class="am-actions">
       <button class="am-cancel" onclick="closeImportModal()">取消</button>
       <button class="am-submit" onclick="confirmImport()">確認帶入</button>
@@ -1126,11 +1130,12 @@ function handlePrepayChange() {
   if (!hasPlan) { const el = document.getElementById('lm-prepay-date'); if(el) el.value=''; }
 }
 
-const _AG_PREF_KEY = 'leafin_collapsed_groups';
-function _loadCollapsedGroups() {
+const _AG_PREF_KEY = 'leafin_expanded_groups';
+function _loadExpandedGroups() {
   try { return new Set(JSON.parse(localStorage.getItem(_AG_PREF_KEY)) || []); } catch { return new Set(); }
 }
-const _collapsedAssetGroups = _loadCollapsedGroups();
+/* Track which groups are OPEN — default is all closed */
+const _expandedAssetGroups = _loadExpandedGroups();
 function toggleAssetGroup(hd) {
   const items = hd.nextElementSibling;
   const chevron = hd.querySelector('.ag-chevron');
@@ -1138,9 +1143,9 @@ function toggleAssetGroup(hd) {
   items.classList.toggle('closed');
   chevron.classList.toggle('closed');
   const cat = hd.dataset.cat;
-  if (wasClosed) _collapsedAssetGroups.delete(cat);
-  else _collapsedAssetGroups.add(cat);
-  localStorage.setItem(_AG_PREF_KEY, JSON.stringify([..._collapsedAssetGroups]));
+  if (wasClosed) _expandedAssetGroups.add(cat);
+  else _expandedAssetGroups.delete(cat);
+  localStorage.setItem(_AG_PREF_KEY, JSON.stringify([..._expandedAssetGroups]));
 }
 
 function renderAssets(assets, total, prevSnap) {
@@ -1163,7 +1168,7 @@ function renderAssets(assets, total, prevSnap) {
     const items = _groups[cat];
     const cs = CAT_STYLE[cat] || CAT_STYLE['其他'];
     const groupTwd = items.reduce((s,a) => s + toTWD(a), 0);
-    const isClosed = _collapsedAssetGroups.has(cat);
+    const isClosed = !_expandedAssetGroups.has(cat);
     const itemsHtml = items.map(a => {
       const prevAmt = prevSnap && prevSnap[a.id] != null ? prevSnap[a.id] : null;
       const d = prevAmt != null ? a.amount - prevAmt : 0;
@@ -1660,28 +1665,29 @@ function openImportDialog() {
   const snap = snaps[prevMonth];
   document.getElementById('import-source').textContent = '來源：' + fmtYM(prevMonth) + ' → 帶入 ' + fmtYM(activeMonth);
 
+  const mkRow = (id, icon, name, amt, color, bg) =>
+    `<label style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:${bg};border-radius:8px;cursor:pointer;">
+      <input type="checkbox" class="import-chk" data-id="${id}" checked style="accent-color:var(--primary);width:15px;height:15px;flex-shrink:0;">
+      <span>${icon}</span>
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</span>
+      <span style="font-size:12px;font-weight:700;color:${color};">$${Number(amt).toLocaleString()}</span>
+    </label>`;
+
   let html = '';
   if (data.assets.length) {
     html += `<div style="font-size:11px;font-weight:700;color:var(--primary-d);padding:4px 0 2px;">資產</div>`;
     data.assets.forEach(a => {
-      const cs = CAT_STYLE[a.category] || CAT_STYLE['其他'];
+      const cs  = CAT_STYLE[a.category] || CAT_STYLE['其他'];
       const amt = snap[a.id] != null ? snap[a.id] : a.amount;
-      html += `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border-radius:8px;">
-        <span>${cs.icon}</span>
-        <span style="flex:1;font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.name}</span>
-        <span style="font-size:12px;font-weight:700;color:var(--primary);">$${amt.toLocaleString()}</span>
-      </div>`;
+      html += mkRow(a.id, cs.icon, a.name, amt, 'var(--primary)', 'var(--bg)');
     });
   }
   if (data.liabilities.length) {
     html += `<div style="font-size:11px;font-weight:700;color:var(--danger);padding:10px 0 2px;">負債</div>`;
     data.liabilities.forEach(l => {
-      const amt = snap[l.id] != null ? snap[l.id] : l.amount;
-      html += `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#FFF5F5;border-radius:8px;">
-        <span>💳</span>
-        <span style="flex:1;font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.name}</span>
-        <span style="font-size:12px;font-weight:700;color:var(--danger);">$${amt.toLocaleString()}</span>
-      </div>`;
+      const icon = LIAB_ICONS[l.debtType] || '💳';
+      const amt  = snap[l.id] != null ? snap[l.id] : l.amount;
+      html += mkRow(l.id, icon, l.name, amt, 'var(--danger)', '#FFF5F5');
     });
   }
   if (!html) { alert('目前沒有任何資產或負債項目。'); return; }
@@ -1695,20 +1701,34 @@ function closeImportModal() {
   document.getElementById('import-modal').classList.remove('open');
 }
 
+function toggleImportAll() {
+  const chks = document.querySelectorAll('.import-chk');
+  const allChecked = [...chks].every(c => c.checked);
+  chks.forEach(c => { c.checked = !allChecked; });
+  document.getElementById('import-all-btn').textContent = allChecked ? '全選' : '取消全選';
+}
+
 function confirmImport() {
   const prevMonth = document.getElementById('import-modal').dataset.month;
   const data = loadData() || JSON.parse(JSON.stringify(DEFAULT_DATA));
   const snap = (data.snapshots || {})[prevMonth];
   if (!snap) { closeImportModal(); return; }
 
+  /* Only import checked items */
+  const checkedIds = new Set(
+    [...document.querySelectorAll('.import-chk:checked')].map(c => c.dataset.id)
+  );
+
   data.assets.forEach(a => {
+    if (!checkedIds.has(a.id)) return;
     if (snap[a.id] != null) {
-      a.delta = a.amount - snap[a.id];  // 目前值 − 上月 = 變動方向
+      a.delta = a.amount - snap[a.id];
       a.amount = snap[a.id];
     }
     a.month = activeMonth;
   });
   data.liabilities.forEach(l => {
+    if (!checkedIds.has(l.id)) return;
     if (snap[l.id] != null) {
       l.delta = l.amount - snap[l.id];
       l.amount = snap[l.id];
@@ -1876,15 +1896,22 @@ function renderNetWorthChart(data) {
   }
 
   function snapAll(ym) {
-    const snap = snaps[ym];
-    const a = data.assets.reduce((s,x) => s+(snap[x.id]!=null?snap[x.id]:0),0);
-    const l = data.liabilities.reduce((s,x) => s+(snap[x.id]!=null?snap[x.id]:0),0);
+    const snap = snaps[ym] || {};
+    const a = data.assets.reduce((s,x) => s + (snap[x.id] != null ? snap[x.id] : 0), 0);
+    /* Use estimateLiabAt for months where liability snapshot is missing */
+    const l = data.liabilities.reduce((s,x) => {
+      return s + (snap[x.id] != null ? snap[x.id] : estimateLiabAt(x, ym, data));
+    }, 0);
     return { a, l, net: a - l };
   }
 
   let labels, aVals, lVals, netVals;
   if (nwPeriod === 'month') {
-    labels = months.map(m => { const [,mo]=m.split('-'); return parseInt(mo)+'月'; });
+    const multiYear = new Set(months.map(m => m.slice(0,4))).size > 1;
+    labels = months.map(m => {
+      const [yr, mo] = m.split('-');
+      return multiYear ? `${yr.slice(2)}/${parseInt(mo)}` : parseInt(mo)+'月';
+    });
     const all = months.map(m => snapAll(m));
     aVals = all.map(v=>v.a); lVals = all.map(v=>v.l); netVals = all.map(v=>v.net);
   } else {
