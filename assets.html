@@ -839,10 +839,14 @@ function loadData() {
 function saveData(data) {
   const ym = activeMonth || curYM();
   if (!data.snapshots) data.snapshots = {};
-  const snap = {};
-  data.assets.forEach(a => { snap[a.id] = a.amount; });
-  data.liabilities.forEach(l => { snap[l.id] = l.amount; });
-  data.snapshots[ym] = snap;
+  /* Only auto-snapshot the current month. Past-month snapshots must be
+     set explicitly (via confirmImport) to avoid poisoning liability estimates. */
+  if (ym === curYM()) {
+    const snap = {};
+    data.assets.forEach(a => { snap[a.id] = a.amount; });
+    data.liabilities.forEach(l => { snap[l.id] = l.amount; });
+    data.snapshots[ym] = snap;
+  }
   localStorage.setItem(ASSETS_KEY, JSON.stringify(data));
 }
 
@@ -899,19 +903,18 @@ function estimateLiabAt(liab, ym, data) {
   const start    = liab.startMonth;
   const apr      = liab.apr || 0;
   const overrides = data?.liabOverrides || {};
-  const snapshots = data?.snapshots    || {};
   if (!start || !monthly || !totalAmt) return liab.amount || 0;
   if (ym < start) return 0;
-  /* Find the most recent anchor (manual override takes priority over auto-snapshot) */
+  /* Only use liabOverrides as anchors — auto-snapshots capture master amounts
+     (not estimated amounts) and would poison the calculation chain. */
   let anchorYM = start, anchorAmt = totalAmt;
-  const prior = [...new Set([
-    ...Object.keys(overrides).filter(m => m < ym && m >= start && overrides[m]?.[liab.id] != null),
-    ...Object.keys(snapshots).filter(m => m < ym && m >= start && snapshots[m]?.[liab.id] != null),
-  ])].sort();
+  const prior = Object.keys(overrides)
+    .filter(m => m < ym && m >= start && overrides[m]?.[liab.id] != null)
+    .sort();
   if (prior.length) {
     const latest = prior[prior.length - 1];
     anchorYM  = latest;
-    anchorAmt = overrides[latest]?.[liab.id] ?? snapshots[latest]?.[liab.id];
+    anchorAmt = overrides[latest][liab.id];
   }
   return calcAmortized(anchorAmt, apr, monthly, ymDiff(anchorYM, ym));
 }
@@ -982,9 +985,8 @@ function updateMonthNav() {
 
   const yearNextBtn = document.getElementById('btn-year-next');
   if (yearNextBtn) {
-    const nextYear = String(parseInt(activeMonth.slice(0, 4)) + 1);
-    const futureYM = `${nextYear}-${activeMonth.slice(5, 7)}`;
-    const blocked = futureYM > curYM();
+    const nextYear = parseInt(activeMonth.slice(0, 4)) + 1;
+    const blocked = String(nextYear) > curYM().slice(0, 4);
     yearNextBtn.disabled = blocked;
     yearNextBtn.style.opacity = blocked ? '0.4' : '1';
   }
@@ -1124,7 +1126,11 @@ function handlePrepayChange() {
   if (!hasPlan) { const el = document.getElementById('lm-prepay-date'); if(el) el.value=''; }
 }
 
-const _collapsedAssetGroups = new Set();
+const _AG_PREF_KEY = 'leafin_collapsed_groups';
+function _loadCollapsedGroups() {
+  try { return new Set(JSON.parse(localStorage.getItem(_AG_PREF_KEY)) || []); } catch { return new Set(); }
+}
+const _collapsedAssetGroups = _loadCollapsedGroups();
 function toggleAssetGroup(hd) {
   const items = hd.nextElementSibling;
   const chevron = hd.querySelector('.ag-chevron');
@@ -1134,6 +1140,7 @@ function toggleAssetGroup(hd) {
   const cat = hd.dataset.cat;
   if (wasClosed) _collapsedAssetGroups.delete(cat);
   else _collapsedAssetGroups.add(cat);
+  localStorage.setItem(_AG_PREF_KEY, JSON.stringify([..._collapsedAssetGroups]));
 }
 
 function renderAssets(assets, total, prevSnap) {

@@ -1,0 +1,1337 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leafin — 小森理財</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   LEAFIN DESIGN TOKENS  (from Pencil wqoyv)
+   ═══════════════════════════════════════ */
+:root {
+  --bg:          #F0F4EC;
+  --card:        #FFFFFF;
+  --border:      #E4EBE6;
+  --shadow:      0 4px 16px rgba(0,0,0,0.08);
+  --shadow-sm:   0 2px 8px  rgba(0,0,0,0.05);
+
+  --primary:     #3EC193;
+  --primary-s:   #E9FAF4;
+  --primary-d:   #249870;   /* card titles */
+
+  --text:        #2D3436;
+  --text-2:      #6B7B7D;
+  --text-3:      #A0AEB0;
+
+  /* Goal accent colors */
+  --g1: #E57373;  --g1s: #FDEAEA;   /* 出國留學 */
+  --g2: #F0A868;  --g2s: #FFF3E6;   /* 買房頭期款 */
+  --g3: #C48B00;  --g3s: #FFF8E1;   /* 生小寶寶 */
+  --g4: #6BADE0;  --g4s: #EBF4FB;   /* 子女教育 */
+  --g5: #7B6AA0;  --g5s: #F3EFF8;   /* 提早退休 */
+
+  --sidebar-w: 210px;
+  --r: 16px;
+  --r-sm: 9999px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+button { font-family: inherit; cursor: pointer; border: none; }
+
+/* ═══════════════════════════════════════
+   LAYOUT SHELL
+   ═══════════════════════════════════════ */
+.app { display: flex; height: 100vh; overflow: hidden; }
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  gap: 6px;
+  overflow-y: auto;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+.logo-icon {
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+}
+.logo-text { display: flex; flex-direction: column; gap: 1px; }
+.logo-name { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; line-height: 1.1; }
+.logo-sub  { font-size: 11px; color: var(--text-2); }
+
+.nav-group { display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; }
+.nav-head  {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  margin-top: 8px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.nav-item:hover { background: var(--bg); }
+.nav-item.active { background: var(--primary-s); color: var(--primary); font-weight: 500; }
+.nav-item .ni { flex-shrink: 0; display: flex; align-items: center; }
+.nav-item .ni svg { stroke: currentColor; }
+.nav-item.active .ni svg { stroke: var(--primary); }
+
+.nav-spacer { flex: 1; }
+.nav-foot   { display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--bg); padding-top: 8px; flex-shrink: 0; }
+
+/* ─── MAIN ─── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+.topbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.greeting { font-size: 15px; font-weight: 600; color: var(--text); }
+
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.bell-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.bell-btn:hover { background: var(--bg); }
+.avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+}
+
+.scroll-area { flex: 1; overflow-y: auto; overflow-x: hidden; }
+.content     { padding: 16px 24px 32px; display: flex; flex-direction: column; gap: 16px; }
+
+/* ═══════════════════════════════════════
+   METRIC CARDS ROW
+   ═══════════════════════════════════════ */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.mcard {
+  background: var(--card);
+  border-radius: var(--r);
+  padding: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.mcard-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary-d);
+}
+.mcard-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+/* Donut ring (SVG-drawn) */
+.donut-wrap { position: relative; flex-shrink: 0; }
+
+/* Balance card */
+.bal-left    { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.bal-amount  { font-size: 28px; font-weight: 700; color: var(--primary); line-height: 1; }
+.bal-details { display: flex; flex-direction: column; gap: 4px; }
+.bal-det-row { font-size: 12px; color: var(--text-2); }
+.bal-badge   {
+  display: inline-flex;
+  align-items: center;
+  background: var(--primary-s);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: var(--r-sm);
+  width: fit-content;
+}
+
+/* Net worth card */
+.net-amount { font-size: 24px; font-weight: 700; color: var(--text); }
+.net-chg    { font-size: 12px; font-weight: 500; color: var(--primary); }
+
+/* Health card */
+.health-info { display: flex; flex-direction: column; gap: 6px; }
+.health-msg  { font-size: 13px; color: var(--text); }
+.health-link { font-size: 12px; font-weight: 500; color: var(--primary); cursor: pointer; }
+.health-link:hover { text-decoration: underline; }
+
+/* Illustrations (SVG placeholders) */
+.illus { flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+
+/* ═══════════════════════════════════════
+   GOALS TIMELINE
+   ═══════════════════════════════════════ */
+.goals-section { display: flex; flex-direction: column; gap: 14px; }
+.goals-header  { display: flex; align-items: center; justify-content: space-between; }
+.goals-title   { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; color: var(--text); }
+.goals-add     { font-size: 13px; font-weight: 500; color: var(--primary); cursor: pointer; }
+.goals-add:hover { opacity: 0.8; }
+
+.goals-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+
+.gcard {
+  border-radius: var(--r);
+  padding: 16px;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.gcard:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.10); }
+
+.gcard-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.gcard-icon {
+  font-size: 36px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.gcard-head { display: flex; flex-direction: column; gap: 2px; }
+.gcard-year { font-size: 15px; font-weight: 700; }
+.gcard-name { font-size: 13px; font-weight: 600; color: var(--text); }
+
+.gcard-track {
+  height: 6px;
+  border-radius: 3px;
+  background: #F0F0F0;
+  overflow: hidden;
+}
+.gcard-fill  { height: 100%; border-radius: 3px; }
+
+.gcard-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.gcard-pct { font-size: 12px; font-weight: 600; }
+.gcard-target { font-size: 11px; color: var(--text-3); }
+
+/* ═══════════════════════════════════════
+   BOTTOM 4-COLUMN ROW
+   ═══════════════════════════════════════ */
+.bottom-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+.bcard {
+  background: var(--card);
+  border-radius: var(--r);
+  padding: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.bcard-title { font-size: 14px; font-weight: 700; color: var(--primary-d); }
+
+/* Sync card */
+.upload-area {
+  border: 1.5px dashed #D4DFCF;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 90px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.upload-area:hover { background: var(--bg); }
+.upload-icon { color: var(--primary); }
+.upload-label { font-size: 12px; font-weight: 600; color: var(--text); text-align: center; }
+.upload-sub   { font-size: 10px; color: var(--text-3); text-align: center; }
+.sync-or      { font-size: 11px; color: var(--text-3); }
+.sync-btns    { display: flex; gap: 6px; flex-wrap: wrap; }
+.sync-btn     {
+  font-size: 10px;
+  color: var(--text);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 5px 10px;
+  transition: background 0.15s;
+}
+.sync-btn:hover { background: var(--bg); }
+.sync-time    { font-size: 9px; color: var(--text-3); }
+
+/* Asset health card */
+.ah-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary-s);
+  color: var(--primary-d);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--r-sm);
+}
+.ah-bear  {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ah-text  { font-size: 11px; color: var(--text-2); line-height: 1.4; }
+.ah-alloc { display: flex; align-items: center; justify-content: center; gap: 16px; }
+.ah-seg   { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.ah-pct   { font-size: 13px; font-weight: 700; }
+.ah-lbl   { font-size: 10px; color: var(--text-3); }
+.ah-tip   { font-size: 10px; color: var(--text-3); }
+.ah-cta   {
+  background: var(--primary);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  width: 100%;
+  transition: opacity 0.15s;
+}
+.ah-cta:hover { opacity: 0.88; }
+
+/* Savings card */
+.sav-body  { display: flex; align-items: center; gap: 10px; }
+.sav-left  { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.sav-sub   { font-size: 12px; color: var(--text-2); }
+.sav-amt   { font-size: 32px; font-weight: 800; color: var(--primary); line-height: 1; }
+.sav-cta   {
+  background: var(--text);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  width: 100%;
+  transition: opacity 0.15s;
+}
+.sav-cta:hover { opacity: 0.85; }
+.sav-link  { font-size: 11px; color: var(--primary); cursor: pointer; }
+.sav-tip   {
+  background: #FFF8F0;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 10px;
+  color: var(--text-2);
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Reminders card */
+.rem-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 0;
+}
+.rem-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.rem-body  { flex: 1; }
+.rem-name  { font-size: 12px; font-weight: 600; color: var(--text); }
+.rem-desc  { font-size: 10px; color: var(--text-2); }
+.rem-arrow { color: var(--text-3); flex-shrink: 0; }
+.rem-seeall { font-size: 11px; color: var(--primary); text-align: right; cursor: pointer; }
+
+/* ═══════════════════════════════════════
+   FOOTER ROW
+   ═══════════════════════════════════════ */
+.footer-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+.fcard {
+  background: var(--card);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.fcard-illus {
+  flex-shrink: 0;
+  width: 62px;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fcard-illus img {
+  max-width: 62px;
+  max-height: 62px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+.fcard-body  { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.fcard-title { font-size: 13px; font-weight: 700; color: var(--primary-d); }
+.fcard-hd    { display: flex; align-items: center; justify-content: space-between; }
+.fcard-link  { font-size: 11px; color: var(--primary); cursor: pointer; }
+
+.fcard-text  { font-size: 11px; color: var(--text); }
+.fcard-sub   { font-size: 10px; color: var(--text-2); }
+
+.streak-num  { font-size: 34px; font-weight: 800; color: var(--primary); line-height: 1; }
+.streak-row  { display: flex; align-items: baseline; gap: 4px; }
+.streak-unit { font-size: 14px; font-weight: 600; color: var(--text); }
+
+/* Shortcuts card */
+.sc-card  { align-items: flex-start; gap: 10px; }
+.sc-grid  { display: flex; gap: 8px; justify-content: center; width: 100%; }
+.sc-item  { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; cursor: pointer; }
+.sc-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sc-label  { font-size: 10px; color: var(--text-2); text-align: center; }
+
+/* scrollbar */
+.scroll-area::-webkit-scrollbar { width: 5px; }
+.scroll-area::-webkit-scrollbar-track { background: transparent; }
+.scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 18px 12px;
+  width: 100%;
+  text-align: center;
+}
+.es-icon { font-size: 28px; opacity: 0.6; }
+.es-msg  { font-size: 12px; color: var(--text-2); line-height: 1.5; }
+.es-btn  {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--primary); color: #fff;
+  border-radius: 8px; padding: 7px 14px;
+  font-size: 12px; font-weight: 600;
+  text-decoration: none; cursor: pointer;
+  transition: background 0.15s; margin-top: 2px;
+}
+.es-btn:hover { background: var(--primary-d); }
+.es-btn-outline {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: transparent; color: var(--primary);
+  border: 1.5px solid var(--primary);
+  border-radius: 8px; padding: 6px 14px;
+  font-size: 12px; font-weight: 600;
+  text-decoration: none; cursor: pointer;
+  transition: all 0.15s; margin-top: 2px;
+}
+.es-btn-outline:hover { background: var(--primary-s); }
+
+/* ── FIRST-TIME BANNER ── */
+.setup-banner {
+  background: linear-gradient(135deg, #E9FAF4 0%, #EAF6FD 100%);
+  border: 1px solid #C8EEE0;
+  border-radius: var(--r);
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.sb-left { display: flex; align-items: center; gap: 14px; }
+.sb-icon { font-size: 32px; }
+.sb-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.sb-sub   { font-size: 12px; color: var(--text-2); }
+.sb-steps { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.sb-step  {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--card); border-radius: 20px;
+  padding: 4px 12px; font-size: 11px; font-weight: 500;
+  color: var(--text-2); border: 1px solid var(--border);
+  text-decoration: none; cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.sb-step:hover { border-color: var(--primary); color: var(--primary); }
+.sb-step.done { background: var(--primary-s); color: var(--primary); border-color: var(--primary); }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══════════════════════════════
+     SIDEBAR  (from Pencil wqoyv)
+     ══════════════════════════════ -->
+<aside class="sidebar">
+
+  <!-- Logo -->
+  <div class="logo">
+    <div class="logo-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3EC193" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22C4 16 8 10 14 6 18 3 22 2 22 2c0 4-1 8-5 12-4 4-10 6-15 8Z"/><line x1="2" y1="22" x2="13" y2="11"/></svg>
+    </div>
+    <div class="logo-text">
+      <div class="logo-name">Leafin</div>
+      <div class="logo-sub">小森理財</div>
+    </div>
+  </div>
+
+  <!-- 規劃未來 -->
+  <div class="nav-group">
+    <div class="nav-head">規劃未來</div>
+    <a class="nav-item active" href="dashboard.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+      總覽
+    </a>
+    <a class="nav-item" href="goals.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg></span>
+      我的夢想任務
+    </a>
+    <a class="nav-item" href="timeline.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="22" y2="12"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></span>
+      人生時間軸
+    </a>
+  </div>
+
+  <!-- 看現在 -->
+  <div class="nav-group">
+    <div class="nav-head">看現在</div>
+    <a class="nav-item" href="expenses.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
+      收支與花費
+    </a>
+    <a class="nav-item" href="assets.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span>
+      我的錢在哪裡？
+    </a>
+  </div>
+
+  <!-- 穩穩累積 -->
+  <div class="nav-group">
+    <div class="nav-head">穩穩累積</div>
+    <a class="nav-item" href="simulator.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>
+      未來模擬
+    </a>
+  </div>
+
+  <!-- 看看近況 -->
+  <div class="nav-group">
+    <div class="nav-head">看看近況</div>
+    <a class="nav-item" href="healthcheck.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+      財務小健檢
+    </a>
+    <a class="nav-item" href="#">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+      年度回顧
+    </a>
+  </div>
+
+  <div class="nav-spacer"></div>
+
+  <!-- Footer nav -->
+  <div class="nav-foot">
+    <a class="nav-item" href="#">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+      設定
+    </a>
+  </div>
+
+</aside>
+
+<!-- ══════════════════════════════
+     MAIN
+     ══════════════════════════════ -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="greeting" id="dash-greeting">嗨，小葉！今天也是往目標前進的一天 🌿</div>
+    <div class="topbar-right">
+      <button class="bell-btn" aria-label="通知">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <div class="avatar" id="dash-avatar">葉</div>
+    </div>
+  </div>
+
+  <div class="scroll-area">
+    <div class="content">
+
+      <!-- ── SETUP BANNER (shown when no profile) ── -->
+      <div id="setup-banner" style="display:none;">
+        <div class="setup-banner">
+          <div class="sb-left">
+            <div class="sb-icon">🌱</div>
+            <div>
+              <div class="sb-title">歡迎來到 Leafin！先設定你的人生起點</div>
+              <div class="sb-sub">填完這三步，頁面就會顯示屬於你的數字</div>
+              <div class="sb-steps">
+                <a class="sb-step" id="sb-step1" href="goals.html">① 設定基本資料（年齡、月存）</a>
+                <a class="sb-step" id="sb-step2" href="goals.html">② 新增夢想任務</a>
+                <a class="sb-step" id="sb-step3" href="assets.html">③ 記錄資產狀況</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───────────────────────────
+           4 METRIC CARDS
+           ─────────────────────────── -->
+      <div class="metrics-row">
+
+        <!-- Card 1: 未來準備進度 -->
+        <div class="mcard" style="cursor:pointer" onclick="location.href='goals.html'">
+          <div class="mcard-title">未來準備進度</div>
+          <div class="mcard-body" id="dash-progress">
+            <!-- Donut 68% -->
+            <div class="donut-wrap">
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <!-- track -->
+                <circle cx="50" cy="50" r="38" fill="none" stroke="#E8F3ED" stroke-width="11"/>
+                <!-- progress: circumference=238.8, 68%→dashoffset=238.8*(1-0.68)=76.4 -->
+                <circle cx="50" cy="50" r="38" fill="none" stroke="#3EC193" stroke-width="11"
+                  stroke-dasharray="238.8" stroke-dashoffset="76.4"
+                  stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                <text x="50" y="46" text-anchor="middle" font-size="22" font-weight="700"
+                  fill="#3EC193" font-family="Inter, sans-serif">68%</text>
+                <text x="50" y="62" text-anchor="middle" font-size="11"
+                  fill="#A0AEB0" font-family="Inter, sans-serif">已達成</text>
+              </svg>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="font-size:12px;font-weight:500;color:#3EC193;">↑ 比上月 +6%</div>
+              <div style="font-size:12px;color:#F0A868;font-weight:400;">做得很好！</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: 本月結餘 -->
+        <div class="mcard" style="cursor:pointer" onclick="location.href='expenses.html'">
+          <div class="mcard-title">本月結餘</div>
+          <div class="mcard-body" id="dash-balance">
+            <div class="bal-left">
+              <div class="bal-amount">+18,600 元</div>
+              <div class="bal-details">
+                <div class="bal-det-row">收入 86,000 元</div>
+                <div class="bal-det-row">支出 67,400 元</div>
+              </div>
+              <div class="bal-badge">比上月 +12%</div>
+            </div>
+            <!-- Wallet illustration (from Pencil) -->
+            <div class="illus">
+              <img src="images/generated-1780080933350.png" width="110" height="110" alt="本月結餘插圖" style="object-fit:contain;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: 淨資產總覽 -->
+        <div class="mcard" style="cursor:pointer" onclick="location.href='assets.html'">
+          <div class="mcard-title">淨資產總覽</div>
+          <div class="mcard-body" id="dash-networth" style="flex-direction:column;align-items:flex-start;gap:6px;">
+            <div class="net-amount">1,248,000 元</div>
+            <div class="net-chg">↑ 比上月 +3.2%</div>
+            <svg id="net-chart" width="100%" height="42" viewBox="0 0 190 42" preserveAspectRatio="none" style="margin-top:4px;"></svg>
+          </div>
+        </div>
+
+        <!-- Card 4: 財務健康總分 -->
+        <div class="mcard" style="cursor:pointer" onclick="location.href='healthcheck.html'">
+          <div class="mcard-title">財務健康總分</div>
+          <div class="mcard-body" id="dash-health">
+            <!-- Score ring 82/100 -->
+            <div class="donut-wrap">
+              <svg width="80" height="80" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="32" fill="none" stroke="#E8F3ED" stroke-width="10"/>
+                <!-- sweepAngle -295 → 295/360 * 2π*32 = 164.8 / circumference=201.1, dashoffset=201.1*(1-295/360)=36.4 -->
+                <circle cx="40" cy="40" r="32" fill="none" stroke="#3EC193" stroke-width="10"
+                  stroke-dasharray="201.1" stroke-dashoffset="36.4"
+                  stroke-linecap="round" transform="rotate(-90 40 40)"/>
+                <text x="40" y="36" text-anchor="middle" font-size="18" font-weight="700"
+                  fill="#3EC193" font-family="Inter, sans-serif">82</text>
+                <text x="40" y="50" text-anchor="middle" font-size="10"
+                  fill="#A0AEB0" font-family="Inter, sans-serif">/100</text>
+              </svg>
+            </div>
+            <div class="health-info">
+              <div class="health-msg">很棒！繼續保持 🌟</div>
+              <div class="health-link">查看健檢報告 →</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /metrics-row -->
+
+      <!-- ───────────────────────────
+           GOALS TIMELINE
+           ─────────────────────────── -->
+      <div class="goals-section">
+        <div class="goals-header">
+          <div class="goals-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3EC193" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/><line x1="12" y1="8" x2="12" y2="8"/></svg>
+            我的人生夢想流水線
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A0AEB0" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          </div>
+          <a class="goals-add" href="goals.html" style="text-decoration:none;color:inherit;">+ 新增夢想任務</a>
+        </div>
+
+        <div class="goals-row" id="dash-goals-row">
+          <!-- 2028 出國留學 -->
+          <div class="gcard" style="background:#F8C4C4;">
+            <div class="gcard-top">
+              <div class="gcard-icon">✈️</div>
+              <div class="gcard-head">
+                <div class="gcard-year" style="color:var(--g1);">2028</div>
+                <div class="gcard-name">出國留學</div>
+              </div>
+            </div>
+            <div class="gcard-track"><div class="gcard-fill" style="width:35%;background:var(--g1);"></div></div>
+            <div class="gcard-bottom">
+              <div class="gcard-target">目標 80 萬</div>
+              <div class="gcard-pct" style="color:var(--g1);">35%</div>
+            </div>
+          </div>
+
+          <!-- 2031 買房頭期款 -->
+          <div class="gcard" style="background:#FAD9B4;">
+            <div class="gcard-top">
+              <div class="gcard-icon">🏠</div>
+              <div class="gcard-head">
+                <div class="gcard-year" style="color:var(--g2);">2031</div>
+                <div class="gcard-name">買房頭期款</div>
+              </div>
+            </div>
+            <div class="gcard-track"><div class="gcard-fill" style="width:45%;background:var(--g2);"></div></div>
+            <div class="gcard-bottom">
+              <div class="gcard-target">目標 600 萬</div>
+              <div class="gcard-pct" style="color:var(--g2);">45%</div>
+            </div>
+          </div>
+
+          <!-- 2034 生小寶寶 -->
+          <div class="gcard" style="background:#FDF4CE;">
+            <div class="gcard-top">
+              <div class="gcard-icon">🍼</div>
+              <div class="gcard-head">
+                <div class="gcard-year" style="color:var(--g3);">2034</div>
+                <div class="gcard-name">生小寶寶</div>
+              </div>
+            </div>
+            <div class="gcard-track"><div class="gcard-fill" style="width:10%;background:var(--g3);"></div></div>
+            <div class="gcard-bottom">
+              <div class="gcard-target">目標 150 萬</div>
+              <div class="gcard-pct" style="color:var(--g3);">10%</div>
+            </div>
+          </div>
+
+          <!-- 2038 子女教育基金 -->
+          <div class="gcard" style="background:#BAD9F2;">
+            <div class="gcard-top">
+              <div class="gcard-icon">🎓</div>
+              <div class="gcard-head">
+                <div class="gcard-year" style="color:var(--g4);">2038</div>
+                <div class="gcard-name">子女教育基金</div>
+              </div>
+            </div>
+            <div class="gcard-track"><div class="gcard-fill" style="width:20%;background:var(--g4);"></div></div>
+            <div class="gcard-bottom">
+              <div class="gcard-target">目標 300 萬</div>
+              <div class="gcard-pct" style="color:var(--g4);">20%</div>
+            </div>
+          </div>
+
+          <!-- 2055 提早退休 -->
+          <div class="gcard" style="background:#E5DEEF;">
+            <div class="gcard-top">
+              <div class="gcard-icon">☕</div>
+              <div class="gcard-head">
+                <div class="gcard-year" style="color:var(--g5);">2055</div>
+                <div class="gcard-name">提早退休</div>
+              </div>
+            </div>
+            <div class="gcard-track"><div class="gcard-fill" style="width:15%;background:var(--g5);"></div></div>
+            <div class="gcard-bottom">
+              <div class="gcard-target">目標 1,200 萬</div>
+              <div class="gcard-pct" style="color:var(--g5);">15%</div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /goals-section -->
+
+      <!-- ───────────────────────────
+           BOTTOM 4 CARDS
+           ─────────────────────────── -->
+      <div class="bottom-row">
+
+        <!-- 同步記帳 -->
+        <div class="bcard">
+          <div class="bcard-title">同步你的記帳數據（推薦）</div>
+          <div class="upload-area">
+            <div class="upload-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3EC193" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="upload-label">拖放 CSV / Excel 檔案到這裡</div>
+            <div class="upload-sub">我們會自動幫你分析！</div>
+          </div>
+          <div class="sync-or">或選擇其他方式</div>
+          <div class="sync-btns">
+            <button class="sync-btn">連接記帳 App</button>
+            <button class="sync-btn">手動微調</button>
+            <button class="sync-btn">隨機再說</button>
+          </div>
+          <div class="sync-time">上次同步：2025/05/18　來自 Moneybook</div>
+        </div>
+
+        <!-- 資產配置健康度 -->
+        <div class="bcard">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="bcard-title">資產配置健康度</div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A0AEB0" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          </div>
+          <div class="ah-badge">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            太空船插圖中...
+          </div>
+          <!-- Bear spaceship illustration (from Pencil) -->
+          <div class="ah-bear">
+            <img src="images/generated-1780080924843.png" style="width:100%;height:110px;object-fit:contain;" alt="太空船插圖">
+          </div>
+          <div class="ah-text">你的資產配置穩健，繼續保持多元分散！</div>
+          <div class="ah-alloc">
+            <div class="ah-seg"><div class="ah-pct" style="color:#3EC193;">55%</div><div class="ah-lbl">股票</div></div>
+            <div class="ah-seg"><div class="ah-pct" style="color:#6BADE0;">25%</div><div class="ah-lbl">儲存</div></div>
+            <div class="ah-seg"><div class="ah-pct" style="color:#F0A868;">20%</div><div class="ah-lbl">定存</div></div>
+          </div>
+          <div class="ah-tip">建議把 5% 移到定存，配置會更穩健！</div>
+          <div class="ah-cta">查看再平衡建議 →</div>
+        </div>
+
+        <!-- 為了實現所有夢想 (savings) -->
+        <div class="bcard">
+          <div class="bcard-title">為了實現所有夢想</div>
+          <div class="sav-body">
+            <div class="sav-left">
+              <div class="sav-sub">本月建議存下</div>
+              <div class="sav-amt" id="dash-savings-amt">NT$22,500</div>
+            </div>
+            <!-- Plant illustration (from Pencil) -->
+            <div class="illus">
+              <img src="images/generated-1780080943214.png" width="100" height="100" alt="植物插圖" style="object-fit:contain;">
+            </div>
+          </div>
+          <div class="sav-cta">✏ 更新本月存款數字</div>
+          <div class="sav-link">查看計算方式 →</div>
+          <div class="sav-tip">
+            <div style="font-weight:600;font-size:11px;color:#2D3436;">💡 小提示</div>
+            <div>只需多存 3,000，買房頭期款可提早半年達成！</div>
+          </div>
+        </div>
+
+        <!-- 本月重點提醒 -->
+        <div class="bcard">
+          <div class="bcard-title">本月重點提醒</div>
+          <div class="rem-item">
+            <div class="rem-icon" style="background:#FFF3E6;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F0A868" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <div class="rem-body">
+              <div class="rem-name">買房頭期款</div>
+              <div class="rem-desc">進度落後，建議增加儲蓄</div>
+            </div>
+            <svg class="rem-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="rem-item">
+            <div class="rem-icon" style="background:#EBF4FB;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6BADE0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            </div>
+            <div class="rem-body">
+              <div class="rem-name">投資組合需要再平衡</div>
+              <div class="rem-desc">股票比重偏高 5%</div>
+            </div>
+            <svg class="rem-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="rem-item">
+            <div class="rem-icon" style="background:#E8F3ED;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3EC193" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="rem-body">
+              <div class="rem-name">緊急預備金</div>
+              <div class="rem-desc">已達目標的 120% 👍</div>
+            </div>
+            <svg class="rem-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="rem-seeall">查看所有提醒 →</div>
+        </div>
+
+      </div><!-- /bottom-row -->
+
+      <!-- ───────────────────────────
+           FOOTER ROW (4 strip cards)
+           ─────────────────────────── -->
+      <div class="footer-row">
+
+        <!-- 今日小提醒 -->
+        <div class="fcard">
+          <div class="fcard-illus"><img src="images/generated-1780080925752.png" alt="" style="height:90px;width:auto;object-fit:contain;"></div>
+          <div class="fcard-body">
+            <div class="fcard-hd">
+              <div class="fcard-title">今日小提醒</div>
+              <div class="fcard-link">查看詳情</div>
+            </div>
+            <div style="font-size:11px;color:#2D3436;">• 結婚基金進度稍慢 🔥</div>
+            <div style="font-size:10px;color:#6B7B7D;">目前已有 78 萬，持續加油！</div>
+          </div>
+        </div>
+
+        <!-- 本月表現 -->
+        <div class="fcard">
+          <div class="fcard-illus"><img src="images/generated-1780080934534.png" alt="" style="height:90px;width:auto;object-fit:contain;"></div>
+          <div class="fcard-body">
+            <div class="fcard-title">本月表現優於上個月</div>
+            <div style="font-size:11px;color:#2D3436;">📈 投資收益增加了 +2.3%</div>
+            <div style="font-size:11px;color:#2D3436;">📉 生活花費減少了 -4.6%</div>
+          </div>
+        </div>
+
+        <!-- 連續存款天數 -->
+        <div class="fcard">
+          <div class="fcard-illus"><img src="images/generated-1780080930343.png" alt="" style="height:90px;width:auto;object-fit:contain;"></div>
+          <div class="fcard-body">
+            <div class="fcard-title">連續存款天數</div>
+            <div class="streak-row">
+              <div class="streak-num">18</div>
+              <div class="streak-unit">天</div>
+            </div>
+            <div style="font-size:10px;color:#6B7B7D;">太棒了！保持下去！🎉</div>
+          </div>
+        </div>
+
+        <!-- 快速捷徑 -->
+        <div class="fcard sc-card">
+          <div class="fcard-title">快速捷徑</div>
+          <div class="sc-grid">
+            <div class="sc-item">
+              <div class="sc-circle" style="background:#E8F3ED;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3EC193" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+              <div class="sc-label">夢想任務</div>
+            </div>
+            <div class="sc-item">
+              <div class="sc-circle" style="background:#EBF4FB;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6BADE0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <div class="sc-label">財務健檢</div>
+            </div>
+            <div class="sc-item">
+              <div class="sc-circle" style="background:#FFF3E6;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F0A868" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              </div>
+              <div class="sc-label">未來模擬</div>
+            </div>
+            <div class="sc-item">
+              <div class="sc-circle" style="background:#F3EFF8;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8A9D4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              </div>
+              <div class="sc-label">同步記帳</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /footer-row -->
+
+    </div><!-- /content -->
+  </div><!-- /scroll-area -->
+</div><!-- /main -->
+
+</div><!-- /app -->
+
+<script>
+/* ═══════════════════════════════════════
+   DATA LAYER  (接 Firebase 時替換此物件)
+   ═══════════════════════════════════════ */
+const liflowData = {
+  user: { name: '小葉' },
+  stats: {
+    readiness: 68, readinessDelta: 6,
+    surplus: 18600, income: 86000, expense: 67400, surplusDelta: 12,
+    netWorth: 1248000, netWorthDelta: 3.2,
+    healthScore: 82,
+  },
+  goals: [
+    { year:2028, emoji:'🎓', name:'出國留學',   pct:35, target:'80 萬',   color:'#E57373' },
+    { year:2031, emoji:'🏠', name:'買房頭期款', pct:45, target:'600 萬',  color:'#F0A868' },
+    { year:2034, emoji:'👶', name:'生小寶寶',   pct:10, target:'150 萬',  color:'#F0C868' },
+    { year:2038, emoji:'📚', name:'子女教育基金',pct:20, target:'300 萬', color:'#6BADE0' },
+    { year:2055, emoji:'☕', name:'提早退休',   pct:15, target:'1,200 萬',color:'#B8A9D4' },
+  ],
+  netHistory: [
+    { label:'2020', value:620000  },
+    { label:'2021', value:780000  },
+    { label:'2022', value:950000  },
+    { label:'2023', value:1080000 },
+    { label:'2024', value:1190000 },
+    { label:'現在',  value:1248000 },
+  ],
+};
+
+/* ═══ NET WORTH LINE CHART ═══ */
+(function () {
+  const svg  = document.getElementById('net-chart');
+  if (!svg) return;
+  const data = liflowData.netHistory;
+  const vals = data.map(d => d.value);
+  const mn = Math.min(...vals), mx = Math.max(...vals), rng = mx - mn || 1;
+  const W = 190, H = 42, pX = 4, pY = 6;
+  const toX = i => pX + i * (W - pX*2) / (vals.length-1);
+  const toY = v => H - pY - ((v-mn)/rng)*(H-pY*2);
+  const pts  = vals.map((v,i) => `${toX(i)},${toY(v)}`).join(' ');
+  const area = `${pX},${H} ${pts} ${toX(vals.length-1)},${H}`;
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="netG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#3EC193" stop-opacity="0.25"/>
+        <stop offset="100%" stop-color="#3EC193" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <polygon points="${area}" fill="url(#netG)"/>
+    <polyline points="${pts}" fill="none" stroke="#3EC193" stroke-width="2.5"
+      stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${toX(vals.length-1)}" cy="${toY(vals[vals.length-1])}" r="4" fill="#3EC193"/>
+    <circle cx="${toX(vals.length-1)}" cy="${toY(vals[vals.length-1])}" r="7" fill="#3EC193" opacity="0.2"/>
+  `;
+})();
+
+/* ═══ NAV CLICK ═══ */
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', function () {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+
+<script>
+/* ══════════════════════════════════════════
+   DASHBOARD  ×  localStorage  BINDING
+   ══════════════════════════════════════════ */
+
+const PROFILE_KEY = 'leafin_profile';
+const GOALS_KEY   = 'leafin_goals';
+const ASSETS_KEY  = 'leafin_assets';
+const EXPENSE_KEY = 'leafin_expenses';
+
+function getProfile()  { try { return JSON.parse(localStorage.getItem(PROFILE_KEY)); } catch { return null; } }
+function getGoals()    { try { return JSON.parse(localStorage.getItem(GOALS_KEY));   } catch { return null; } }
+function getAssets()   { try { return JSON.parse(localStorage.getItem(ASSETS_KEY));  } catch { return null; } }
+function getExpenses() { try { return JSON.parse(localStorage.getItem(EXPENSE_KEY)); } catch { return null; } }
+
+function fmtMoney(n) {
+  if (!n && n !== 0) return '—';
+  if (Math.abs(n) >= 10000) return (n / 10000).toFixed(0) + ' 萬';
+  return n.toLocaleString();
+}
+
+/* ── 1. Greeting & Avatar ── */
+function bindGreeting(p) {
+  if (!p) return;
+  const name = p.name || '朋友';
+  document.getElementById('dash-greeting').textContent =
+    `嗨，${name}！今天也是往目標前進的一天 🌿`;
+  document.getElementById('dash-avatar').textContent = name.charAt(0);
+}
+
+/* ── 2. Setup Banner ── */
+function bindSetupBanner(p, goals, assets) {
+  const hasProfile = !!p;
+  const hasGoals   = goals && goals.length > 0;
+  const hasAssets  = !!assets;
+  const allDone    = hasProfile && hasGoals && hasAssets;
+
+  if (!allDone) {
+    document.getElementById('setup-banner').style.display = '';
+    if (hasProfile) document.getElementById('sb-step1').classList.add('done');
+    if (hasGoals)   document.getElementById('sb-step2').classList.add('done');
+    if (hasAssets)  document.getElementById('sb-step3').classList.add('done');
+  }
+}
+
+/* ── 3. 未來準備進度 (Card 1) ── */
+function bindProgress(goals) {
+  const el = document.getElementById('dash-progress');
+  if (!goals || goals.length === 0) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="es-icon">🎯</div>
+        <div class="es-msg">還沒有夢想任務<br>加入第一個目標，進度就會出現</div>
+        <a class="es-btn" href="goals.html">+ 新增夢想任務</a>
+      </div>`;
+    return;
+  }
+  const avg = Math.round(goals.reduce((s, g) => s + (g.pct || 0), 0) / goals.length);
+  const circ = 238.8;
+  const offset = circ * (1 - avg / 100);
+  el.innerHTML = `
+    <div class="donut-wrap">
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="38" fill="none" stroke="#E8F3ED" stroke-width="11"/>
+        <circle cx="50" cy="50" r="38" fill="none" stroke="#3EC193" stroke-width="11"
+          stroke-dasharray="${circ}" stroke-dashoffset="${offset.toFixed(1)}"
+          stroke-linecap="round" transform="rotate(-90 50 50)"/>
+        <text x="50" y="46" text-anchor="middle" font-size="22" font-weight="700"
+          fill="#3EC193" font-family="Inter, sans-serif">${avg}%</text>
+        <text x="50" y="62" text-anchor="middle" font-size="11"
+          fill="#A0AEB0" font-family="Inter, sans-serif">已達成</text>
+      </svg>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <div style="font-size:12px;color:var(--text-2);">${goals.length} 個進行中任務</div>
+      <a href="goals.html" style="font-size:12px;color:var(--primary);font-weight:500;text-decoration:none;">查看全部 →</a>
+    </div>`;
+}
+
+/* ── 4. 本月結餘 (Card 2) ── */
+function bindBalance(expenses, profile) {
+  const el = document.getElementById('dash-balance');
+  if (!expenses) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="es-icon">💸</div>
+        <div class="es-msg">還沒記錄收支<br>填一次，以後就輕鬆追蹤</div>
+        <a class="es-btn" href="expenses.html">填入收支資料</a>
+      </div>`;
+    return;
+  }
+  const bal = (expenses.income || 0) - (expenses.expense || 0);
+  el.innerHTML = `
+    <div class="bal-left">
+      <div class="bal-amount" style="color:${bal>=0?'var(--primary)':'#FF7B7B'}">
+        ${bal >= 0 ? '+' : ''}${fmtMoney(bal)} 元
+      </div>
+      <div class="bal-details">
+        <div class="bal-det-row">收入 ${fmtMoney(expenses.income)} 元</div>
+        <div class="bal-det-row">支出 ${fmtMoney(expenses.expense)} 元</div>
+      </div>
+    </div>
+    <div class="illus">
+      <img src="images/generated-1780080933350.png" width="100" height="100" alt="" style="object-fit:contain;">
+    </div>`;
+}
+
+/* ── 5. 淨資產 (Card 3) ── */
+function bindNetworth(assets, profile) {
+  const el = document.getElementById('dash-networth');
+  if (!assets) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="es-icon">🏦</div>
+        <div class="es-msg">還沒記錄資產<br>知道自己有多少才能規劃未來</div>
+        <a class="es-btn" href="assets.html">填入資產資料</a>
+      </div>`;
+    return;
+  }
+  const liabTotal = assets.liabilities_total || 0;
+  const net = (assets.total || 0) - liabTotal;
+  el.innerHTML = `
+    <div class="net-amount">${fmtMoney(net)} 元</div>
+    <div class="net-chg" style="color:${net>=0?'var(--primary)':'#FF7B7B'}">
+      資產 ${fmtMoney(assets.total)} ／ 負債 ${fmtMoney(liabTotal)}
+    </div>
+    <a href="assets.html" style="font-size:11px;color:var(--primary);margin-top:4px;text-decoration:none;">查看明細 →</a>`;
+}
+
+/* ── 6. 財務健康 (Card 4) ── */
+function bindHealth(profile, goals) {
+  const el = document.getElementById('dash-health');
+  if (!profile) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="es-icon">🩺</div>
+        <div class="es-msg">設定人生起點後<br>自動計算你的財務健康分數</div>
+        <a class="es-btn-outline" href="goals.html">去設定</a>
+      </div>`;
+    return;
+  }
+  /* 簡易計算：儲蓄率 + 是否有目標 */
+  const savingRate = profile.income > 0 ? (profile.monthly / profile.income) : 0;
+  let score = 50;
+  if (savingRate >= 0.20) score += 15;
+  else if (savingRate >= 0.10) score += 8;
+  if (goals && goals.length >= 2) score += 12;
+  if (goals && goals.length >= 1) score += 5;
+  if (profile.fund > 0) score += 8;
+  score = Math.min(score, 100);
+  const circ = 201.1;
+  const offset = circ * (1 - score / 100);
+  const label = score >= 80 ? '🟢 健康' : score >= 60 ? '🟡 注意' : '🔴 待加強';
+  el.innerHTML = `
+    <div class="donut-wrap">
+      <svg width="80" height="80" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r="32" fill="none" stroke="#E8F3ED" stroke-width="10"/>
+        <circle cx="40" cy="40" r="32" fill="none" stroke="#3EC193" stroke-width="10"
+          stroke-dasharray="${circ}" stroke-dashoffset="${offset.toFixed(1)}"
+          stroke-linecap="round" transform="rotate(-90 40 40)"/>
+        <text x="40" y="36" text-anchor="middle" font-size="18" font-weight="700"
+          fill="#3EC193" font-family="Inter, sans-serif">${score}</text>
+        <text x="40" y="50" text-anchor="middle" font-size="10"
+          fill="#A0AEB0" font-family="Inter, sans-serif">/100</text>
+      </svg>
+    </div>
+    <div class="health-info">
+      <div class="health-msg">${label}</div>
+      <a href="healthcheck.html" class="health-link" style="text-decoration:none;">查看健檢報告 →</a>
+    </div>`;
+}
+
+/* ── 7. 夢想流水線 (Goals Row) ── */
+const GOAL_COLORS = [
+  { bg:'#F8C4C4', fill:'#E57373' },
+  { bg:'#FAD9B4', fill:'#F0A868' },
+  { bg:'#FDF4CE', fill:'#C48B00' },
+  { bg:'#BAD9F2', fill:'#6BADE0' },
+  { bg:'#E5DEEF', fill:'#7B6AA0' },
+  { bg:'#FFCAD4', fill:'#FF7BAC' },
+];
+
+function bindGoalsRow(goals) {
+  const el = document.getElementById('dash-goals-row');
+  if (!goals || goals.length === 0) {
+    el.innerHTML = `
+      <div style="width:100%;padding:24px 0;text-align:center;">
+        <div style="font-size:28px;margin-bottom:8px;opacity:.5;">🌟</div>
+        <div style="font-size:13px;color:var(--text-2);margin-bottom:12px;">還沒有夢想任務，加入第一個開始規劃吧！</div>
+        <a href="goals.html" class="es-btn" style="display:inline-flex;">+ 新增夢想任務</a>
+      </div>`;
+    return;
+  }
+  el.innerHTML = goals.map((g, i) => {
+    const c = GOAL_COLORS[i % GOAL_COLORS.length];
+    const year = g.targetDate ? g.targetDate.split('/')[0] : '—';
+    return `
+      <div class="gcard" style="background:${c.bg};cursor:pointer" onclick="location.href='goals.html'">
+        <div class="gcard-top">
+          <div class="gcard-icon">${g.icon || '🎯'}</div>
+          <div class="gcard-head">
+            <div class="gcard-year" style="color:${c.fill};">${year}</div>
+            <div class="gcard-name">${g.name}</div>
+          </div>
+        </div>
+        <div class="gcard-track">
+          <div class="gcard-fill" style="width:${g.pct||0}%;background:${c.fill};"></div>
+        </div>
+        <div class="gcard-bottom">
+          <div class="gcard-target">目標 ${fmtMoney(g.target)}元</div>
+          <div class="gcard-pct" style="color:${c.fill};">${g.pct||0}%</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ── 8. 本月建議存下 ── */
+function bindSavings(profile) {
+  const el = document.getElementById('dash-savings-amt');
+  if (!profile) return;
+  el.textContent = 'NT$' + (profile.monthly || 0).toLocaleString();
+}
+
+/* ── 初始化 ── */
+(function init() {
+  const p       = getProfile();
+  const goals   = getGoals();
+  const assets  = getAssets();
+  const expenses = getExpenses();
+
+  bindGreeting(p);
+  bindSetupBanner(p, goals, assets);
+  bindProgress(goals);
+  bindBalance(expenses, p);
+  bindNetworth(assets, p);
+  bindHealth(p, goals);
+  bindGoalsRow(goals);
+  bindSavings(p);
+})();
+</script>
+</body>
+</html>
