@@ -1057,12 +1057,14 @@ const LIAB_ICONS = {
 };
 
 let liabEditingId = null;
+let _liabSaveTimer = null;
 
 function openLiabModal(editId = null) {
   liabEditingId = editId;
   ['lm-name','lm-total-amt','lm-monthly','lm-terms','lm-remaining','lm-note'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
+  delete document.getElementById('lm-terms').dataset.userEdited;
   document.getElementById('lm-start-month').value = curYM();
   document.getElementById('lm-type').value = '房屋貸款';
   document.getElementById('lm-calc-box').style.display = 'none';
@@ -1094,6 +1096,7 @@ function openLiabModal(editId = null) {
 }
 
 function closeLiabModal() {
+  if (_liabSaveTimer) { clearTimeout(_liabSaveTimer); _liabSaveTimer = null; }
   liabEditingId = null;
   document.getElementById('liab-modal').classList.remove('open');
 }
@@ -1219,6 +1222,7 @@ function confirmLiab() {
   const note      = document.getElementById('lm-note').value.trim();
 
   if (!name || !totalAmt) { alert('請填入名稱和金額'); return; }
+  if (remaining > totalAmt) { alert('剩餘金額不能大於貸款總額'); return; }
 
   const cfg      = LIAB_TYPE_GROUPS[type] || { group:'A' };
   const paidAmt  = Math.max(0, totalAmt - remaining);
@@ -1230,7 +1234,8 @@ function confirmLiab() {
   const btn = document.getElementById('lm-submit');
   btn.textContent = '追蹤中…'; btn.disabled = true; btn.style.transform = 'scale(0.97)';
 
-  setTimeout(() => {
+  _liabSaveTimer = setTimeout(() => {
+    _liabSaveTimer = null;
     const data  = loadData() || JSON.parse(JSON.stringify(DEFAULT_DATA));
     const entry = {
       name, debtType: type, startMonth, totalAmt, monthly,
