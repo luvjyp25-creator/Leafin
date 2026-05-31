@@ -1254,6 +1254,12 @@ function confirmLiab() {
   }, 500);
 }
 
+function showLiabToast() {
+  const t = document.getElementById('liab-toast');
+  t.classList.add('lm-toast-show');
+  setTimeout(() => t.classList.remove('lm-toast-show'), 3000);
+}
+
 let addModalType = 'asset';
 let editingId = null;
 
