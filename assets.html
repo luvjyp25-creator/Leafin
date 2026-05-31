@@ -1193,10 +1193,23 @@ function toggleAssetGroup(hd) {
 function renderAssets(assets, total, prevSnap) {
   const wrap = document.getElementById('asset-donut-wrap');
   if (wrap) {
-    const twdAssets = assets.map(a => ({...a, amount: toTWD(a)}));
-    const slices = makeDonut(twdAssets, total, a => (CAT_STYLE[a.category]||CAT_STYLE['其他']).color);
+    /* Aggregate by category for the donut + legend */
+    const catMap = {};
+    assets.forEach(a => {
+      const cat = a.category || '其他';
+      catMap[cat] = (catMap[cat] || 0) + toTWD(a);
+    });
+    const catOrder = Object.keys(CAT_STYLE);
+    const catData = [
+      ...catOrder.filter(c => catMap[c]).map(c => ({ category: c, amount: catMap[c] })),
+      ...Object.keys(catMap).filter(c => !catOrder.includes(c)).map(c => ({ category: c, amount: catMap[c] })),
+    ];
+    const slices = makeDonut(catData, total, c => (CAT_STYLE[c.category]||CAT_STYLE['其他']).color);
     const svgCircles = slices.map(s => s.el).join('');
-    const legend = twdAssets.map((a,i) => { const cs = CAT_STYLE[a.category]||CAT_STYLE['其他']; return `<div class="leg-row"><div class="leg-dot" style="background:${cs.color};"></div><span class="leg-label">${a.category}</span><span class="leg-val">$${a.amount.toLocaleString()}</span><span class="leg-pct">${slices[i].pct}%</span></div>`; }).join('');
+    const legend = catData.map((c, i) => {
+      const cs = CAT_STYLE[c.category]||CAT_STYLE['其他'];
+      return `<div class="leg-row"><div class="leg-dot" style="background:${cs.color};"></div><span class="leg-label">${c.category}</span><span class="leg-val">$${Math.round(c.amount).toLocaleString()}</span><span class="leg-pct">${slices[i].pct}%</span></div>`;
+    }).join('');
     wrap.innerHTML = `<svg width="90" height="90" viewBox="0 0 90 90" style="flex-shrink:0;"><circle cx="45" cy="45" r="35" fill="none" stroke="#E4EBE6" stroke-width="14"/>${svgCircles}<text x="45" y="49" text-anchor="middle" font-size="11" font-weight="800" fill="#2D3436" font-family="Inter">${fmtM(total)}</text></svg><div class="legend-col">${legend}</div>`;
   }
   /* ── 依類型分組 ── */
