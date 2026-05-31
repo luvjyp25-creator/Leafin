@@ -877,6 +877,22 @@ function toggleRateField() {
 function curYM() { return new Date().toISOString().slice(0,7); }
 function fmtYM(ym) { if(!ym) return ''; const [y,m]=ym.split('-'); return y+'年'+parseInt(m)+'月'; }
 
+function ymDiff(fromYM, toYM) {
+  const [fy,fm] = fromYM.split('-').map(Number);
+  const [ty,tm] = toYM.split('-').map(Number);
+  return (ty - fy) * 12 + (tm - fm);
+}
+
+function estimateLiabAt(liab, ym) {
+  const monthly  = liab.monthly  || 0;
+  const totalAmt = liab.totalAmt || 0;
+  const start    = liab.startMonth;
+  if (!start || !monthly || !totalAmt) return liab.amount || 0;
+  if (ym < start) return 0;
+  const elapsed = ymDiff(start, ym);
+  return Math.max(0, totalAmt - monthly * elapsed);
+}
+
 /* ── 月份導航狀態 ── */
 let activeMonth = curYM();
 
@@ -965,9 +981,13 @@ function renderAll(data) {
   const snap  = (data.snapshots || {})[activeMonth];
   let dispAssets = data.assets;
   let dispLiabs  = data.liabilities;
-  if (!isNow && snap) {
-    dispAssets = data.assets.map(a => ({...a, amount: snap[a.id] != null ? snap[a.id] : 0}));
-    dispLiabs  = data.liabilities.map(l => ({...l, amount: snap[l.id] != null ? snap[l.id] : 0}));
+  if (!isNow) {
+    dispAssets = data.assets.map(a => ({...a, amount: snap?.[a.id] != null ? snap[a.id] : 0}));
+    dispLiabs  = data.liabilities.map(l => {
+      const amt = snap?.[l.id] != null ? snap[l.id] : estimateLiabAt(l, activeMonth);
+      const paidPct = l.totalAmt ? Math.max(0, Math.round((1 - amt / l.totalAmt) * 100)) : (l.paidPct || 0);
+      return {...l, amount: amt, paidPct};
+    });
   }
 
   const totalA = dispAssets.reduce((s,a) => s + toTWD(a), 0);
