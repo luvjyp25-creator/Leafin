@@ -670,7 +670,7 @@ function setPeriod(el) {
         <span class="lm-section-label" id="lm-cond-label">貸款條件</span>
         <div class="lm-section-line"></div>
       </div>
-      <div class="am-row3">
+      <div class="am-row2">
         <div>
           <div class="am-label" id="lm-total-label">貸款總額</div>
           <input class="am-input" id="lm-total-amt" type="number" placeholder="0" oninput="calcLiabPreview()">
@@ -679,25 +679,76 @@ function setPeriod(el) {
           <div class="am-label" id="lm-monthly-label">每月還款（元）</div>
           <input class="am-input" id="lm-monthly" type="number" placeholder="0" oninput="calcLiabPreview()">
         </div>
-        <div id="lm-terms-wrap">
-          <div class="am-label">總期數</div>
-          <input class="am-input" id="lm-terms" type="number" placeholder="0" oninput="this.dataset.userEdited='1';calcLiabPreview()">
-        </div>
       </div>
-      <div class="lm-section">
-        <span class="lm-section-label" id="lm-status-label">目前狀態</span>
-        <div class="lm-section-line"></div>
+      <div class="am-row2" id="lm-terms-row">
+        <div>
+          <div class="am-label" id="lm-terms-label">貸款年限 / 期數</div>
+          <select class="am-input" id="lm-terms-select" onchange="this.dataset.userEdited='1';handleTermsSelectChange()">
+            <option value="12">12 期</option>
+            <option value="24">24 期（2 年）</option>
+            <option value="36">36 期（3 年）</option>
+            <option value="60">5 年（60 期）</option>
+            <option value="84">7 年（84 期）</option>
+            <option value="120">10 年（120 期）</option>
+            <option value="180">15 年（180 期）</option>
+            <option value="240" selected>20 年（240 期）</option>
+            <option value="360">30 年（360 期）</option>
+            <option value="custom">自訂期數</option>
+          </select>
+        </div>
+        <div id="lm-custom-terms-col" style="display:none;">
+          <div class="am-label">自訂期數（期）</div>
+          <input class="am-input" id="lm-terms-custom" type="number" placeholder="例：300" oninput="calcLiabPreview()">
+        </div>
       </div>
       <div>
         <div class="am-label" id="lm-remaining-label">目前剩餘本金</div>
         <input class="am-input" id="lm-remaining" type="number" placeholder="請查銀行 App 顯示的數字" oninput="calcLiabPreview()">
       </div>
       <div id="lm-calc-box" class="lm-calc-box" style="display:none;">
-        <span class="lm-calc-label">✓ 自動計算</span>
-        <div class="lm-chips" id="lm-calc-chips"></div>
+        <div class="lm-calc-hdr">✓ 自動計算</div>
+        <div class="lm-calc-grid" id="lm-calc-grid"></div>
       </div>
       <div class="lm-info-box">✅ <span id="lm-info-text">儲存後將在每月支出中預扣金額，並自動追蹤剩餘本金</span></div>
-      <div><div class="am-label">說明（選填）</div><input class="am-input" id="lm-note" type="text" placeholder="補充說明（如：綁約期至 2028 年）"></div>
+      <div class="lm-adv-wrap">
+        <div class="lm-adv-toggle" onclick="toggleLiabAdvanced()">
+          <span class="lm-section-label">進階設定（選填）</span>
+          <div class="lm-section-line"></div>
+          <span class="lm-adv-chev" id="lm-adv-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+        </div>
+        <div class="lm-adv-body" id="lm-advanced-body">
+          <div class="am-row2" style="margin-top:8px;">
+            <div>
+              <div class="am-label">年利率（APR）%</div>
+              <input class="am-input" id="lm-apr" type="number" step="0.01" placeholder="例：2.38">
+            </div>
+            <div>
+              <div class="am-label">利率類型</div>
+              <div class="lm-radio-grp">
+                <label class="lm-radio-lbl"><input type="radio" name="lm-rate-type" value="fixed" id="lm-rate-fixed" checked> 固定利率</label>
+                <label class="lm-radio-lbl"><input type="radio" name="lm-rate-type" value="floating" id="lm-rate-floating"> 浮動利率</label>
+              </div>
+            </div>
+          </div>
+          <div class="am-row2" style="margin-top:8px;">
+            <div>
+              <div class="am-label">是否有提前還款計畫</div>
+              <select class="am-input" id="lm-prepay" onchange="handlePrepayChange()">
+                <option value="none">無特別計畫</option>
+                <option value="yes">有計畫</option>
+              </select>
+            </div>
+            <div id="lm-prepay-date-wrap" style="visibility:hidden;">
+              <div class="am-label">預計提前還款時間</div>
+              <input class="am-input" id="lm-prepay-date" type="month" style="font-size:13px;">
+            </div>
+          </div>
+          <div style="margin-top:8px;">
+            <div class="am-label">備註（選填）</div>
+            <textarea class="am-input" id="lm-note" rows="2" placeholder="例：預計 2028 年將有一筆獎金可提前還款" style="resize:vertical;min-height:56px;font-size:13px;font-weight:400;line-height:1.5;"></textarea>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="am-actions">
       <button class="am-cancel" onclick="closeLiabModal()">取消</button>
