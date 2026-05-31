@@ -746,8 +746,8 @@ const DEFAULT_DATA = {
     { id:'a4', name:'儲蓄型保單',           sub:'南山人壽 · 繳費中', category:'保單',       amount:146000, delta:500 },
   ],
   liabilities: [
-    { id:'l1', name:'房貸（目標買房規劃）', sub:'預計 2031 年起 · 月付 $22,000', category:'房貸', amount:4800000, paidPct:0,  monthly:22000 },
-    { id:'l2', name:'就學貸款',             sub:'已還 28% · 月付 $3,200',        category:'學貸', amount:1000000, paidPct:28, monthly:3200  },
+    { id:'l1', name:'房貸（目標買房規劃）', sub:'預計 2031 年起 · 月付 $22,000', category:'房貸', debtType:'房屋貸款', amount:4800000, paidPct:0,  monthly:22000, totalAmt:4800000, totalTerms:360, remainingAmt:4800000, startMonth:'2031-01', recurring:true },
+    { id:'l2', name:'就學貸款',             sub:'已還 28% · 月付 $3,200',        category:'學貸', debtType:'就學貸款', amount:720000,  paidPct:28, monthly:3200,  totalAmt:1000000, totalTerms:120, remainingAmt:720000,  startMonth:'2022-09', recurring:true },
   ]
 };
 
@@ -1003,7 +1003,10 @@ function renderLiabilities(liabs, total, prevSnap) {
     const prevAmt = prevSnap && prevSnap[l.id] != null ? prevSnap[l.id] : null;
     const d = prevAmt != null ? l.amount - prevAmt : 0;
     const deltaHtml = d ? `<div style="font-size:10px;color:${d<=0?'var(--primary)':'var(--danger)'};">${d<=0?'↓ -':'↑ +'}$${Math.abs(d).toLocaleString()}</div>` : '';
-    return `<div class="liab-item" ondblclick="openEditModal('liab','${l.id}')" title="雙擊編輯" style="cursor:pointer;"><div class="liab-icon" style="background:#FDEAEA;">💳</div><div class="liab-info"><div class="liab-name">${l.name}</div><div class="liab-sub">${l.sub||''}</div><div class="liab-progress"><div class="liab-fill" style="width:${l.paidPct||0}%;background:${color};"></div></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;"><div class="liab-amount" style="color:${color};">$${l.amount.toLocaleString()}</div>${deltaHtml}</div><span onclick="event.stopPropagation();deleteItem('liab','${l.id}')" style="cursor:pointer;color:var(--text-3);font-size:13px;margin-left:4px;" title="刪除">✕</span></div>`;
+    const icon    = LIAB_ICONS[l.debtType] || '💳';
+    const metaStr = [l.startMonth, l.totalTerms ? `${l.totalTerms} 期` : ''].filter(Boolean).join(' · ');
+    const subLine = l.sub || '';
+    return `<div class="liab-item" ondblclick="openLiabModal('${l.id}')" title="雙擊編輯" style="cursor:pointer;"><div class="liab-icon" style="background:#FDEAEA;">${icon}</div><div class="liab-info"><div class="liab-name">${l.name}</div><div class="liab-sub">${subLine}</div>${metaStr ? `<div style="font-size:10px;color:var(--text-3);margin-top:1px;">${metaStr}</div>` : ''}<div class="liab-progress"><div class="liab-fill" style="width:${l.paidPct||0}%;background:${color};"></div></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;"><div class="liab-amount" style="color:${color};">$${l.amount.toLocaleString()}</div>${deltaHtml}</div><span onclick="event.stopPropagation();deleteItem('liab','${l.id}')" style="cursor:pointer;color:var(--text-3);font-size:13px;margin-left:4px;" title="刪除">✕</span></div>`;
   }).join('');
 }
 
