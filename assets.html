@@ -608,6 +608,74 @@ function setPeriod(el) {
   </div>
 </div>
 
+<!-- LIAB MODAL -->
+<div class="am-overlay" id="liab-modal" onclick="if(event.target===this)closeLiabModal()">
+  <div class="am-box lm-box" id="lm-box">
+    <div class="lm-title-row">
+      <div class="am-title" id="lm-title">新增負債項目</div>
+      <span class="lm-badge" id="lm-badge">一次設定，自動追蹤</span>
+      <button class="lm-close" onclick="closeLiabModal()">✕</button>
+    </div>
+    <div class="am-fields">
+      <div><div class="am-label">名稱</div><input class="am-input" id="lm-name" type="text" placeholder="例：富邦房屋貸款、特斯拉車貸"></div>
+      <div class="am-row2">
+        <div>
+          <div class="am-label">類型</div>
+          <select class="am-input" id="lm-type" onchange="handleLiabTypeChange()">
+            <option>房屋貸款</option>
+            <option>汽車貸款</option>
+            <option>信用貸款</option>
+            <option>就學貸款</option>
+            <option>購物分期</option>
+            <option>信用卡卡債</option>
+            <option>其他負債</option>
+          </select>
+        </div>
+        <div>
+          <div class="am-label" id="lm-start-label">貸款起始年月（撥款日）</div>
+          <input class="am-input" id="lm-start-month" type="month" style="font-size:13px;">
+        </div>
+      </div>
+      <div class="lm-section">
+        <span class="lm-section-label" id="lm-cond-label">貸款條件</span>
+        <div class="lm-section-line"></div>
+      </div>
+      <div class="am-row3">
+        <div>
+          <div class="am-label" id="lm-total-label">貸款總額</div>
+          <input class="am-input" id="lm-total-amt" type="number" placeholder="0" oninput="calcLiabPreview()">
+        </div>
+        <div>
+          <div class="am-label" id="lm-monthly-label">每月還款（元）</div>
+          <input class="am-input" id="lm-monthly" type="number" placeholder="0" oninput="calcLiabPreview()">
+        </div>
+        <div id="lm-terms-wrap">
+          <div class="am-label">總期數</div>
+          <input class="am-input" id="lm-terms" type="number" placeholder="0" oninput="this.dataset.userEdited='1';calcLiabPreview()">
+        </div>
+      </div>
+      <div class="lm-section">
+        <span class="lm-section-label" id="lm-status-label">目前狀態</span>
+        <div class="lm-section-line"></div>
+      </div>
+      <div>
+        <div class="am-label" id="lm-remaining-label">目前剩餘本金</div>
+        <input class="am-input" id="lm-remaining" type="number" placeholder="請查銀行 App 顯示的數字" oninput="calcLiabPreview()">
+      </div>
+      <div id="lm-calc-box" class="lm-calc-box" style="display:none;">
+        <span class="lm-calc-label">✓ 自動計算</span>
+        <div class="lm-chips" id="lm-calc-chips"></div>
+      </div>
+      <div class="lm-info-box">✅ <span id="lm-info-text">儲存後將在每月支出中預扣金額，並自動追蹤剩餘本金</span></div>
+      <div><div class="am-label">說明（選填）</div><input class="am-input" id="lm-note" type="text" placeholder="補充說明（如：綁約期至 2028 年）"></div>
+    </div>
+    <div class="am-actions">
+      <button class="am-cancel" onclick="closeLiabModal()">取消</button>
+      <button class="lm-submit" id="lm-submit" onclick="confirmLiab()">儲存並開始追蹤 ✓</button>
+    </div>
+  </div>
+</div>
+
 <!-- IMPORT PREV MONTH MODAL -->
 <div class="am-overlay" id="import-modal" onclick="if(event.target===this)closeImportModal()">
   <div class="am-box" style="max-height:80vh;overflow-y:auto;">
@@ -1802,5 +1870,6 @@ function applyAssetsColMap() {
   if (histBody) histBody.style.display = 'none';
 })();
 </script>
+<div id="liab-toast" class="lm-toast">✨ 負債已同步至您的人生時間軸！</div>
 </body>
 </html>
