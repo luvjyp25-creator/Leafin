@@ -284,7 +284,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           🟡 注意
         </div>
-        <div class="score-date">最後更新：2026 / 05 / 30 · 比上季 ↑ +5 分</div>
+        <div class="score-date" id="hc-score-date">最後更新：—</div>
         <div class="score-msg">
           整體財務狀況正在改善！儲蓄與投資表現良好，保險與退休準備仍有空間提升。
           <strong style="color:var(--primary);">繼續保持，距離健康（80分）只差 8 分！</strong>
@@ -664,6 +664,9 @@ function leafinHealthScore(profile, expenses, assets) {
   // Score hero text
   const numEl = document.getElementById('hc-score-num');
   if (numEl) numEl.innerHTML = totalScore + ' <span class="score-100">/ 100</span>';
+
+  const dateEl = document.getElementById('hc-score-date');
+  if (dateEl) dateEl.textContent = '最後更新：' + new Date().toLocaleDateString('zh-TW');
 
   // Avatar — show first character of user name
   if (profile && profile.name) {

@@ -1896,7 +1896,7 @@ function bindGoalsRow(goals) {
     const c = GOAL_COLORS[i % GOAL_COLORS.length];
     const year = g.targetDate ? g.targetDate.split('/')[0] : '—';
     const days = goalDaysLeft(g.targetDate);
-    const daysStr = days !== null ? `還剩 ${days} 天` : '已到期';
+    const daysStr = days !== null ? `還剩 ${days} 天` : (g.targetDate ? '已到期' : '未設定日期');
     const daysColor = days !== null && days < 180 ? '#E57373' : c.fill;
     return `
       <div class="gcard" style="background:${c.bg};cursor:pointer" onclick="location.href='goals.html'">
