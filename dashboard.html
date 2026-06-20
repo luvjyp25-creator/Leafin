@@ -1113,36 +1113,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
         <!-- 本月重點提醒 → 財務小健檢 -->
         <div class="bcard" onclick="location.href='healthcheck.html'" style="cursor:pointer;">
           <div class="bcard-title">本月重點提醒</div>
-          <div class="rem-item">
-            <div class="rem-icon" style="background:#FFF3E6;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F0A868" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            </div>
-            <div class="rem-body">
-              <div class="rem-name">買房頭期款</div>
-              <div class="rem-desc">進度落後，建議增加儲蓄</div>
-            </div>
-            <svg class="rem-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-          <div class="rem-item">
-            <div class="rem-icon" style="background:#EBF4FB;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6BADE0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-            </div>
-            <div class="rem-body">
-              <div class="rem-name">投資組合需要再平衡</div>
-              <div class="rem-desc">股票比重偏高 5%</div>
-            </div>
-            <svg class="rem-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-          <div class="rem-item">
-            <div class="rem-icon" style="background:#E8F3ED;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3EC193" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            </div>
-            <div class="rem-body">
-              <div class="rem-name">緊急預備金</div>
-              <div class="rem-desc">已達目標的 120% 👍</div>
-            </div>
-            <svg class="rem-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
+          <div id="dash-reminders"></div>
           <div class="rem-seeall">查看所有提醒 →</div>
         </div>
 
@@ -1927,6 +1898,53 @@ function bindSavings(profile) {
   el.textContent = 'NT$' + (profile.monthly || 0).toLocaleString();
 }
 
+/* ── 10. 本月重點提醒（依真實資料的規則引擎）── */
+function bindReminders(profile, goals, assets, expenses) {
+  const wrap = document.getElementById('dash-reminders');
+  if (!wrap) return;
+  const txs = (expenses && expenses.transactions) || [];
+  const now = new Date();
+  const ym = now.getFullYear() + '/' + String(now.getMonth() + 1).padStart(2, '0');
+  let mInc = 0, mExp = 0;
+  txs.forEach(t => { if (String(t.date || '').replace(/-/g,'/').slice(0,7) !== ym) return; const a = Number(t.amount)||0; if (t.type==='income') mInc+=a; else if (t.type==='expense') mExp+=a; });
+  const monthly = (profile && profile.monthly) || 0;
+  const income  = (profile && profile.income)  || 0;
+  const assetTotal = (assets && assets.total) || 0;
+  const liabTotal  = (assets && assets.liabilities_total) || 0;
+  const items = [];
+
+  if (mInc > 0 && mExp > mInc)
+    items.push({ p:5, bg:'#FDEAEA', color:'#FF7B7B', icon:'⚠', name:'本月入不敷出', desc:'支出比收入多 $' + (mExp - mInc).toLocaleString() });
+  if (liabTotal > 0 && income > 0 && liabTotal > income * 12 * 3)
+    items.push({ p:4, bg:'#FFF3E6', color:'#F0A868', icon:'💳', name:'負債偏高', desc:'負債超過年收入 3 倍，留意還款壓力' });
+  if (goals && goals.length) {
+    const up = goals.filter(g => g.targetDate).map(g => {
+      const parts = String(g.targetDate).split('/'); const y = parseInt(parts[0]), mo = parts[1] ? parseInt(parts[1]) : 12;
+      const days = Math.round((new Date(y, mo-1, 1) - now) / 86400000);
+      return { name:g.name, pct:g.pct||0, days };
+    }).filter(g => g.days >= 0).sort((a,b) => a.days - b.days)[0];
+    if (up && up.pct < 50 && up.days < 730)
+      items.push({ p:3, bg:'#FFF3E6', color:'#F0A868', icon:'🎯', name:up.name, desc:'進度 ' + up.pct + '%，距目標約 ' + Math.max(1, Math.round(up.days/30)) + ' 個月' });
+  }
+  const rate = income > 0 ? monthly / income : 0;
+  if (rate > 0 && rate < 0.1)
+    items.push({ p:2, bg:'#FFF8E1', color:'#C48B00', icon:'💰', name:'儲蓄率偏低', desc:'目前約 ' + Math.round(rate*100) + '%，建議提高每月儲蓄' });
+  else if (rate >= 0.2)
+    items.push({ p:1, bg:'#E8F3ED', color:'#3EC193', icon:'👍', name:'儲蓄率達標', desc:'維持每月存 $' + monthly.toLocaleString() });
+  if (liabTotal === 0 && assetTotal > 0)
+    items.push({ p:1, bg:'#E8F3ED', color:'#3EC193', icon:'✓', name:'目前無負債', desc:'財務體質良好，繼續保持' });
+  if (!items.length)
+    items.push({ p:0, bg:'#E8F3ED', color:'#3EC193', icon:'🌱', name:'開始記錄你的財務', desc:'新增目標與收支後，提醒會更個人化' });
+
+  items.sort((a,b) => b.p - a.p);
+  wrap.innerHTML = items.slice(0,3).map(it => `
+    <div class="rem-item">
+      <div class="rem-icon" style="background:${it.bg};color:${it.color};font-size:13px;display:flex;align-items:center;justify-content:center;">${it.icon}</div>
+      <div class="rem-body"><div class="rem-name">${it.name}</div><div class="rem-desc">${it.desc}</div></div>
+      <svg class="rem-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`).join('');
+}
+
 /* ── 9. 資產配置健康度（依 leafin_assets 真實類別佔比）── */
 function bindAllocation(assets) {
   const wrap = document.getElementById('dash-alloc');
@@ -1970,6 +1988,7 @@ function bindAllocation(assets) {
   bindGoalsRow(goals);
   bindSavings(p);
   bindAllocation(assets);
+  bindReminders(p, goals, assets, expenses);
 })();
 </script>
 </body>
