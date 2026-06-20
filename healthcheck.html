@@ -580,30 +580,53 @@ window.addEventListener('load', () => {
 /* ══════════════════════════════
    HEALTHCHECK × localStorage
    ══════════════════════════════ */
+/* ── 共用：FIRE 目標 & 財務健康分數（dashboard 與 healthcheck 必須完全一致）──
+   月退休支出 × 12 ÷ 提領率；提領率(withdrawRate %)與月退休支出(retireExpense)
+   存在 leafin_profile，由未來模擬頁設定，各頁讀同一個值。 */
+function leafinFireTarget(profile) {
+  const wr  = (profile && profile.withdrawRate) || 4;      // 提領率 %
+  const exp = (profile && profile.retireExpense) || 60000; // 月退休支出
+  return Math.round(exp * 12 / (wr / 100));
+}
+function leafinHealthScore(profile, expenses) {
+  // 當月收入（從 transactions 算，單一真實來源；income/expense 欄位是歷來總和不可用）
+  const txs = (expenses && Array.isArray(expenses.transactions)) ? expenses.transactions : [];
+  const now = new Date();
+  const ym = now.getFullYear() + '/' + String(now.getMonth() + 1).padStart(2, '0');
+  let mInc = 0;
+  txs.forEach(function(t) {
+    if (String(t.date || '').replace(/-/g, '/').slice(0, 7) !== ym) return;
+    if (t.type === 'income') mInc += Number(t.amount) || 0;
+  });
+  const income = mInc || (profile && profile.income) || 0;
+  const sav = (profile && profile.monthly) || 0;
+  const savingsRate = income > 0 ? sav / income : 0;
+  const savingsScore = Math.min(20, Math.round(savingsRate * 60));
+
+  const fund = (profile && profile.fund != null) ? profile.fund : 0;
+  const fireTarget = leafinFireTarget(profile);
+  const retireProgress = fireTarget > 0 ? fund / fireTarget : 0;
+  const retireScore = Math.min(20, Math.round(retireProgress * 40));
+
+  const debtScore = 14, investScore = 16, insuranceScore = 9, familyScore = 5;
+  const total = savingsScore + debtScore + investScore + insuranceScore + retireScore + familyScore;
+  return { savingsScore, retireScore, debtScore, investScore, insuranceScore, familyScore, fireTarget, total };
+}
+
 (function() {
   function get(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } }
 
   const profile  = get('leafin_profile');
   const expenses = get('leafin_expenses');
-  // const assets = get('leafin_assets'); // reserved for future debt scoring
 
   if (!profile && !expenses) return; // no data → keep hardcoded values
 
-  // --- Scoring ---
-  const inc = (expenses && expenses.income) || (profile && profile.income) || 0;
-  const sav = (profile && profile.monthly) || 0;
-  const savingsRate = inc > 0 ? sav / inc : 0;
-  const savingsScore = Math.min(20, Math.round(savingsRate * 60));
-
-  const fund = (profile && profile.fund != null) ? profile.fund : 0;
-  const monthlyExpense = (expenses && expenses.expense) ||
-                         (profile ? Math.max(0, (profile.income || 0) - (profile.monthly || 0)) : 30000);
-  const fireTarget = monthlyExpense * 12 * 25;
-  const retireProgress = fireTarget > 0 ? fund / fireTarget : 0;
-  const retireScore = Math.min(20, Math.round(retireProgress * 40));
-
-  const debtScore = 14, investScore = 16, insuranceScore = 9, familyScore = 5;
-  const totalScore = savingsScore + debtScore + investScore + insuranceScore + retireScore + familyScore;
+  // --- Scoring (共用公式) ---
+  const H = leafinHealthScore(profile, expenses);
+  const savingsScore = H.savingsScore, retireScore = H.retireScore;
+  const debtScore = H.debtScore, investScore = H.investScore;
+  const insuranceScore = H.insuranceScore, familyScore = H.familyScore;
+  const totalScore = H.total;
 
   // --- Update score displays ---
   // Savings category score
@@ -622,7 +645,9 @@ window.addEventListener('load', () => {
   const circ = 314.16;
   const filled = Math.round(circ * totalScore / 100);
   const gap = Math.round(circ - filled);
-  document.getElementById('hc-score-ring-fill').setAttribute('stroke-dasharray', filled + ' ' + gap);
+  const ring = document.getElementById('hc-score-ring-fill');
+  ring.setAttribute('stroke-dasharray', filled + ' ' + gap);
+  ring.setAttribute('stroke-dashoffset', '0'); // 重設起點，避免弧線偏移
   document.getElementById('hc-total-score').textContent = totalScore;
 
   // Score hero text

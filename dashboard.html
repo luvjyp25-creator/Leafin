@@ -1789,7 +1789,37 @@ function bindNetworth(assets, profile) {
 }
 
 /* ── 6. 財務健康 (Card 4) ── */
-function bindHealth(profile, goals) {
+/* ── 共用：FIRE 目標 & 財務健康分數（與 healthcheck.html 完全相同的公式）── */
+function leafinFireTarget(profile) {
+  const wr  = (profile && profile.withdrawRate) || 4;      // 提領率 %
+  const exp = (profile && profile.retireExpense) || 60000; // 月退休支出
+  return Math.round(exp * 12 / (wr / 100));
+}
+function leafinHealthScore(profile, expenses) {
+  const txs = (expenses && Array.isArray(expenses.transactions)) ? expenses.transactions : [];
+  const now = new Date();
+  const ym = now.getFullYear() + '/' + String(now.getMonth() + 1).padStart(2, '0');
+  let mInc = 0;
+  txs.forEach(function(t) {
+    if (String(t.date || '').replace(/-/g, '/').slice(0, 7) !== ym) return;
+    if (t.type === 'income') mInc += Number(t.amount) || 0;
+  });
+  const income = mInc || (profile && profile.income) || 0;
+  const sav = (profile && profile.monthly) || 0;
+  const savingsRate = income > 0 ? sav / income : 0;
+  const savingsScore = Math.min(20, Math.round(savingsRate * 60));
+
+  const fund = (profile && profile.fund != null) ? profile.fund : 0;
+  const fireTarget = leafinFireTarget(profile);
+  const retireProgress = fireTarget > 0 ? fund / fireTarget : 0;
+  const retireScore = Math.min(20, Math.round(retireProgress * 40));
+
+  const debtScore = 14, investScore = 16, insuranceScore = 9, familyScore = 5;
+  const total = savingsScore + debtScore + investScore + insuranceScore + retireScore + familyScore;
+  return { savingsScore, retireScore, debtScore, investScore, insuranceScore, familyScore, fireTarget, total };
+}
+
+function bindHealth(profile, expenses) {
   const el = document.getElementById('dash-health');
   if (!profile) {
     el.innerHTML = `
@@ -1800,15 +1830,8 @@ function bindHealth(profile, goals) {
       </div>`;
     return;
   }
-  /* 簡易計算：儲蓄率 + 是否有目標 */
-  const savingRate = profile.income > 0 ? (profile.monthly / profile.income) : 0;
-  let score = 50;
-  if (savingRate >= 0.20) score += 15;
-  else if (savingRate >= 0.10) score += 8;
-  if (goals && goals.length >= 2) score += 12;
-  if (goals && goals.length >= 1) score += 5;
-  if (profile.fund > 0) score += 8;
-  score = Math.min(score, 100);
+  /* 與健檢頁共用同一套六維公式，確保兩頁分數一致 */
+  const score = leafinHealthScore(profile, expenses).total;
   const circ = 201.1;
   const offset = circ * (1 - score / 100);
   const label = score >= 80 ? '🟢 健康' : score >= 60 ? '🟡 注意' : '🔴 待加強';
@@ -1907,7 +1930,7 @@ function bindSavings(profile) {
   bindProgress(goals);
   bindBalance(expenses, p);
   bindNetworth(assets, p);
-  bindHealth(p, goals);
+  bindHealth(p, expenses);
   bindGoalsRow(goals);
   bindSavings(p);
 })();
