@@ -28,7 +28,7 @@
   let dirty = false;
   let debounceTimer = null;
   const listeners = [];
-  const state = { status: 'unconfigured', user: null, lastSync: null };
+  const state = { status: 'unconfigured', user: null, lastSync: null, error: null };
   // status: 'unconfigured' | 'signedout' | 'signedin' | 'syncing' | 'synced' | 'offline' | 'error'
 
   function emit() { listeners.forEach(fn => { try { fn(state); } catch (e) {} }); }
@@ -178,8 +178,8 @@
       if (cachedFileId) await updateFile(cachedFileId, payload);
       else cachedFileId = await createFile(payload);
       setLocalMeta({ updatedAt: updatedAt });
-      dirty = false; state.lastSync = updatedAt; setStatus('synced');
-    } catch (e) { setStatus('error'); }
+      dirty = false; state.lastSync = updatedAt; state.error = null; setStatus('synced');
+    } catch (e) { state.error = String((e && e.message) || e); console.error('[LeafinSync] syncUp', e); setStatus('error'); }
   }
 
   async function syncDown() {
@@ -197,8 +197,8 @@
         return true;
       }
       if (remote) state.lastSync = remote.updatedAt;
-      setStatus('synced'); return false;
-    } catch (e) { setStatus('error'); return false; }
+      state.error = null; setStatus('synced'); return false;
+    } catch (e) { state.error = String((e && e.message) || e); console.error('[LeafinSync] syncDown', e); setStatus('error'); return false; }
   }
 
   async function syncNow() { await syncDown(); await syncUp(); }

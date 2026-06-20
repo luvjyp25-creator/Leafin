@@ -225,7 +225,8 @@ const LS_KEYS = ['leafin_profile','leafin_goals','leafin_assets','leafin_expense
   const fmtTime = ts => ts ? new Date(ts).toLocaleString('zh-TW') : '尚未同步';
   window.LeafinSync.onChange(st => {
     const unconf = st.status === 'unconfigured';
-    const signedIn = st.status === 'signedin' || st.status === 'syncing' || st.status === 'synced';
+    // 只要有使用者（已登入），就顯示已登入區，即使同步出問題也讓使用者看得到狀態
+    const signedIn = !!st.user || st.status === 'signedin' || st.status === 'syncing' || st.status === 'synced';
     if ($('acct-unconfigured')) $('acct-unconfigured').style.display = unconf ? '' : 'none';
     if ($('acct-signedout'))   $('acct-signedout').style.display = (!unconf && !signedIn) ? '' : 'none';
     if ($('acct-signedin'))    $('acct-signedin').style.display = signedIn ? '' : 'none';
@@ -236,8 +237,9 @@ const LS_KEYS = ['leafin_profile','leafin_goals','leafin_assets','leafin_expense
     }
     if ($('acct-status')) {
       $('acct-status').textContent = st.status === 'syncing' ? '同步中…'
-        : st.status === 'error' ? '同步發生問題，稍後重試'
+        : st.status === 'error' ? ('同步發生問題：' + (st.error || '請稍後重試') + '（多半是尚未啟用 Drive API）')
         : '已同步 · ' + fmtTime(st.lastSync);
+      $('acct-status').style.color = st.status === 'error' ? '#FF7B7B' : 'var(--text-2)';
     }
   });
   const signin = $('acct-signin-btn'); if (signin) signin.onclick = () => window.LeafinSync.signIn();
