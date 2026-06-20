@@ -250,9 +250,10 @@ button { font-family: inherit; cursor: pointer; border: none; }
   flex-shrink: 0;
   line-height: 1;
 }
-.gcard-head { display: flex; flex-direction: column; gap: 2px; }
-.gcard-year { font-size: 15px; font-weight: 700; }
-.gcard-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.gcard-head { display: flex; flex-direction: column; gap: 1px; }
+.gcard-year { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; line-height: 1.2; }
+.gcard-days { font-size: 11px; font-weight: 600; line-height: 1.4; }
+.gcard-name { font-size: 12px; font-weight: 600; color: var(--text); margin-top: 1px; }
 
 .gcard-track {
   height: 6px;
@@ -535,6 +536,210 @@ button { font-family: inherit; cursor: pointer; border: none; }
 }
 .sb-step:hover { border-color: var(--primary); color: var(--primary); }
 .sb-step.done { background: var(--primary-s); color: var(--primary); border-color: var(--primary); }
+
+/* ═══════════════════════════════════════
+   SIDEBAR CHECKLIST WIDGET
+   ═══════════════════════════════════════ */
+.ncl-wrap {
+  margin-top: 12px;
+  background: var(--primary-s);
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.ncl-header {
+  padding: 12px 14px 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.ncl-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--primary-d);
+}
+.ncl-title { font-size: 11px; font-weight: 700; letter-spacing: 0.2px; }
+#ncl-chevron { color: var(--primary-d); transition: transform 0.2s; }
+.ncl-bar-wrap {
+  height: 4px; background: rgba(62,193,147,0.2);
+  border-radius: 99px; margin: 8px 0 4px;
+}
+.ncl-bar {
+  height: 100%; background: var(--primary);
+  border-radius: 99px; transition: width 0.4s ease;
+}
+.ncl-pct { font-size: 11px; font-weight: 600; color: var(--primary); }
+.ncl-body { padding: 0 14px 12px; display: flex; flex-direction: column; gap: 6px; }
+.ncl-body.hidden { display: none; }
+.ncl-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--text-2);
+}
+.ncl-item.done { color: var(--text); }
+.ncl-check {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 1.5px solid var(--border);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+}
+.ncl-item.done .ncl-check {
+  background: var(--primary); border-color: var(--primary);
+}
+.ncl-cta {
+  margin-left: auto; font-size: 10px; font-weight: 600;
+  color: var(--primary); white-space: nowrap;
+  text-decoration: none; cursor: pointer;
+}
+.ncl-cta:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════
+   ONBOARDING OVERLAY
+   ═══════════════════════════════════════ */
+.ob-overlay {
+  position: fixed; inset: 0;
+  background: rgba(240,244,236,0.96);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.ob-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 40px 44px;
+  width: 100%; max-width: 500px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.13);
+  position: relative;
+}
+.ob-steps-indicator {
+  display: flex; gap: 6px; margin-bottom: 28px;
+}
+.ob-step-dot {
+  height: 4px; border-radius: 99px; flex: 1;
+  background: var(--border); transition: background 0.3s;
+}
+.ob-step-dot.active { background: var(--primary); }
+.ob-step-dot.done   { background: var(--primary); opacity: 0.4; }
+.ob-tag {
+  font-size: 11px; font-weight: 700; color: var(--primary);
+  letter-spacing: 0.5px; margin-bottom: 6px;
+}
+.ob-title {
+  font-size: 22px; font-weight: 800; color: var(--text);
+  letter-spacing: -0.5px; margin-bottom: 4px;
+}
+.ob-sub { font-size: 13px; color: var(--text-2); margin-bottom: 24px; }
+.ob-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.ob-label { font-size: 12px; font-weight: 600; color: var(--text); }
+.ob-input {
+  height: 44px; border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 0 14px; font-size: 14px; font-family: inherit;
+  color: var(--text); outline: none; transition: border-color 0.15s;
+  width: 100%;
+}
+.ob-input:focus { border-color: var(--primary); }
+.ob-radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.ob-radio {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 99px;
+  border: 1.5px solid var(--border); cursor: pointer;
+  font-size: 12px; font-weight: 500; color: var(--text-2);
+  transition: all 0.15s; user-select: none;
+}
+.ob-radio.selected { border-color: var(--primary); background: var(--primary-s); color: var(--primary); }
+.ob-radio input { display: none; }
+.ob-hint { font-size: 11px; color: var(--text-3); margin-top: -8px; }
+.ob-actions { display: flex; gap: 10px; margin-top: 28px; align-items: center; }
+.ob-btn-primary {
+  flex: 1; height: 48px; background: var(--primary); color: #fff;
+  border-radius: 12px; font-size: 15px; font-weight: 700;
+  border: none; cursor: pointer; transition: opacity 0.15s;
+}
+.ob-btn-primary:hover { opacity: 0.88; }
+.ob-btn-back {
+  height: 48px; padding: 0 18px; background: none;
+  border: 1.5px solid var(--border); border-radius: 12px;
+  font-size: 14px; font-weight: 600; color: var(--text-2);
+  cursor: pointer; transition: border-color 0.15s;
+}
+.ob-btn-back:hover { border-color: var(--primary); color: var(--primary); }
+.ob-footer-hint { font-size: 11px; color: var(--text-3); margin-top: 12px; text-align: center; }
+
+/* Step 2 - options */
+.ob-options { display: flex; flex-direction: column; gap: 8px; }
+.ob-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-radius: 10px;
+  border: 1.5px solid var(--border); cursor: pointer;
+  font-size: 13px; color: var(--text-2); transition: all 0.15s;
+  user-select: none;
+}
+.ob-option.selected { border-color: var(--primary); background: var(--primary-s); color: var(--primary-d); }
+.ob-option input { display: none; }
+.ob-option-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 1.5px solid var(--border); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.ob-option.selected .ob-option-dot { border-color: var(--primary); background: var(--primary); }
+.ob-check-group { display: flex; flex-direction: column; gap: 8px; }
+.ob-checkbox {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border-radius: 10px;
+  border: 1.5px solid var(--border); cursor: pointer;
+  font-size: 13px; color: var(--text-2); transition: all 0.15s;
+  user-select: none;
+}
+.ob-checkbox.selected { border-color: var(--primary); background: var(--primary-s); color: var(--primary-d); }
+.ob-checkbox input { display: none; }
+.ob-checkbox-box {
+  width: 16px; height: 16px; border-radius: 4px;
+  border: 1.5px solid var(--border); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.ob-checkbox.selected .ob-checkbox-box { border-color: var(--primary); background: var(--primary); }
+
+/* Step 3 - goal cards */
+.ob-goal-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.ob-goal-card {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 16px 8px; border-radius: 12px;
+  border: 1.5px solid var(--border); cursor: pointer;
+  font-size: 12px; font-weight: 600; color: var(--text-2);
+  transition: all 0.15s; user-select: none; text-align: center;
+  position: relative;
+}
+.ob-goal-card:hover { border-color: var(--primary); }
+.ob-goal-card.selected {
+  border-color: var(--primary); background: var(--primary-s); color: var(--primary-d);
+}
+.ob-goal-card .ob-goal-check {
+  position: absolute; top: 6px; right: 6px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--primary); display: none;
+  align-items: center; justify-content: center;
+}
+.ob-goal-card.selected .ob-goal-check { display: flex; }
+.ob-goal-icon { font-size: 28px; line-height: 1; }
+
+/* Completion screen */
+.ob-complete { text-align: center; padding: 8px 0; }
+.ob-complete-icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--primary-s); border: 3px solid var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 36px;
+}
+.ob-complete-title { font-size: 26px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+.ob-complete-sub { font-size: 14px; color: var(--text-2); margin-bottom: 24px; }
+.ob-complete-list { text-align: left; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+.ob-complete-item {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: var(--text);
+}
+.ob-complete-item .oci { color: var(--primary); font-size: 15px; }
 </style>
 </head>
 <body>
@@ -582,30 +787,34 @@ button { font-family: inherit; cursor: pointer; border: none; }
     </a>
     <a class="nav-item" href="assets.html">
       <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span>
-      我的錢在哪裡？
+      資產與負債
     </a>
   </div>
 
-  <!-- 穩穩累積 -->
+  <!-- 想看看 -->
   <div class="nav-group">
-    <div class="nav-head">穩穩累積</div>
+    <div class="nav-head">想看看</div>
     <a class="nav-item" href="simulator.html">
       <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>
       未來模擬
     </a>
-  </div>
-
-  <!-- 看看近況 -->
-  <div class="nav-group">
-    <div class="nav-head">看看近況</div>
     <a class="nav-item" href="healthcheck.html">
       <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
       財務小健檢
     </a>
-    <a class="nav-item" href="#">
-      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
-      年度回顧
-    </a>
+  </div>
+
+  <!-- Checklist widget -->
+  <div class="ncl-wrap" id="ncl-wrap">
+    <div class="ncl-header" onclick="toggleNcl()">
+      <div class="ncl-title-row">
+        <span class="ncl-title">財務導航建立進度</span>
+        <svg id="ncl-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="ncl-bar-wrap"><div class="ncl-bar" id="ncl-bar"></div></div>
+      <div class="ncl-pct" id="ncl-pct">計算中…</div>
+    </div>
+    <div class="ncl-body" id="ncl-body"></div>
   </div>
 
   <div class="nav-spacer"></div>
@@ -1093,6 +1302,317 @@ document.querySelectorAll('.nav-item').forEach(el => {
 });
 </script>
 
+<!-- ══════════════════════════════════════════
+     ONBOARDING OVERLAY
+     ══════════════════════════════════════════ -->
+<div id="ob-overlay" class="ob-overlay" style="display:none;">
+  <div class="ob-card">
+
+    <!-- Step dots -->
+    <div class="ob-steps-indicator" id="ob-dots">
+      <div class="ob-step-dot" id="dot-1"></div>
+      <div class="ob-step-dot" id="dot-2"></div>
+      <div class="ob-step-dot" id="dot-3"></div>
+    </div>
+
+    <!-- ── STEP 1 ── -->
+    <div id="ob-s1">
+      <div class="ob-tag">建立人生起點（1/3）</div>
+      <div class="ob-title">了解你的基本資訊</div>
+      <div class="ob-sub">讓 Leafin 為你量身規劃，只需填 4 項。</div>
+
+      <div class="ob-field">
+        <div class="ob-label">年齡</div>
+        <input class="ob-input" type="number" id="ob-age" placeholder="例：28" min="16" max="80">
+      </div>
+
+      <div class="ob-field">
+        <div class="ob-label">人生階段</div>
+        <div class="ob-radio-group">
+          <label class="ob-radio" onclick="obRadio(this,'ob-lifestyle')"><input type="radio" name="ob-lifestyle" value="單身">單身</label>
+          <label class="ob-radio" onclick="obRadio(this,'ob-lifestyle')"><input type="radio" name="ob-lifestyle" value="穩定交往">穩定交往</label>
+          <label class="ob-radio" onclick="obRadio(this,'ob-lifestyle')"><input type="radio" name="ob-lifestyle" value="已婚">已婚</label>
+          <label class="ob-radio" onclick="obRadio(this,'ob-lifestyle')"><input type="radio" name="ob-lifestyle" value="已婚有小孩">已婚有小孩</label>
+        </div>
+      </div>
+
+      <div class="ob-field">
+        <div class="ob-label">月收入（含獎金）</div>
+        <input class="ob-input" type="number" id="ob-income" placeholder="例：48500" min="0" oninput="obEstimateSavings()">
+      </div>
+
+      <div class="ob-field">
+        <div class="ob-label">每月可存金額</div>
+        <input class="ob-input" type="number" id="ob-monthly" placeholder="例：22500" min="0">
+        <div class="ob-hint">預估：月收入 × 40%，可自行修改</div>
+      </div>
+
+      <div class="ob-actions">
+        <button class="ob-btn-primary" onclick="obNext(1)">下一步 →</button>
+      </div>
+      <div class="ob-footer-hint">只需填 4 項，快速開始！</div>
+    </div>
+
+    <!-- ── STEP 2 ── -->
+    <div id="ob-s2" style="display:none;">
+      <div class="ob-tag">了解你的財務現況（2/3）</div>
+      <div class="ob-title">大約了解你的資產狀況</div>
+      <div class="ob-sub">不用精確計算，先大致填寫即可。</div>
+
+      <div class="ob-field">
+        <div class="ob-label">目前總資產大約是多少？</div>
+        <div class="ob-options" id="ob-asset-opts">
+          <label class="ob-option" onclick="obSelect(this,'ob-asset')">
+            <div class="ob-option-dot"></div>50 萬以下
+          </label>
+          <label class="ob-option" onclick="obSelect(this,'ob-asset')">
+            <div class="ob-option-dot"></div>50 ～ 200 萬
+          </label>
+          <label class="ob-option" onclick="obSelect(this,'ob-asset')">
+            <div class="ob-option-dot"></div>200 ～ 500 萬
+          </label>
+          <label class="ob-option" onclick="obSelect(this,'ob-asset')">
+            <div class="ob-option-dot"></div>500 ～ 1000 萬
+          </label>
+          <label class="ob-option" onclick="obSelect(this,'ob-asset')">
+            <div class="ob-option-dot"></div>1000 萬以上
+          </label>
+        </div>
+      </div>
+
+      <div class="ob-field">
+        <div class="ob-label">目前有貸款嗎？（可複選）</div>
+        <div class="ob-check-group" id="ob-loan-opts">
+          <label class="ob-checkbox" onclick="obToggle(this)"><div class="ob-checkbox-box"></div>房貸</label>
+          <label class="ob-checkbox" onclick="obToggle(this)"><div class="ob-checkbox-box"></div>車貸</label>
+          <label class="ob-checkbox" onclick="obToggle(this)"><div class="ob-checkbox-box"></div>信貸 / 信用貸款</label>
+          <label class="ob-checkbox" onclick="obToggle(this,'exclusive')"><div class="ob-checkbox-box"></div>沒有貸款</label>
+        </div>
+      </div>
+
+      <div class="ob-actions">
+        <button class="ob-btn-back" onclick="obBack(2)">← 上一步</button>
+        <button class="ob-btn-primary" onclick="obNext(2)">下一步 →</button>
+      </div>
+      <div class="ob-footer-hint">不用精確計算，之後可以再補資料。</div>
+    </div>
+
+    <!-- ── STEP 3 ── -->
+    <div id="ob-s3" style="display:none;">
+      <div class="ob-tag">選擇你的人生目標（3/3）</div>
+      <div class="ob-title">你想達成哪些夢想？</div>
+      <div class="ob-sub">可複選，Leafin 會幫你規劃追蹤路徑。</div>
+
+      <div class="ob-goal-grid" id="ob-goal-grid">
+        <div class="ob-goal-card" onclick="obToggleGoal(this)" data-goal="house">
+          <div class="ob-goal-check"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="ob-goal-icon">🏠</div>買房
+        </div>
+        <div class="ob-goal-card" onclick="obToggleGoal(this)" data-goal="wedding">
+          <div class="ob-goal-check"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="ob-goal-icon">💍</div>結婚
+        </div>
+        <div class="ob-goal-card" onclick="obToggleGoal(this)" data-goal="baby">
+          <div class="ob-goal-check"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="ob-goal-icon">👶</div>小孩教育
+        </div>
+        <div class="ob-goal-card" onclick="obToggleGoal(this)" data-goal="study">
+          <div class="ob-goal-check"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="ob-goal-icon">✈️</div>留學 / 出國
+        </div>
+        <div class="ob-goal-card" onclick="obToggleGoal(this)" data-goal="fire">
+          <div class="ob-goal-check"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="ob-goal-icon">🌴</div>退休 / FIRE
+        </div>
+        <div class="ob-goal-card" onclick="obToggleGoal(this)" data-goal="other">
+          <div class="ob-goal-check"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="ob-goal-icon">⭐</div>其他目標
+        </div>
+      </div>
+
+      <div class="ob-actions" style="margin-top:20px;">
+        <button class="ob-btn-back" onclick="obBack(3)">← 上一步</button>
+        <button class="ob-btn-primary" onclick="obFinish()">建立我的財務導航 ✨</button>
+      </div>
+      <div class="ob-footer-hint">我們會根據你的選擇，建立專屬的財務計畫。</div>
+    </div>
+
+    <!-- ── COMPLETE ── -->
+    <div id="ob-complete" style="display:none;">
+      <div class="ob-complete">
+        <div class="ob-complete-icon">✅</div>
+        <div class="ob-complete-title">設定完成！</div>
+        <div class="ob-complete-sub">你的財務導航已建立，我們會陪你一步步實現夢想。</div>
+        <div class="ob-complete-list">
+          <div class="ob-complete-item"><span class="oci">✓</span> 人生起點：已完成</div>
+          <div class="ob-complete-item"><span class="oci">✓</span> 資產負債概況：已完成</div>
+          <div class="ob-complete-item"><span class="oci">✓</span> 人生目標：已完成</div>
+        </div>
+        <button class="ob-btn-primary" style="width:100%;" onclick="obClose()">開始探索我的 Dashboard →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   ONBOARDING  LOGIC
+   ══════════════════════════════════════ */
+(function checkOnboarding() {
+  if (!localStorage.getItem('leafin_onboarded')) {
+    document.getElementById('ob-overlay').style.display = 'flex';
+    updateDots(1);
+  }
+})();
+
+let obStep = 1;
+
+function updateDots(step) {
+  [1,2,3].forEach(i => {
+    const d = document.getElementById('dot-' + i);
+    d.classList.remove('active','done');
+    if (i === step) d.classList.add('active');
+    else if (i < step) d.classList.add('done');
+  });
+}
+
+function showStep(n) {
+  [1,2,3].forEach(i => document.getElementById('ob-s'+i).style.display = 'none');
+  document.getElementById('ob-complete').style.display = 'none';
+  if (n === 'complete') {
+    document.getElementById('ob-complete').style.display = '';
+    document.getElementById('ob-dots').style.display = 'none';
+  } else {
+    document.getElementById('ob-s'+n).style.display = '';
+    document.getElementById('ob-dots').style.display = '';
+    updateDots(n);
+  }
+  obStep = n;
+}
+
+function obRadio(el, name) {
+  document.querySelectorAll(`[name="${name}"]`).forEach(r => r.closest('.ob-radio').classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function obSelect(el, group) {
+  el.closest('.ob-options').querySelectorAll('.ob-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function obToggle(el, exclusive) {
+  if (exclusive) {
+    el.closest('.ob-check-group').querySelectorAll('.ob-checkbox').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  } else {
+    const noneItem = [...el.closest('.ob-check-group').querySelectorAll('.ob-checkbox')].find(c => c.textContent.trim() === '沒有貸款');
+    if (noneItem) noneItem.classList.remove('selected');
+    el.classList.toggle('selected');
+  }
+}
+
+function obToggleGoal(el) { el.classList.toggle('selected'); }
+
+function obEstimateSavings() {
+  const income = parseFloat(document.getElementById('ob-income').value);
+  if (income > 0 && !document.getElementById('ob-monthly').dataset.touched) {
+    document.getElementById('ob-monthly').placeholder = '例：' + Math.round(income * 0.4).toLocaleString();
+  }
+}
+document.getElementById('ob-monthly').addEventListener('input', function() {
+  this.dataset.touched = '1';
+});
+
+function obNext(fromStep) {
+  if (fromStep === 1) {
+    const age = parseInt(document.getElementById('ob-age').value);
+    const lifestyle = document.querySelector('[name="ob-lifestyle"]:checked')?.value;
+    const income = parseFloat(document.getElementById('ob-income').value);
+    if (!age || !lifestyle || !income) { alert('請填寫所有必填欄位'); return; }
+    showStep(2);
+  } else if (fromStep === 2) {
+    const asset = document.querySelector('#ob-asset-opts .ob-option.selected');
+    if (!asset) { alert('請選擇資產範圍'); return; }
+    showStep(3);
+  }
+}
+
+function obBack(fromStep) { showStep(fromStep - 1); }
+
+function obFinish() {
+  // Save profile
+  const age = parseInt(document.getElementById('ob-age').value);
+  const lifestyle = document.querySelector('[name="ob-lifestyle"]:checked')?.value || '單身';
+  const income = parseFloat(document.getElementById('ob-income').value) || 0;
+  const monthlyRaw = parseFloat(document.getElementById('ob-monthly').value);
+  const monthly = isNaN(monthlyRaw) ? Math.round(income * 0.4) : monthlyRaw;
+
+  const existing = JSON.parse(localStorage.getItem('leafin_profile') || '{}');
+  const profile = Object.assign(existing, { age, lifestyle, income, monthly });
+  localStorage.setItem('leafin_profile', JSON.stringify(profile));
+  localStorage.setItem('leafin_onboarded', '1');
+
+  showStep('complete');
+}
+
+function obClose() {
+  document.getElementById('ob-overlay').style.display = 'none';
+  location.reload();
+}
+
+/* ══════════════════════════════════════
+   SIDEBAR CHECKLIST LOGIC
+   ══════════════════════════════════════ */
+let nclOpen = true;
+
+function toggleNcl() {
+  nclOpen = !nclOpen;
+  const body = document.getElementById('ncl-body');
+  body.classList.toggle('hidden', !nclOpen);
+  document.getElementById('ncl-chevron').style.transform = nclOpen ? '' : 'rotate(-90deg)';
+}
+
+function renderChecklist() {
+  const profile  = JSON.parse(localStorage.getItem('leafin_profile') || 'null');
+  const goals    = JSON.parse(localStorage.getItem('leafin_goals')   || '[]');
+  const assets   = JSON.parse(localStorage.getItem('leafin_assets')  || 'null');
+  const expenses = JSON.parse(localStorage.getItem('leafin_expenses') || 'null');
+  const onboarded = !!localStorage.getItem('leafin_onboarded');
+
+  const hasProfile  = !!(profile && profile.age && profile.income);
+  const hasGoals    = goals.length > 0;
+  const hasAssets   = !!(assets && assets.assets && assets.assets.length > 0);
+  const hasLiab     = !!(assets && assets.liabilities && assets.liabilities.length > 0);
+  const hasExpenses = !!(expenses && (expenses.transactions?.length > 0 || expenses.income));
+
+  const items = [
+    { label: '建立人生起點',   done: onboarded || hasProfile, href: null,            cta: '去設定' },
+    { label: '建立人生目標',   done: hasGoals,                href: 'goals.html',    cta: '去新增' },
+    { label: '新增資產',       done: hasAssets,               href: 'assets.html',   cta: '去新增' },
+    { label: '新增負債',       done: hasLiab,                 href: 'assets.html',   cta: '去新增' },
+    { label: '完成首次收支紀錄', done: hasExpenses,           href: 'expenses.html', cta: '去記錄' },
+  ];
+
+  const doneCount = items.filter(i => i.done).length;
+  const pct = Math.round(doneCount / items.length * 100);
+
+  document.getElementById('ncl-bar').style.width = pct + '%';
+  document.getElementById('ncl-pct').textContent = pct + '% 完成';
+
+  const body = document.getElementById('ncl-body');
+  body.innerHTML = items.map(item => `
+    <div class="ncl-item ${item.done ? 'done' : ''}">
+      <div class="ncl-check">${item.done ? '<svg width="9" height="9" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</div>
+      <span>${item.label}</span>
+      ${!item.done && item.href ? `<a class="ncl-cta" href="${item.href}">${item.cta}</a>` : ''}
+    </div>
+  `).join('');
+}
+
+renderChecklist();
+</script>
+
 <script>
 /* ══════════════════════════════════════════
    DASHBOARD  ×  localStorage  BINDING
@@ -1151,11 +1671,27 @@ function bindProgress(goals) {
     return;
   }
   const avg = Math.round(goals.reduce((s, g) => s + (g.pct || 0), 0) / goals.length);
+  const totalTarget  = goals.reduce((s, g) => s + (g.target  || 0), 0);
+  const totalCurrent = goals.reduce((s, g) => s + (g.current || 0), 0);
   const circ = 238.8;
   const offset = circ * (1 - avg / 100);
+  const fmt = v => v >= 10000000 ? (v/10000).toFixed(0)+'萬' : v >= 10000 ? (v/10000).toFixed(1)+'萬' : v.toLocaleString();
+
+  const now = new Date();
+  const upcoming = goals
+    .filter(g => g.targetDate)
+    .map(g => {
+      const parts = String(g.targetDate).split('/');
+      const y = parseInt(parts[0]), m = parts[1] ? parseInt(parts[1]) : 12;
+      const days = Math.round((new Date(y, m-1, 1) - now) / 86400000);
+      return { name: g.name, days };
+    })
+    .filter(g => g.days >= 0)
+    .sort((a, b) => a.days - b.days)[0];
+
   el.innerHTML = `
     <div class="donut-wrap">
-      <svg width="100" height="100" viewBox="0 0 100 100">
+      <svg width="90" height="90" viewBox="0 0 100 100">
         <circle cx="50" cy="50" r="38" fill="none" stroke="#E8F3ED" stroke-width="11"/>
         <circle cx="50" cy="50" r="38" fill="none" stroke="#3EC193" stroke-width="11"
           stroke-dasharray="${circ}" stroke-dashoffset="${offset.toFixed(1)}"
@@ -1166,9 +1702,12 @@ function bindProgress(goals) {
           fill="#A0AEB0" font-family="Inter, sans-serif">已達成</text>
       </svg>
     </div>
-    <div style="display:flex;flex-direction:column;gap:6px;">
-      <div style="font-size:12px;color:var(--text-2);">${goals.length} 個進行中任務</div>
-      <a href="goals.html" style="font-size:12px;color:var(--primary);font-weight:500;text-decoration:none;">查看全部 →</a>
+    <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;">
+      <div style="font-size:10px;color:var(--text-3);font-weight:600;letter-spacing:0.3px;">夢想基金・目標總額</div>
+      <div style="font-size:20px;font-weight:800;color:var(--text);letter-spacing:-0.5px;">${fmt(totalTarget)}<span style="font-size:12px;font-weight:500;color:var(--text-2);">元</span></div>
+      <div style="font-size:11px;color:var(--text-2);">還差 <strong style="color:var(--text);">${fmt(totalTarget - totalCurrent)}</strong> 元・${goals.length} 個目標</div>
+      ${upcoming ? `<div style="font-size:11px;color:var(--primary);font-weight:600;margin-top:2px;">⏳ ${upcoming.name} 還剩 ${upcoming.days} 天</div>` : ''}
+      <a href="goals.html" style="font-size:11px;color:var(--primary);font-weight:500;text-decoration:none;margin-top:2px;">查看全部 →</a>
     </div>`;
 }
 
@@ -1275,6 +1814,15 @@ const GOAL_COLORS = [
   { bg:'#FFCAD4', fill:'#FF7BAC' },
 ];
 
+function goalDaysLeft(targetDate) {
+  if (!targetDate) return null;
+  const parts = String(targetDate).split('/');
+  const y = parseInt(parts[0]), m = parts[1] ? parseInt(parts[1]) : 12;
+  if (isNaN(y)) return null;
+  const days = Math.round((new Date(y, m-1, 1) - new Date()) / 86400000);
+  return days >= 0 ? days : null;
+}
+
 function bindGoalsRow(goals) {
   const el = document.getElementById('dash-goals-row');
   if (!goals || goals.length === 0) {
@@ -1289,12 +1837,16 @@ function bindGoalsRow(goals) {
   el.innerHTML = goals.map((g, i) => {
     const c = GOAL_COLORS[i % GOAL_COLORS.length];
     const year = g.targetDate ? g.targetDate.split('/')[0] : '—';
+    const days = goalDaysLeft(g.targetDate);
+    const daysStr = days !== null ? `還剩 ${days} 天` : '已到期';
+    const daysColor = days !== null && days < 180 ? '#E57373' : c.fill;
     return `
       <div class="gcard" style="background:${c.bg};cursor:pointer" onclick="location.href='goals.html'">
         <div class="gcard-top">
           <div class="gcard-icon">${g.icon || '🎯'}</div>
           <div class="gcard-head">
             <div class="gcard-year" style="color:${c.fill};">${year}</div>
+            <div class="gcard-days" style="color:${daysColor};">${daysStr}</div>
             <div class="gcard-name">${g.name}</div>
           </div>
         </div>

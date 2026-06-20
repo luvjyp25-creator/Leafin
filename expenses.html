@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -111,6 +111,8 @@ button { font-family: inherit; cursor: pointer; border: none; }
   border: 1px solid var(--border); box-shadow: var(--shadow-sm);
 }
 .card-header { padding: 18px 20px 0; display: flex; align-items: flex-start; justify-content: space-between; }
+.trend-dot { transition: opacity 0.15s; }
+.trend-dot:hover { opacity: 1 !important; }
 .card-title { font-size: 14px; font-weight: 700; color: var(--text); }
 .card-sub { font-size: 11px; color: var(--text-2); margin-top: 2px; }
 .card-body { padding: 16px 20px; }
@@ -299,27 +301,19 @@ button { font-family: inherit; cursor: pointer; border: none; }
     </a>
     <a class="nav-item" href="assets.html">
       <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span>
-      我的錢在哪裡？
+      資產與負債
     </a>
   </div>
 
   <div class="nav-group">
-    <div class="nav-head">穩穩累積</div>
+    <div class="nav-head">想看看</div>
     <a class="nav-item" href="simulator.html">
       <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>
       未來模擬
     </a>
-  </div>
-
-  <div class="nav-group">
-    <div class="nav-head">看看近況</div>
     <a class="nav-item" href="healthcheck.html">
       <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
       財務小健檢
-    </a>
-    <a class="nav-item" href="#">
-      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
-      年度回顧
     </a>
   </div>
 
@@ -650,8 +644,14 @@ button { font-family: inherit; cursor: pointer; border: none; }
   <div class="imp-modal" style="width:560px;max-height:80vh;">
     <div class="imp-title">🗂 欄位對應</div>
 
-    <!-- 設定列：標題行 + 編碼 -->
-    <div style="display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap;">
+    <!-- 格式切換 -->
+    <div style="display:flex;gap:6px;margin-bottom:12px;background:var(--bg);border-radius:10px;padding:4px;">
+      <button id="fmt-btn-long" onclick="switchImportFmt('long')" style="flex:1;padding:6px;border-radius:7px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--card);color:var(--text);box-shadow:var(--shadow-sm);">縱向（每行一筆）</button>
+      <button id="fmt-btn-wide" onclick="switchImportFmt('wide')" style="flex:1;padding:6px;border-radius:7px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:transparent;color:var(--text-2);">橫向（每行一個月）</button>
+    </div>
+
+    <!-- 縱向設定列：標題行 + 編碼 -->
+    <div id="fmt-long-settings" style="display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap;">
       <div style="flex:1;min-width:160px;">
         <div style="font-size:11px;font-weight:600;color:var(--text-2);margin-bottom:4px;">標題從第幾行開始</div>
         <select id="header-row-sel" onchange="reapplyHeaderRow()" style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-family:inherit;font-size:12px;background:var(--card);outline:none;cursor:pointer;">
@@ -675,8 +675,13 @@ button { font-family: inherit; cursor: pointer; border: none; }
       </div>
     </div>
 
+    <!-- 縱向：欄位對應表 -->
     <div id="col-map-body" style="overflow-y:auto;max-height:300px;"></div>
-    <div style="margin-top:10px;padding:10px 12px;background:#FFF8E1;border-radius:8px;border-left:3px solid #C48B00;">
+
+    <!-- 橫向：欄設定表 -->
+    <div id="wide-map-body" style="display:none;overflow-y:auto;max-height:300px;"></div>
+
+    <div id="fmt-hint-long" style="margin-top:10px;padding:10px 12px;background:#FFF8E1;border-radius:8px;border-left:3px solid #C48B00;">
       <div style="font-size:11px;font-weight:700;color:#A07000;margin-bottom:2px;">💡 格式提示</div>
       <div style="font-size:11px;color:var(--text-2);">
         若看到亂碼 → 切換「編碼格式」試試。<br>
@@ -684,9 +689,17 @@ button { font-family: inherit; cursor: pointer; border: none; }
         不確定的欄位選「略過」即可。
       </div>
     </div>
+    <div id="fmt-hint-wide" style="display:none;margin-top:10px;padding:10px 12px;background:#FFF8E1;border-radius:8px;border-left:3px solid #C48B00;">
+      <div style="font-size:11px;font-weight:700;color:#A07000;margin-bottom:2px;">💡 橫向格式說明</div>
+      <div style="font-size:11px;color:var(--text-2);">
+        第一欄須為月份（如 2025-10）。<br>
+        其餘每欄指定名稱並選擇「收入」或「支出」。<br>
+        空白欄位或不需要的欄位選「略過」即可。
+      </div>
+    </div>
     <div class="imp-actions">
       <button class="imp-cancel" onclick="closeColMapModal()">取消</button>
-      <button class="imp-confirm" onclick="applyColMap()">確認匯入 →</button>
+      <button class="imp-confirm" id="col-map-confirm-btn" onclick="applyColMap()">確認匯入 →</button>
     </div>
   </div>
 </div>
@@ -1182,12 +1195,92 @@ const FIELD_OPTIONS = [
   { value:'type',     label:'↕ 類型（收/支）' },
 ];
 
+let currentImportFmt = 'long'; // 'long' | 'wide'
+
+function detectIsWideFormat(rows) {
+  // 若資料列的第一欄大多是 YYYY-MM 格式 → 橫向
+  const dataRows = rows.slice(1, Math.min(rows.length, 6));
+  const matches = dataRows.filter(r => /^\d{4}-\d{2}$/.test(String(r[0] || '').trim()));
+  return matches.length >= Math.min(dataRows.length, 2);
+}
+
+function switchImportFmt(fmt) {
+  currentImportFmt = fmt;
+  const isWide = fmt === 'wide';
+
+  // 切換按鈕樣式
+  const btnLong = document.getElementById('fmt-btn-long');
+  const btnWide = document.getElementById('fmt-btn-wide');
+  if (btnLong) { btnLong.style.background = isWide ? 'transparent' : 'var(--card)'; btnLong.style.color = isWide ? 'var(--text-2)' : 'var(--text)'; btnLong.style.boxShadow = isWide ? 'none' : 'var(--shadow-sm)'; }
+  if (btnWide) { btnWide.style.background = isWide ? 'var(--card)' : 'transparent'; btnWide.style.color = isWide ? 'var(--text)' : 'var(--text-2)'; btnWide.style.boxShadow = isWide ? 'var(--shadow-sm)' : 'none'; }
+
+  // 顯示/隱藏對應區塊
+  document.getElementById('fmt-long-settings').style.display = isWide ? 'none' : 'flex';
+  document.getElementById('col-map-body').style.display = isWide ? 'none' : 'block';
+  document.getElementById('wide-map-body').style.display = isWide ? 'block' : 'none';
+  document.getElementById('fmt-hint-long').style.display = isWide ? 'none' : 'block';
+  document.getElementById('fmt-hint-wide').style.display = isWide ? 'block' : 'none';
+
+  // 切換確認按鈕的 onclick
+  const btn = document.getElementById('col-map-confirm-btn');
+  if (btn) btn.onclick = isWide ? applyWideMap : applyColMap;
+
+  if (isWide) renderWideMapTable(rawImportRows);
+}
+
+function renderWideMapTable(rows) {
+  if (!rows.length) return;
+  // 第一列為標題列（欄名）
+  const headers = (rows[0] || []).map(h => String(h || '').trim());
+  // 取前幾行樣本值（跳過標題）
+  const samples = (rows[1] || []).map(c => String(c || '—'));
+  const months  = rows.slice(1).map(r => String(r[0] || '')).filter(Boolean).slice(0, 4);
+
+  let html = `
+    <div style="font-size:11px;color:var(--text-2);margin-bottom:8px;">
+      偵測到 <strong>${rows.length - 1}</strong> 個月份（${months.join('、')}${rows.length > 5 ? '…' : ''}）
+    </div>
+    <table class="col-map-table">
+      <thead><tr><th>欄位名稱</th><th>範例值</th><th>類別名稱</th><th>類型</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--bg);">
+          <td><strong>${headers[0] || '第1欄'}</strong></td>
+          <td class="col-sample">${samples[0]}</td>
+          <td colspan="2" style="font-size:11px;color:var(--text-2);">月份（自動）</td>
+        </tr>`;
+
+  for (let i = 1; i < headers.length; i++) {
+    const h = headers[i];
+    const isIncome = /收入|薪|income|salary|profit/i.test(h);
+    html += `
+        <tr>
+          <td><strong>${h || '（空白）'}</strong></td>
+          <td class="col-sample">${samples[i] !== undefined ? samples[i] : '—'}</td>
+          <td><input id="wm-name-${i}" type="text" value="${h || ''}" placeholder="類別名稱（空白=略過）"
+            style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;font-family:inherit;"></td>
+          <td>
+            <select id="wm-type-${i}" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:4px 6px;font-size:12px;font-family:inherit;">
+              <option value="skip">略過</option>
+              <option value="income" ${isIncome?'selected':''}>收入</option>
+              <option value="expense" ${!isIncome?'selected':''}>支出</option>
+            </select>
+          </td>
+        </tr>`;
+  }
+
+  html += '</tbody></table>';
+  document.getElementById('wide-map-body').innerHTML = html;
+}
+
 function showColMapModal(rows) {
+  const isWide = detectIsWideFormat(rows);
   const autoIdx = autoDetectHeaderRow(rows);
   const sel = document.getElementById('header-row-sel');
   if (sel) sel.value = autoIdx;
   renderColMapTable(rows, autoIdx);
+  currentImportFmt = isWide ? 'wide' : 'long';
   document.getElementById('col-map-modal').classList.add('open');
+  switchImportFmt(currentImportFmt); // 套用初始狀態
 }
 
 function renderColMapTable(rows, hIdx) {
@@ -1285,6 +1378,55 @@ function applyColMap() {
     })
     .filter(r => r.amount > 0);
 
+  closeColMapModal();
+  showImportPreview(pendingImportRows);
+}
+
+function applyWideMap() {
+  const rows = rawImportRows;
+  if (!rows.length) return;
+  const headers = (rows[0] || []).map(h => String(h || '').trim());
+  const colCount = headers.length;
+
+  // 收集各欄的設定
+  const colDefs = []; // { idx, name, type }
+  for (let i = 1; i < colCount; i++) {
+    const nameEl = document.getElementById('wm-name-' + i);
+    const typeEl = document.getElementById('wm-type-' + i);
+    if (!nameEl || !typeEl) continue;
+    const name = nameEl.value.trim();
+    const type = typeEl.value;
+    if (type === 'skip' || !name) continue;
+    colDefs.push({ idx: i, name, type });
+  }
+
+  if (!colDefs.length) { alert('請至少設定一個欄位（非略過）'); return; }
+
+  const result = [];
+  // 每個資料列 = 一個月份
+  for (let ri = 1; ri < rows.length; ri++) {
+    const row = rows[ri];
+    const monthRaw = String(row[0] || '').trim();
+    if (!monthRaw) continue;
+    const dateStr = monthRaw.replace(/-/g, '/') + '/01';
+
+    for (const col of colDefs) {
+      const rawVal = String(row[col.idx] || '').replace(/[^0-9.-]/g, '');
+      const amt = parseFloat(rawVal);
+      if (!amt || isNaN(amt) || amt <= 0) continue;
+      result.push({
+        id: 'imp_' + Math.random().toString(36).slice(2),
+        date: dateStr,
+        name: col.name,
+        category: col.name,
+        type: col.type,
+        amount: Math.abs(amt),
+      });
+    }
+  }
+
+  if (!result.length) { alert('沒有可匯入的數據（金額欄位皆為空）'); return; }
+  pendingImportRows = result;
   closeColMapModal();
   showImportPreview(pendingImportRows);
 }
@@ -1530,10 +1672,23 @@ function renderTrendChart(transactions, period, year) {
   const maxVal = Math.max(...incomeVals, ...expenseVals, 1);
 
   // SVG dimensions
-  const W=640, H=180, pL=52, pR=16, pT=16, pB=28;
+  const W=640, H=180, pL=52, pR=24, pT=16, pB=28;
   const cw = W-pL-pR, ch = H-pT-pB;
   const x = i => pL + (n>1 ? i/(n-1)*cw : cw/2);
   const y = v => pT + ch - Math.min(v/maxVal, 1)*ch;
+
+  function smoothCurve(vals) {
+    if (!vals.length) return '';
+    const pts = vals.map((v,i) => [x(i), y(v)]);
+    let d = `M ${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0=pts[Math.max(i-1,0)], p1=pts[i], p2=pts[i+1], p3=pts[Math.min(i+2,pts.length-1)];
+      const cp1x=(p1[0]+(p2[0]-p0[0])/6).toFixed(1), cp1y=(p1[1]+(p2[1]-p0[1])/6).toFixed(1);
+      const cp2x=(p2[0]-(p3[0]-p1[0])/6).toFixed(1), cp2y=(p2[1]-(p3[1]-p1[1])/6).toFixed(1);
+      d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+    }
+    return d;
+  }
 
   function yLabel(v) {
     if (v>=10000000) return (v/10000).toFixed(0)+'萬';
@@ -1556,8 +1711,8 @@ function renderTrendChart(transactions, period, year) {
 
   function polyline(vals, color, dashed='') {
     if (n===0) return '';
-    const pts = vals.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
-    return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${dashed}/>`;
+    const d = smoothCurve(vals);
+    return `<path d="${d}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" ${dashed}/>`;
   }
 
   // Target savings line (from profile)
@@ -1571,9 +1726,9 @@ function renderTrendChart(transactions, period, year) {
     }
   } catch(e) {}
 
-  // Dots with data attributes for tooltip
+  // Dots (invisible by default, shown on hover for tooltip interaction)
   function dots(vals, color, type) {
-    return vals.map((v,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="4" fill="${color}" stroke="#fff" stroke-width="2" style="cursor:pointer;"
+    return vals.map((v,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="5" fill="${color}" stroke="#fff" stroke-width="2" opacity="0" style="cursor:pointer;"
       data-label="${labels[i]}" data-type="${type}" data-val="${v}" data-inc="${incomeVals[i]}" data-exp="${expenseVals[i]}" data-sav="${savingsVals[i]}"
       class="trend-dot"/>`).join('');
   }

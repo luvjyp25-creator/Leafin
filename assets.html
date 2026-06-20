@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>我的錢在哪裡？ — Leafin 小森理財</title>
+<title>資產與負債 — Leafin 小森理財</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -112,10 +112,18 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .card-sub { font-size: 11px; color: var(--text-2); margin-top: 2px; }
 .card-body { padding: 14px 20px 18px; }
 
+/* NET WORTH ROW */
+.nw-row { display: flex; gap: 16px; align-items: stretch; }
+.nw-hero-col { flex: 0 0 340px; }
+.nw-chart-col { flex: 1; min-width: 0; }
+.nw-chart-col .card { height: 100%; box-sizing: border-box; }
+
 /* NET WORTH HERO */
 .networth-hero {
   background: linear-gradient(135deg, #E9FAF4 0%, #EAF6FD 100%);
   border-radius: var(--r);
+  height: 100%;
+  box-sizing: border-box;
   border: 1px solid #C8EEE0;
   padding: 24px 28px;
   display: flex;
@@ -177,13 +185,17 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .asset-delta.down { color: var(--danger); }
 
 /* DONUT SVG */
-.donut-section { display: flex; align-items: center; gap: 16px; padding: 8px 0; }
-.legend-col { display: flex; flex-direction: column; gap: 8px; flex: 1; }
-.leg-row { display: flex; align-items: center; gap: 7px; }
-.leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.leg-label { font-size: 11px; color: var(--text-2); flex: 1; }
-.leg-val { font-size: 12px; font-weight: 700; color: var(--text); }
-.leg-pct { font-size: 10px; color: var(--text-3); margin-left: 4px; }
+.nw-dot { transition: opacity 0.15s; }
+.nw-dot:hover { opacity: 1 !important; }
+.trend-dot { transition: opacity 0.15s; }
+.trend-dot:hover { opacity: 1 !important; }
+.donut-section { display: flex; align-items: center; gap: 20px; padding: 4px 0 10px; }
+.legend-col { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 12px; flex: 1; align-self: center; min-width: 0; }
+.leg-row { display: flex; align-items: center; gap: 5px; min-width: 0; overflow: hidden; }
+.leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.leg-label { font-size: 11px; color: var(--text-2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.leg-val { font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.leg-pct { font-size: 10px; color: var(--text-3); white-space: nowrap; }
 
 /* LINE CHART (mini) */
 .mini-chart { width: 100%; height: 60px; }
@@ -359,27 +371,19 @@ button { font-family: inherit; cursor: pointer; border: none; }
     </a>
     <a class="nav-item active" href="assets.html">
       <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span>
-      我的錢在哪裡？
+      資產與負債
     </a>
   </div>
 
   <div class="nav-group">
-    <div class="nav-head">穩穩累積</div>
+    <div class="nav-head">想看看</div>
     <a class="nav-item" href="simulator.html">
       <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>
       未來模擬
     </a>
-  </div>
-
-  <div class="nav-group">
-    <div class="nav-head">看看近況</div>
     <a class="nav-item" href="healthcheck.html">
       <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
       財務小健檢
-    </a>
-    <a class="nav-item" href="#">
-      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
-      年度回顧
     </a>
   </div>
 
@@ -397,7 +401,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   <div class="topbar">
     <div class="topbar-left">
       <div>
-        <div class="page-title">🏦 我的錢在哪裡？</div>
+        <div class="page-title">🏦 資產與負債</div>
         <div class="page-sub">資產追蹤 · 更新於 2026 / 05 / 30</div>
       </div>
     </div>
@@ -424,33 +428,36 @@ button { font-family: inherit; cursor: pointer; border: none; }
 
   <div class="scroll-area">
 
-    <!-- NET WORTH HERO -->
-    <div class="networth-hero">
-      <div class="nw-left">
-        <div class="nw-label">淨資產（Net Worth）</div>
-        <div class="nw-amount" id="nw-amount">—</div>
-        <div class="nw-sub" id="nw-sub">計算中…</div>
-        <div class="nw-chips" id="nw-chips"></div>
-      </div>
-      <div class="nw-right" id="nw-right"></div>
-    </div>
-
-    <!-- NET WORTH TREND -->
-    <div class="card" id="nw-trend-card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">淨資產趨勢</div>
-          <div class="card-sub" id="nw-trend-sub">從快照記錄計算</div>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;">
-          <button id="nw-period-month" onclick="setNwPeriod('month')" style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:var(--primary);color:#fff;border:none;">月</button>
-          <button id="nw-period-year" onclick="setNwPeriod('year')" style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:var(--bg);color:var(--text-2);border:1px solid var(--border);">年</button>
-          <button onclick="refreshChart()" title="重新整理圖表" style="padding:3px 8px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;background:var(--bg);color:var(--text-2);border:1px solid var(--border);line-height:1;" id="nw-refresh-btn">↻</button>
+    <!-- NET WORTH ROW: hero (left) + trend chart (right) -->
+    <div class="nw-row">
+      <div class="nw-hero-col">
+        <div class="networth-hero">
+          <div class="nw-left">
+            <div class="nw-label">淨資產（Net Worth）</div>
+            <div class="nw-amount" id="nw-amount">—</div>
+            <div class="nw-sub" id="nw-sub">計算中…</div>
+            <div class="nw-chips" id="nw-chips"></div>
+          </div>
         </div>
       </div>
-      <div class="card-body" style="position:relative;">
-        <div id="nw-chart-container"></div>
-        <div id="nw-tooltip" style="display:none;position:absolute;background:var(--text);color:#fff;border-radius:8px;padding:8px 12px;font-size:11px;pointer-events:none;z-index:10;white-space:nowrap;"></div>
+      <div class="nw-chart-col">
+        <div class="card" id="nw-trend-card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">淨資產趨勢</div>
+              <div class="card-sub" id="nw-trend-sub">從快照記錄計算</div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <button id="nw-period-month" onclick="setNwPeriod('month')" style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:var(--primary);color:#fff;border:none;">月</button>
+              <button id="nw-period-year" onclick="setNwPeriod('year')" style="padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:var(--bg);color:var(--text-2);border:1px solid var(--border);">年</button>
+              <button onclick="refreshChart()" title="重新整理圖表" style="padding:3px 8px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;background:var(--bg);color:var(--text-2);border:1px solid var(--border);line-height:1;" id="nw-refresh-btn">↻</button>
+            </div>
+          </div>
+          <div class="card-body" style="position:relative;">
+            <div id="nw-chart-container"></div>
+            <div id="nw-tooltip" style="display:none;position:absolute;background:var(--text);color:#fff;border-radius:8px;padding:8px 12px;font-size:11px;pointer-events:none;z-index:10;white-space:nowrap;"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1075,36 +1082,6 @@ function renderAll(data) {
   if (nwSub) nwSub.textContent = '資產 $' + totalA.toLocaleString() + ' － 負債 $' + totalL.toLocaleString();
   const chips = document.getElementById('nw-chips');
   if (chips) chips.innerHTML = `<div class="nw-chip"><div class="dot" style="background:var(--primary);"></div> 資產 ${fmtM(totalA)}</div><div class="nw-chip"><div class="dot" style="background:#FF7B7B;"></div> 負債 ${fmtM(totalL)}</div><div class="nw-chip" style="color:var(--primary);">${monthD>=0?'↑ +':'↓ -'}$${Math.abs(monthD).toLocaleString()} 本月</div>`;
-  // FIRE rate
-  let fireTarget = 24000000; // 2400萬 default
-  try {
-    const p = JSON.parse(localStorage.getItem('leafin_profile'));
-    if (p && p.monthly) fireTarget = p.monthly * 12 / 0.04;
-  } catch(e) {}
-  const fireRate = Math.min(100, Math.round(Math.max(0, net) / fireTarget * 100));
-  const nwRight = document.getElementById('nw-right');
-  if (nwRight) {
-    const r=24, circ=2*Math.PI*r, filled=(fireRate/100)*circ;
-    nwRight.innerHTML = `
-      <div class="nw-stat">
-        <div class="nw-stat-label">本月變動</div>
-        <div class="nw-stat-val ${monthD>=0?'up':'down'}">${monthD>=0?'+':'-'}$${Math.abs(monthD).toLocaleString()}</div>
-      </div>
-      <div class="nw-stat" style="text-align:center;">
-        <div class="nw-stat-label">FIRE 達成率</div>
-        <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
-          <svg width="52" height="52" viewBox="0 0 52 52">
-            <circle cx="26" cy="26" r="${r}" fill="none" stroke="#C8EEE0" stroke-width="5"/>
-            <circle cx="26" cy="26" r="${r}" fill="none" stroke="var(--primary)" stroke-width="5"
-              stroke-dasharray="${filled.toFixed(1)} ${(circ-filled).toFixed(1)}"
-              stroke-dashoffset="${(circ/4).toFixed(1)}"
-              stroke-linecap="round" transform="rotate(-90 26 26)"/>
-            <text x="26" y="30" text-anchor="middle" font-size="12" font-weight="800" fill="var(--primary)" font-family="Inter">${fireRate}%</text>
-          </svg>
-          <div style="font-size:10px;color:var(--text-2);">目標<br>${fireTarget>=10000000?(fireTarget/10000).toFixed(0)+'萬':fireTarget.toLocaleString()}</div>
-        </div>
-      </div>`;
-  }
 
   const atSub = document.getElementById('asset-total-sub'); if (atSub) atSub.textContent = fmtYM(activeMonth) + ' · 總計 $' + totalA.toLocaleString();
   const ltSub = document.getElementById('liab-total-sub');  if (ltSub) ltSub.textContent  = fmtYM(activeMonth) + ' · 總計 $' + totalL.toLocaleString();
@@ -1129,13 +1106,15 @@ function renderAll(data) {
   saveData({ ...data, total: realA, liabilities_total: realL });
 }
 
-function makeDonut(items, total, getColor) {
-  const circ = 220; let offset = 55;
+function makeDonut(items, total, getColor, cfg) {
+  const cx = cfg?.cx ?? 45, cy = cfg?.cy ?? 45, r = cfg?.r ?? 35, sw = cfg?.sw ?? 14;
+  const circ = 2 * Math.PI * r;
+  let offset = circ / 4;
   return items.map((item, i) => {
     const pct  = total > 0 ? item.amount / total : 0;
     const dash = pct * circ;
     const color = getColor(item, i);
-    const el = `<circle cx="45" cy="45" r="35" fill="none" stroke="${color}" stroke-width="14" stroke-dasharray="${dash.toFixed(1)} ${(circ-dash).toFixed(1)}" stroke-dashoffset="${(-offset).toFixed(1)}" stroke-linecap="round"/>`;
+    const el = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-dasharray="${dash.toFixed(1)} ${(circ-dash).toFixed(1)}" stroke-dashoffset="${(-offset).toFixed(1)}" stroke-linecap="round"/>`;
     offset += dash;
     return { el, color, pct: Math.round(pct*100) };
   });
@@ -1204,13 +1183,15 @@ function renderAssets(assets, total, prevSnap) {
       ...catOrder.filter(c => catMap[c]).map(c => ({ category: c, amount: catMap[c] })),
       ...Object.keys(catMap).filter(c => !catOrder.includes(c)).map(c => ({ category: c, amount: catMap[c] })),
     ];
-    const slices = makeDonut(catData, total, c => (CAT_STYLE[c.category]||CAT_STYLE['其他']).color);
+    const _dc = { cx:60, cy:60, r:48, sw:15, size:120 };
+    const slices = makeDonut(catData, total, c => (CAT_STYLE[c.category]||CAT_STYLE['其他']).color, _dc);
     const svgCircles = slices.map(s => s.el).join('');
+    const _fmtA = v => v >= 10000 ? `${(v/10000).toFixed(1)}萬` : `$${Math.round(v).toLocaleString()}`;
     const legend = catData.map((c, i) => {
       const cs = CAT_STYLE[c.category]||CAT_STYLE['其他'];
-      return `<div class="leg-row"><div class="leg-dot" style="background:${cs.color};"></div><span class="leg-label">${c.category}</span><span class="leg-val">$${Math.round(c.amount).toLocaleString()}</span><span class="leg-pct">${slices[i].pct}%</span></div>`;
+      return `<div class="leg-row"><div class="leg-dot" style="background:${cs.color};"></div><span class="leg-label">${c.category}</span><span class="leg-val">${_fmtA(c.amount)}</span><span class="leg-pct"> ${slices[i].pct}%</span></div>`;
     }).join('');
-    wrap.innerHTML = `<svg width="90" height="90" viewBox="0 0 90 90" style="flex-shrink:0;"><circle cx="45" cy="45" r="35" fill="none" stroke="#E4EBE6" stroke-width="14"/>${svgCircles}<text x="45" y="49" text-anchor="middle" font-size="11" font-weight="800" fill="#2D3436" font-family="Inter">${fmtM(total)}</text></svg><div class="legend-col">${legend}</div>`;
+    wrap.innerHTML = `<svg width="${_dc.size}" height="${_dc.size}" viewBox="0 0 ${_dc.size} ${_dc.size}" style="flex-shrink:0;"><circle cx="${_dc.cx}" cy="${_dc.cy}" r="${_dc.r}" fill="none" stroke="#F0F4EC" stroke-width="${_dc.sw}"/>${svgCircles}<text x="${_dc.cx}" y="${_dc.cy-3}" text-anchor="middle" font-size="14" font-weight="800" fill="#2D3436" font-family="Inter">${fmtM(total)}</text><text x="${_dc.cx}" y="${_dc.cy+12}" text-anchor="middle" font-size="9" fill="#A0AEB0" font-family="Inter">資產總值</text></svg><div class="legend-col">${legend}</div>`;
   }
   /* ── 依類型分組 ── */
   const _catOrder = Object.keys(CAT_STYLE);
@@ -1241,10 +1222,12 @@ function renderAssets(assets, total, prevSnap) {
 function renderLiabilities(liabs, total, prevSnap) {
   const wrap = document.getElementById('liab-donut-wrap');
   if (wrap) {
-    const slices = makeDonut(liabs, total, (_,i) => LIAB_COLORS[i % LIAB_COLORS.length]);
+    const _ldc = { cx:60, cy:60, r:48, sw:15, size:120 };
+    const slices = makeDonut(liabs, total, (_,i) => LIAB_COLORS[i % LIAB_COLORS.length], _ldc);
     const svgCircles = slices.map(s => s.el).join('');
-    const legend = liabs.map((l,i) => `<div class="leg-row"><div class="leg-dot" style="background:${LIAB_COLORS[i%LIAB_COLORS.length]};"></div><span class="leg-label">${l.name}</span><span class="leg-val">$${l.amount.toLocaleString()}</span><span class="leg-pct">${slices[i].pct}%</span></div>`).join('');
-    wrap.innerHTML = `<svg width="90" height="90" viewBox="0 0 90 90" style="flex-shrink:0;"><circle cx="45" cy="45" r="35" fill="none" stroke="#E4EBE6" stroke-width="14"/>${svgCircles}<text x="45" y="49" text-anchor="middle" font-size="11" font-weight="800" fill="#2D3436" font-family="Inter">${fmtM(total)}</text></svg><div class="legend-col">${legend}</div>`;
+    const _fmtL = v => v >= 10000 ? `${(v/10000).toFixed(1)}萬` : `$${Math.round(v).toLocaleString()}`;
+    const legend = liabs.map((l,i) => `<div class="leg-row"><div class="leg-dot" style="background:${LIAB_COLORS[i%LIAB_COLORS.length]};"></div><span class="leg-label">${l.name}</span><span class="leg-val">${_fmtL(l.amount)}</span><span class="leg-pct"> ${slices[i].pct}%</span></div>`).join('');
+    wrap.innerHTML = `<svg width="${_ldc.size}" height="${_ldc.size}" viewBox="0 0 ${_ldc.size} ${_ldc.size}" style="flex-shrink:0;"><circle cx="${_ldc.cx}" cy="${_ldc.cy}" r="${_ldc.r}" fill="none" stroke="#FDEAEA" stroke-width="${_ldc.sw}"/>${svgCircles}<text x="${_ldc.cx}" y="${_ldc.cy-3}" text-anchor="middle" font-size="14" font-weight="800" fill="#2D3436" font-family="Inter">${fmtM(total)}</text><text x="${_ldc.cx}" y="${_ldc.cy+12}" text-anchor="middle" font-size="9" fill="#A0AEB0" font-family="Inter">負債總額</text></svg><div class="legend-col">${legend}</div>`;
   }
   document.getElementById('liab-list-render').innerHTML = liabs.map((l,i) => {
     const color = LIAB_COLORS[i % LIAB_COLORS.length];
@@ -2033,10 +2016,23 @@ function renderNetWorthChart(data) {
   const minV = Math.min(...allFlat, 0), maxV = Math.max(...allFlat, 1);
   const range = maxV - minV || 1;
 
-  const W=600, H=160, pL=60, pR=16, pT=16, pB=28;
+  const W=Math.max(container.clientWidth||700,400), H=160, pL=50, pR=28, pT=16, pB=28;
   const cw=W-pL-pR, ch=H-pT-pB;
   const xp = i => pL+(n>1?i/(n-1)*cw:cw/2);
   const yp = v => pT+ch-(v-minV)/range*ch;
+
+  function smoothCurve(vals) {
+    if (!vals.length) return '';
+    const pts = vals.map((v,i) => [xp(i), yp(v)]);
+    let d = `M ${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0=pts[Math.max(i-1,0)], p1=pts[i], p2=pts[i+1], p3=pts[Math.min(i+2,pts.length-1)];
+      const cp1x=(p1[0]+(p2[0]-p0[0])/6).toFixed(1), cp1y=(p1[1]+(p2[1]-p0[1])/6).toFixed(1);
+      const cp2x=(p2[0]-(p3[0]-p1[0])/6).toFixed(1), cp2y=(p2[1]-(p3[1]-p1[1])/6).toFixed(1);
+      d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+    }
+    return d;
+  }
 
   function yLabel(v) {
     const abs=Math.abs(v), sign=v<0?'-':'';
@@ -2055,14 +2051,15 @@ function renderNetWorthChart(data) {
   const zeroLine=minV<0?`<line x1="${pL}" y1="${yp(0).toFixed(1)}" x2="${W-pR}" y2="${yp(0).toFixed(1)}" stroke="#A0AEB0" stroke-width="1" stroke-dasharray="4,3"/>`:'';
 
   function makeLine(vals, color, type) {
-    const pts = vals.map((v,i)=>`${xp(i).toFixed(1)},${yp(v).toFixed(1)}`).join(' ');
-    const dots = vals.map((v,i)=>`<circle cx="${xp(i).toFixed(1)}" cy="${yp(v).toFixed(1)}" r="4" fill="${color}" stroke="#fff" stroke-width="2" style="cursor:pointer;" data-idx="${i}" data-type="${type}" class="nw-dot"/>`).join('');
-    return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>${dots}`;
+    const d = smoothCurve(vals);
+    const hitDots = vals.map((v,i)=>`<circle class="nw-dot" cx="${xp(i).toFixed(1)}" cy="${yp(v).toFixed(1)}" r="5" fill="${color}" stroke="#fff" stroke-width="2" opacity="0" style="cursor:pointer;" data-idx="${i}" data-type="${type}"/>`).join('');
+    return `<path d="${d}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round"/>${hitDots}`;
   }
 
-  // Area under assets line
-  const aPts = aVals.map((v,i)=>`${xp(i).toFixed(1)},${yp(v).toFixed(1)}`).join(' ');
-  const areaClose = `${xp(n-1).toFixed(1)},${yp(Math.max(minV,0)).toFixed(1)} ${xp(0).toFixed(1)},${yp(Math.max(minV,0)).toFixed(1)}`;
+  // Smooth area under assets line
+  const areaD = smoothCurve(aVals);
+  const bottomY = yp(Math.max(minV,0));
+  const areaClose = `L ${xp(n-1).toFixed(1)},${bottomY.toFixed(1)} L ${xp(0).toFixed(1)},${bottomY.toFixed(1)} Z`;
 
   container.innerHTML = `
     <svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;" preserveAspectRatio="xMidYMid meet">
@@ -2071,7 +2068,7 @@ function renderNetWorthChart(data) {
         <stop offset="100%" stop-color="#3EC193" stop-opacity="0.01"/>
       </linearGradient></defs>
       ${gridLines}${xLabels}${zeroLine}
-      <polygon points="${aPts} ${areaClose}" fill="url(#nwG2)"/>
+      <path d="${areaD} ${areaClose}" fill="url(#nwG2)"/>
       ${makeLine(aVals,'#3EC193','asset')}
       ${makeLine(lVals,'#FF7B7B','liab')}
       ${makeLine(netVals,'#4EA8DE','net')}
@@ -2333,6 +2330,7 @@ function importAssetsCSV(input) {
     _assetsRawRows = parseAssetsCSV(text);
     if (_assetsRawRows.length < 2) { alert('檔案沒有資料'); return; }
     const fmt = detectAssetsFormat(_assetsRawRows);
+    if (fmt === 'transactional') { importTransactionalFormat(_assetsRawRows); return; }
     if (fmt === 'wide')  { importWideFormat(_assetsRawRows);  return; }
     if (fmt === 'long')  { importLongFormat(_assetsRawRows);  return; }
     showAssetsColMap(_assetsRawRows); // 一般逐筆格式
@@ -2343,12 +2341,26 @@ function importAssetsCSV(input) {
 /* 自動偵測 CSV 格式 */
 function detectAssetsFormat(rows) {
   const h = rows[0] || [];
+  const h0 = String(h[0]||'').trim();
+  const h1 = String(h[1]||'').trim();
+  const h2 = String(h[2]||'').trim();
+  const h3 = String(h[3]||'').trim();
+
+  // Transactional format: 月份, 類型/類別, 名稱, 金額[, 幣別]
+  // e.g. [月份, 類型, 名稱, 金額, 幣別]
+  if (
+    /^(月份|date|日期)/i.test(h0) &&
+    /^(類型|類別|category)/i.test(h1) &&
+    /^(名稱|name)/i.test(h2) &&
+    /^(金額|amount)/i.test(h3)
+  ) return 'transactional';
+
   // Wide format: [資產/name, Currency, 2025 Jan, 2025 Feb, ...]
-  if (h.length >= 3 && /\d{4}/.test(String(h[2]||''))) return 'wide';
-  // Long format: [Date, asset1, asset2, ...]，第一欄是日期
-  if (/^(date|日期|月份|時間)/i.test(String(h[0]||''))) return 'long';
-  // Long format: 第二列第一個值像日期
-  if (rows[1] && /\d{4}/.test(String(rows[1][0]||''))) return 'long';
+  if (h.length >= 3 && /\d{4}/.test(h2)) return 'wide';
+  // Long format: [Date, asset1, asset2, ...]，第一欄是日期，且欄數 > 2
+  if (/^(date|日期|月份|時間)/i.test(h0) && h.length > 2) return 'long';
+  // Long format: 第二列第一個值像日期，欄數 > 2
+  if (rows[1] && /\d{4}/.test(String(rows[1][0]||'')) && h.length > 2) return 'long';
   return 'normal';
 }
 
@@ -2367,6 +2379,81 @@ function parseMonthStr(s) {
   m = s.match(/([A-Za-z]{3})\s+(\d{4})/);
   if (m) { const mo=MNAMES[m[1].toLowerCase()]; if(mo) return `${m[2]}-${String(mo).padStart(2,'0')}`; }
   return null;
+}
+
+/* 格式 0（縱向逐筆）：月份, 類型, 名稱, 金額[, 幣別] */
+function importTransactionalFormat(rows) {
+  const h = rows[0] || [];
+  const hasCurrency = /^(幣別|currency)/i.test(String(h[4]||'').trim());
+
+  const LIAB_TYPES = /貸款|卡債|分期|負債|loan|debt|credit/i;
+
+  const data = loadData() || JSON.parse(JSON.stringify(DEFAULT_DATA));
+  if (!data.snapshots)    data.snapshots    = {};
+  if (!data.liabOverrides) data.liabOverrides = {};
+
+  // Group rows by month, then process each
+  const byMonth = {};
+  rows.slice(1).forEach(row => {
+    const ym  = parseMonthStr(String(row[0]||'').trim());
+    if (!ym) return;
+    const cat      = String(row[1]||'').trim();
+    const name     = String(row[2]||'').trim();
+    const amt      = parseFloat(String(row[3]||'0').replace(/[^0-9.-]/g,'')) || 0;
+    const currency = hasCurrency ? (String(row[4]||'TWD').trim() || 'TWD') : 'TWD';
+    if (!name) return;
+    if (!byMonth[ym]) byMonth[ym] = [];
+    byMonth[ym].push({ ym, cat, name, amt, currency });
+  });
+
+  if (!Object.keys(byMonth).length) { alert('找不到有效的月份資料'); return; }
+
+  let updates = 0, adds = 0;
+  const allMonths = Object.keys(byMonth).sort();
+  const latestYM  = allMonths[allMonths.length - 1];
+
+  // For each unique (name + currency) find or create asset/liability
+  const idMap = {}; // key: name|currency → id
+
+  allMonths.forEach(ym => {
+    if (!data.snapshots[ym]) data.snapshots[ym] = {};
+    byMonth[ym].forEach(({ cat, name, amt, currency }) => {
+      const key = name + '|' + currency;
+      if (!idMap[key]) {
+        const isLiab = LIAB_TYPES.test(cat) || LIAB_TYPES.test(name);
+        const arr = isLiab ? data.liabilities : data.assets;
+        const existing = arr.find(x =>
+          x.name.trim().toLowerCase() === name.toLowerCase() &&
+          (!isLiab ? (x.currency||'TWD') === currency : true)
+        );
+        if (existing) {
+          idMap[key] = existing.id;
+        } else {
+          const id = 'imp_' + name.replace(/\s/g,'_') + '_' + Math.random().toString(36).slice(2,6);
+          idMap[key] = id;
+          if (isLiab) {
+            data.liabilities.push({ id, name, debtType: cat, amount: 0, paidPct: 0, recurring: false });
+          } else {
+            data.assets.push({ id, name, category: cat, amount: 0, currency, sub: '' });
+          }
+          adds++;
+        }
+      }
+      const id = idMap[key];
+      data.snapshots[ym][id] = amt;
+
+      // Update master amount with latest month's value
+      if (ym === latestYM) {
+        const isLiab = LIAB_TYPES.test(cat) || LIAB_TYPES.test(name);
+        const arr = isLiab ? data.liabilities : data.assets;
+        const item = arr.find(x => x.id === id);
+        if (item) { item.amount = amt; updates++; }
+      }
+    });
+  });
+
+  const range = `${allMonths[0]} ～ ${latestYM}`;
+  showImportPreview({ updates, adds, months: allMonths.length, range }, data);
 }
 
 /* 格式 1（橫向）：每資產一行，月份為欄 */
