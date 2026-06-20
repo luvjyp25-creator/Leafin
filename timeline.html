@@ -477,7 +477,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
         </div>
 
         <div class="timeline-scroll">
-          <div class="timeline-track">
+          <div class="timeline-track" id="tl-track">
             <!-- 現在 -->
             <div class="tl-node" onclick="selectNode(0)">
               <div class="tl-info">
@@ -898,14 +898,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
 </div><!-- /app -->
 
 <script>
-const nodes = [
-  { title: "現在 😊", sub: "努力工作存第一桶金", target: "—", years: "今天", monthly: "$22,500" },
-  { title: "出國留學 ✈️", sub: "語言學校 + 海外工作體驗", target: "80 萬", years: "約 5 年", monthly: "$10,500" },
-  { title: "買房頭期款 🏠", sub: "買房頭期 + 裝潢準備", target: "600 萬", years: "約 8 年", monthly: "$5,800" },
-  { title: "生小孩 👶", sub: "第一胎 + 育兒準備", target: "150 萬", years: "約 11 年", monthly: "$2,200" },
-  { title: "財務自由 FIRE ☕", sub: "半退休生活 + 環遊世界", target: "2,500 萬", years: "約 22 年", monthly: "$8,500" },
-  { title: "快樂退休 🌴", sub: "享受生活追求熱愛", target: "1,200 萬", years: "約 32 年", monthly: "$2,800" },
-];
+let nodes = []; // 由 renderTimeline() 依 leafin_goals 動態生成
 
 function selectNode(i) {
   const d = nodes[i];
@@ -943,45 +936,91 @@ function fmtMoney(n) {
   return n.toLocaleString();
 }
 
+const TL_COLORS = ['#3EC193','#6BADE0','#F0A868','#FF7BAC','#7B6AA0','#C48B00'];
+
+/* 依 leafin_goals + profile 動態生成時間軸節點（取代原本寫死的節點）*/
+function renderTimeline(p, goals) {
+  const track = document.getElementById('tl-track');
+  if (!track) return;
+  const curYear = new Date().getFullYear();
+  const curAge  = (p && p.age) || 29;
+  const monthly = (p && p.monthly) || 0;
+
+  nodes = [{ title: '現在 😊', sub: '目前的起點', target: '—', years: '今天', monthly: '$' + monthly.toLocaleString() }];
+
+  let html = `
+    <div class="tl-node" onclick="selectNode(0)">
+      <div class="tl-info">
+        <div class="tl-name">現在</div>
+        <div class="tl-amount">月存 $${monthly.toLocaleString()}</div>
+        <div class="tl-year">${curYear}</div>
+      </div>
+      <div class="tl-icon-wrap active"><span class="tl-icon">😊</span></div>
+      <div class="tl-age">${curAge} 歲</div>
+    </div>`;
+
+  const sorted = [...(goals || [])]
+    .filter(g => g.targetDate)
+    .sort((a, b) => parseInt(a.targetDate) - parseInt(b.targetDate));
+
+  sorted.forEach((g, idx) => {
+    const color = TL_COLORS[(idx + 1) % TL_COLORS.length];
+    const y = parseInt(g.targetDate) || curYear;
+    const ageAt = curAge + (y - curYear);
+    const monthsLeft = Math.max(0, y - curYear) * 12;
+    const remaining = Math.max(0, (g.target || 0) - (g.current || 0));
+    const mo = monthsLeft > 0 ? Math.round(remaining / monthsLeft) : remaining;
+
+    html += `<div class="tl-connector" style="background:${color};"></div>`;
+    html += `
+      <div class="tl-node" onclick="selectNode(${idx + 1})">
+        <div class="tl-info">
+          <div class="tl-name">${g.name}</div>
+          <div class="tl-amount">目標 ${fmtMoney(g.target)}</div>
+          <div class="tl-year">${y}</div>
+        </div>
+        <div class="tl-icon-wrap" style="border-color:${color};background:#fff;"><span class="tl-icon">${g.icon || '🎯'}</span></div>
+        <div class="tl-age" style="color:${color};">${ageAt} 歲</div>
+      </div>`;
+
+    nodes.push({
+      title: g.name + ' ' + (g.icon || '🎯'),
+      sub: g.usage || '夢想目標',
+      target: fmtMoney(g.target),
+      years: (y - curYear) <= 0 ? '今年' : ('約 ' + (y - curYear) + ' 年'),
+      monthly: '$' + mo.toLocaleString()
+    });
+  });
+
+  if (!sorted.length) {
+    html += `<div style="padding:24px 16px;color:var(--text-3);font-size:13px;">還沒有設定夢想目標，<a href="goals.html" style="color:var(--primary);text-decoration:none;">去新增 →</a></div>`;
+  }
+  track.innerHTML = html;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const p     = getProfile();
   const goals = getGoals();
 
+  renderTimeline(p, goals);
+
   if (p) {
-    // "現在" timeline node
-    document.getElementById('tl-now-age').textContent    = (p.age || 29) + ' 歲';
-    document.getElementById('tl-now-amount').textContent = '月存 $' + (p.monthly || 0).toLocaleString();
-    document.getElementById('tl-now-year').textContent   = new Date().getFullYear();
-
-    // Topbar avatar: first char of name
     document.getElementById('tl-avatar').textContent = (p.name || '我').charAt(0);
-
-    // Sidebar: recommended monthly savings
     document.getElementById('tl-saving-amount').textContent = (p.monthly || 0).toLocaleString();
-
-    // Monthly income display
     document.getElementById('tl-monthly-income').textContent = (p.income || 0).toLocaleString() + ' 元';
-
-    // Surplus = income - monthly savings
     const surplus = (p.income || 0) - (p.monthly || 0);
     const surplusEl = document.getElementById('tl-surplus');
     surplusEl.textContent = (surplus >= 0 ? '+' : '') + surplus.toLocaleString() + ' 元';
-    surplusEl.style.color = surplus >= 0 ? 'var(--primary)' : 'var(--danger, #FF7B7B)';
+    surplusEl.style.color = surplus >= 0 ? 'var(--primary)' : '#FF7B7B';
   }
 
-  // Compute goal totals
-  let totalGoal = 0;
-  if (goals && goals.length > 0) {
-    totalGoal = goals.reduce((s, g) => s + (g.target || 0), 0);
-  } else {
-    totalGoal = 84300000; // 8,430 萬 default
-  }
-
-  const fund = (p != null && p.fund != null) ? p.fund : 8430000;
-  const pct  = totalGoal > 0 ? Math.min(100, Math.round(fund / totalGoal * 100)) : 0;
+  // 目標總額 / 已準備（= 目標 current 加總，與 goals 頁一致，不再用 profile.fund）
+  const totalGoal    = (goals && goals.length) ? goals.reduce((s, g) => s + (g.target  || 0), 0) : 0;
+  const totalCurrent = (goals && goals.length) ? goals.reduce((s, g) => s + (g.current || 0), 0) : 0;
+  const pct = totalGoal > 0 ? Math.min(100, Math.round(totalCurrent / totalGoal * 100)) : 0;
 
   document.getElementById('tl-total-goal').textContent    = fmtMoney(totalGoal);
-  document.getElementById('tl-fund-text').textContent     = '已準備 ' + fmtMoney(fund);
+  document.getElementById('tl-fund-text').textContent     = '已準備 ' + fmtMoney(totalCurrent);
   document.getElementById('tl-pct-text').textContent      = pct + '%';
   document.getElementById('tl-progress-fill').style.width = pct + '%';
 });
