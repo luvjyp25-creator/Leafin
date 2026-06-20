@@ -1723,15 +1723,27 @@ function bindBalance(expenses, profile) {
       </div>`;
     return;
   }
-  const bal = (expenses.income || 0) - (expenses.expense || 0);
+  // 「本月」結餘：從 transactions 算當月（transactions 為單一真實來源；
+  // expenses.income/expense 是歷來總和，不可當本月用）
+  const txs = Array.isArray(expenses.transactions) ? expenses.transactions : [];
+  const now = new Date();
+  const curYM = now.getFullYear() + '/' + String(now.getMonth() + 1).padStart(2, '0');
+  let mInc = 0, mExp = 0;
+  txs.forEach(t => {
+    if (String(t.date || '').replace(/-/g, '/').slice(0, 7) !== curYM) return;
+    const amt = Number(t.amount) || 0;
+    if (t.type === 'income') mInc += amt;
+    else if (t.type === 'expense') mExp += amt;
+  });
+  const bal = mInc - mExp;
   el.innerHTML = `
     <div class="bal-left">
       <div class="bal-amount" style="color:${bal>=0?'var(--primary)':'#FF7B7B'}">
         ${bal >= 0 ? '+' : ''}${fmtMoney(bal)} 元
       </div>
       <div class="bal-details">
-        <div class="bal-det-row">收入 ${fmtMoney(expenses.income)} 元</div>
-        <div class="bal-det-row">支出 ${fmtMoney(expenses.expense)} 元</div>
+        <div class="bal-det-row">收入 ${fmtMoney(mInc)} 元</div>
+        <div class="bal-det-row">支出 ${fmtMoney(mExp)} 元</div>
       </div>
     </div>
     <div class="illus">
