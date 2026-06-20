@@ -588,7 +588,7 @@ function leafinFireTarget(profile) {
   const exp = (profile && profile.retireExpense) || 60000; // 月退休支出
   return Math.round(exp * 12 / (wr / 100));
 }
-function leafinHealthScore(profile, expenses) {
+function leafinHealthScore(profile, expenses, assets) {
   // 當月收入（從 transactions 算，單一真實來源；income/expense 欄位是歷來總和不可用）
   const txs = (expenses && Array.isArray(expenses.transactions)) ? expenses.transactions : [];
   const now = new Date();
@@ -603,12 +603,22 @@ function leafinHealthScore(profile, expenses) {
   const savingsRate = income > 0 ? sav / income : 0;
   const savingsScore = Math.min(20, Math.round(savingsRate * 60));
 
-  const fund = (profile && profile.fund != null) ? profile.fund : 0;
+  // 退休準備：以淨資產佔 FIRE 目標比例（取代原本的 profile.fund）
+  const assetTotal = (assets && assets.total) || 0;
+  const liabTotal  = (assets && assets.liabilities_total) || 0;
+  const netWorth = assetTotal - liabTotal;
   const fireTarget = leafinFireTarget(profile);
-  const retireProgress = fireTarget > 0 ? fund / fireTarget : 0;
+  const retireProgress = fireTarget > 0 ? Math.max(0, netWorth) / fireTarget : 0;
   const retireScore = Math.min(20, Math.round(retireProgress * 40));
 
-  const debtScore = 14, investScore = 16, insuranceScore = 9, familyScore = 5;
+  // 負債管理：負債佔年收入比例越低越好（無負債=滿分）
+  const annualIncome = income * 12;
+  let debtScore;
+  if (liabTotal <= 0) debtScore = 20;
+  else if (annualIncome <= 0) debtScore = 10;
+  else debtScore = Math.min(20, Math.max(4, Math.round(20 - (liabTotal / annualIncome) * 3.2)));
+
+  const investScore = 16, insuranceScore = 9, familyScore = 5; // 暫無資料來源，維持中性值
   const total = savingsScore + debtScore + investScore + insuranceScore + retireScore + familyScore;
   return { savingsScore, retireScore, debtScore, investScore, insuranceScore, familyScore, fireTarget, total };
 }
@@ -618,11 +628,12 @@ function leafinHealthScore(profile, expenses) {
 
   const profile  = get('leafin_profile');
   const expenses = get('leafin_expenses');
+  const assets   = get('leafin_assets');
 
-  if (!profile && !expenses) return; // no data → keep hardcoded values
+  if (!profile && !expenses && !assets) return; // no data → keep hardcoded values
 
   // --- Scoring (共用公式) ---
-  const H = leafinHealthScore(profile, expenses);
+  const H = leafinHealthScore(profile, expenses, assets);
   const savingsScore = H.savingsScore, retireScore = H.retireScore;
   const debtScore = H.debtScore, investScore = H.investScore;
   const insuranceScore = H.insuranceScore, familyScore = H.familyScore;
