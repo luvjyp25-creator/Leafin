@@ -458,7 +458,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         <div class="settings-header"><span class="settings-label">目標設定</span><span style="font-size:10px;color:var(--text-4);margin-left:6px;">點擊格子可編輯</span></div>
         <div class="settings-cards">
           <div class="setting-card" onclick="showEditPanel()" style="cursor:pointer;" title="點擊編輯"><span class="setting-card-label">目標年齡</span><span class="setting-card-value" id="setAge">32 歲</span></div>
-          <div class="setting-card" onclick="showEditPanel()" style="cursor:pointer;" title="點擊編輯"><span class="setting-card-label">預計達成日</span><span class="setting-card-value" id="setDate">2027 / 06</span></div>
+          <div class="setting-card" onclick="showEditPanel()" style="cursor:pointer;" title="點擊編輯"><span class="setting-card-label">預計達成日</span><span class="setting-card-value" id="setDate">2027/06</span></div>
           <div class="setting-card" onclick="showEditPanel()" style="cursor:pointer;" title="點擊編輯"><span class="setting-card-label">目標用途</span><span class="setting-card-value" id="setUsage">結婚相關支出</span></div>
         </div>
         <div class="divider"></div>
@@ -606,17 +606,17 @@ function saveProfileData(p) { localStorage.setItem(PROFILE_KEY, JSON.stringify(p
 
 function fmtFund(n) {
   if (!n) return '0 元';
-  if (n >= 10000) return (n / 10000).toFixed(0) + ' 萬元';
+  if (n >= 10000) return (n/10000).toFixed(0) + ' 萬元';
   return n.toLocaleString() + ' 元';
 }
 function fmtAmt(n) {
   if (!n) return '—';
-  if (n >= 10000) return (n / 10000).toFixed(0) + ' 萬元';
+  if (n >= 10000) return (n/10000).toFixed(0) + ' 萬元';
   return n.toLocaleString() + ' 元';
 }
 function fmtAmtShort(n) {
   if (!n) return '—';
-  if (n >= 10000) return (n / 10000).toFixed(0) + ' 萬';
+  if (n >= 10000) return (n/10000).toFixed(0) + ' 萬';
   return n.toLocaleString();
 }
 
@@ -657,15 +657,15 @@ function finishEdit(field) {
    ══════════════════════════════════════════ */
 const DEFAULT_GOALS = [
   { id:'wedding',   name:'結婚基金',    icon:'💍', iconBg:'#FFCAD4', color:'#FF7B7B',
-    pct:65, current:780000,   target:1200000,  targetAge:'32 歲', targetDate:'2027 / 06', usage:'結婚相關支出',   monthlyInput:18000, expectedReturn:4 },
+    pct:65, current:780000,   target:1200000,  targetAge:'32 歲', targetDate:'2027/06', usage:'結婚相關支出',   monthlyInput:18000, expectedReturn:4 },
   { id:'house',     name:'買房頭期款',  icon:'🏠', iconBg:'#FEF3C7', color:'#F59E0B',
-    pct:28, current:1120000,  target:4000000,  targetAge:'34 歲', targetDate:'2031 / 08', usage:'頭期款+裝潢',    monthlyInput:12000, expectedReturn:4 },
+    pct:28, current:1120000,  target:4000000,  targetAge:'34 歲', targetDate:'2031/08', usage:'頭期款+裝潢',    monthlyInput:12000, expectedReturn:4 },
   { id:'baby',      name:'第一胎教育金',icon:'👶', iconBg:'#EDE9FE', color:'#8B5CF6',
-    pct:10, current:300000,   target:3000000,  targetAge:'37 歲', targetDate:'2034 / 03', usage:'子女教育費用',   monthlyInput:5000,  expectedReturn:5 },
+    pct:10, current:300000,   target:3000000,  targetAge:'37 歲', targetDate:'2034/03', usage:'子女教育費用',   monthlyInput:5000,  expectedReturn:5 },
   { id:'study',     name:'出國留學',    icon:'✈️', iconBg:'#DBEAFE', color:'#3B82F6',
-    pct:35, current:280000,   target:800000,   targetAge:'31 歲', targetDate:'2028 / 07', usage:'語言學校費用',   monthlyInput:8000,  expectedReturn:3 },
-  { id:'fire',      name:'退休 / FIRE', icon:'🌴', iconBg:'#E9FAF4', color:'#3EC193',
-    pct:33, current:8430000,  target:25000000, targetAge:'55 歲', targetDate:'2048 / 01', usage:'財務自由退休',   monthlyInput:22500, expectedReturn:7 },
+    pct:35, current:280000,   target:800000,   targetAge:'31 歲', targetDate:'2028/07', usage:'語言學校費用',   monthlyInput:8000,  expectedReturn:3 },
+  { id:'fire',      name:'退休/FIRE', icon:'🌴', iconBg:'#E9FAF4', color:'#3EC193',
+    pct:33, current:8430000,  target:25000000, targetAge:'55 歲', targetDate:'2048/01', usage:'財務自由退休',   monthlyInput:22500, expectedReturn:7 },
 ];
 
 let GOALS = [];
@@ -692,7 +692,7 @@ function yearsLeft(targetDate) {
   const now = new Date();
   const diff = (ty - now.getFullYear()) * 12 + (tm - now.getMonth() - 1);
   if (diff <= 0) return '已達成';
-  const y = Math.floor(diff / 12), m = diff % 12;
+  const y = Math.floor(diff/12), m = diff % 12;
   if (y === 0) return m + ' 個月';
   if (m === 0) return y + ' 年';
   return y + ' 年 ' + m + ' 個月';
@@ -747,7 +747,7 @@ function selectGoalByIdx(i) {
   document.getElementById('midIcon').style.background = g.iconBg;
   document.getElementById('midName').textContent = g.name;
 
-  const fill = CIRC * g.pct / 100;
+  const fill = CIRC * g.pct/100;
   document.getElementById('donutFill').setAttribute('stroke-dasharray', fill.toFixed(1) + ' ' + CIRC);
   document.getElementById('donutFill').setAttribute('stroke', g.color);
   document.getElementById('donutPct').textContent = g.pct + '%';
@@ -803,7 +803,7 @@ const PRESET_GOALS = [
   { name:'出國留學',   icon:'✈️', iconBg:'#DBEAFE', color:'#3B82F6', usage:'語言學校費用' },
   { name:'買車',       icon:'🚗', iconBg:'#FFF3E6', color:'#F0A868', usage:'購車費用' },
   { name:'旅遊基金',   icon:'🌏', iconBg:'#E0F2FE', color:'#0EA5E9', usage:'旅遊體驗' },
-  { name:'退休 / FIRE',icon:'🌴', iconBg:'#E9FAF4', color:'#3EC193', usage:'財務自由退休' },
+  { name:'退休/FIRE',icon:'🌴', iconBg:'#E9FAF4', color:'#3EC193', usage:'財務自由退休' },
   { name:'自訂目標',   icon:'⭐', iconBg:'#FFF8E1', color:'#C48B00', usage:'' },
 ];
 
@@ -861,7 +861,7 @@ function confirmAddGoal() {
     name, icon: preset.icon, iconBg: preset.iconBg, color: preset.color,
     pct: 0, current: 0, target,
     targetAge: ageAtTarget + ' 歲',
-    targetDate: targetYear + ' / 01',
+    targetDate: targetYear + '/01',
     usage: usage || preset.usage,
     monthlyInput: 10000, expectedReturn: 5,
   });
@@ -887,9 +887,9 @@ function monthsLeftFromDate(targetDate) {
 function calcPMT(target, current, annualReturn, months) {
   const fv = Math.max(0, target - current);
   if (months <= 0) return fv;
-  if (annualReturn === 0) return Math.ceil(fv / months);
-  const r = annualReturn / 100 / 12;
-  return Math.ceil((fv * r) / (Math.pow(1 + r, months) - 1));
+  if (annualReturn === 0) return Math.ceil(fv/months);
+  const r = annualReturn/100/12;
+  return Math.ceil((fv * r)/(Math.pow(1 + r, months) - 1));
 }
 
 function updateSimulation() {
@@ -915,7 +915,7 @@ function updateSimulation() {
     document.getElementById('res-ok').textContent = '✓ 投入足夠，可提早達成！';
     document.getElementById('res-ok-sub').textContent = '比需求多 ' + (monthly - needed).toLocaleString() + ' 元';
     document.getElementById('res-warn').textContent = '若維持現在金額';
-    document.getElementById('res-warn-sub').textContent = '約 ' + Math.floor(ml * needed / monthly) + ' 個月後達標';
+    document.getElementById('res-warn-sub').textContent = '約 ' + Math.floor(ml * needed/monthly) + ' 個月後達標';
   } else {
     document.getElementById('res-ok').textContent = '⚠ 每月還差 ' + (needed - monthly).toLocaleString() + ' 元';
     document.getElementById('res-ok-sub').textContent = '建議提高投入或延後目標年份';
@@ -971,7 +971,7 @@ function hideEditPanel() {
 function previewPct() {
   const cur = parseInt(document.getElementById('ep-current').value) || 0;
   const tgt = parseInt(document.getElementById('ep-target').value) || 0;
-  const pct = tgt > 0 ? Math.min(100, Math.round(cur / tgt * 100)) : 0;
+  const pct = tgt > 0 ? Math.min(100, Math.round(cur/tgt * 100)) : 0;
   document.getElementById('ep-pct-preview').textContent = pct + '%';
 }
 
@@ -1005,10 +1005,10 @@ function saveGoalEdit() {
   const profile = loadProfile();
   const curAge  = parseInt(profile.age) || 28;
   const ageAtTarget = curAge + (year - new Date().getFullYear());
-  const pct = target > 0 ? Math.min(100, Math.round(current / target * 100)) : 0;
+  const pct = target > 0 ? Math.min(100, Math.round(current/target * 100)) : 0;
   Object.assign(GOALS[activeIdx], {
     name, current, target, usage, pct,
-    targetDate: year + ' / ' + String(month).padStart(2, '0'),
+    targetDate: year + '/' + String(month).padStart(2, '0'),
     targetAge: ageAtTarget + ' 歲',
   });
   saveGoals();
@@ -1095,7 +1095,7 @@ function renderRightColumn() {
   const totalTarget = GOALS.reduce((s, g) => s + (g.target || 0), 0);
   const weightedPct = totalTarget > 0
     ? Math.min(100, Math.round(
-        GOALS.reduce((s, g) => s + g.pct * (g.target || 0), 0) / totalTarget
+        GOALS.reduce((s, g) => s + g.pct * (g.target || 0), 0)/totalTarget
       ))
     : 0;
 
