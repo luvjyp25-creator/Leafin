@@ -959,6 +959,13 @@ function calcAmortized(principal, annualRatePct, monthly, periods) {
   return Math.round(bal);
 }
 
+/* 總利息估算：總還款額 = 月付 × 期數；總利息 = 總還款額 − 貸款總額 */
+function calcLoanInterest(monthly, terms, totalAmt) {
+  const totalPayment = (monthly || 0) * (terms || 0);
+  const totalInterest = totalPayment - (totalAmt || 0);
+  return { totalPayment, totalInterest };
+}
+
 function estimateLiabAt(liab, ym, data) {
   const monthly  = liab.monthly  || 0;
   const totalAmt = liab.totalAmt || 0;
