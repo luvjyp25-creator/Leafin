@@ -1319,7 +1319,12 @@ document.querySelectorAll('.nav-item').forEach(el => {
     <div id="ob-s1">
       <div class="ob-tag">建立人生起點（1/3）</div>
       <div class="ob-title">了解你的基本資訊</div>
-      <div class="ob-sub">讓 Leafin 為你量身規劃，只需填 4 項。</div>
+      <div class="ob-sub">讓 Leafin 為你量身規劃，快速填寫即可。</div>
+
+      <div class="ob-field">
+        <div class="ob-label">你的名字</div>
+        <input class="ob-input" type="text" id="ob-name" placeholder="例：小葉" maxlength="20">
+      </div>
 
       <div class="ob-field">
         <div class="ob-label">年齡</div>
@@ -1347,10 +1352,16 @@ document.querySelectorAll('.nav-item').forEach(el => {
         <div class="ob-hint">預估：月收入 × 40%，可自行修改</div>
       </div>
 
+      <div class="ob-field">
+        <div class="ob-label">緊急預備金（選填）</div>
+        <input class="ob-input" type="number" id="ob-fund" placeholder="例：300000" min="0">
+        <div class="ob-hint">手邊可動用的存款，用於財務健康評估</div>
+      </div>
+
       <div class="ob-actions">
         <button class="ob-btn-primary" onclick="obNext(1)">下一步 →</button>
       </div>
-      <div class="ob-footer-hint">只需填 4 項，快速開始！</div>
+      <div class="ob-footer-hint">快速填寫，立即開始！</div>
     </div>
 
     <!-- ── STEP 2 ── -->
@@ -1526,10 +1537,11 @@ document.getElementById('ob-monthly').addEventListener('input', function() {
 
 function obNext(fromStep) {
   if (fromStep === 1) {
+    const name = document.getElementById('ob-name').value.trim();
     const age = parseInt(document.getElementById('ob-age').value);
     const lifestyle = document.querySelector('[name="ob-lifestyle"]:checked')?.value;
     const income = parseFloat(document.getElementById('ob-income').value);
-    if (!age || !lifestyle || !income) { alert('請填寫所有必填欄位'); return; }
+    if (!name || !age || !lifestyle || !income) { alert('請填寫名字、年齡、人生階段、月收入'); return; }
     showStep(2);
   } else if (fromStep === 2) {
     const asset = document.querySelector('#ob-asset-opts .ob-option.selected');
@@ -1542,14 +1554,17 @@ function obBack(fromStep) { showStep(fromStep - 1); }
 
 function obFinish() {
   // Save profile
+  const name = document.getElementById('ob-name').value.trim();
   const age = parseInt(document.getElementById('ob-age').value);
   const lifestyle = document.querySelector('[name="ob-lifestyle"]:checked')?.value || '單身';
   const income = parseFloat(document.getElementById('ob-income').value) || 0;
   const monthlyRaw = parseFloat(document.getElementById('ob-monthly').value);
   const monthly = isNaN(monthlyRaw) ? Math.round(income * 0.4) : monthlyRaw;
+  const fundRaw = parseFloat(document.getElementById('ob-fund').value);
+  const fund = isNaN(fundRaw) ? 0 : fundRaw;
 
   const existing = JSON.parse(localStorage.getItem('leafin_profile') || '{}');
-  const profile = Object.assign(existing, { age, lifestyle, income, monthly });
+  const profile = Object.assign(existing, { name, age, lifestyle, income, monthly, fund });
   localStorage.setItem('leafin_profile', JSON.stringify(profile));
   localStorage.setItem('leafin_onboarded', '1');
 
