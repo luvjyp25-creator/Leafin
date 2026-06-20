@@ -1652,17 +1652,23 @@ function bindGreeting(p) {
 
 /* ── 2. Setup Banner ── */
 function bindSetupBanner(p, goals, assets) {
+  const banner = document.getElementById('setup-banner');
+  const onboarded  = !!localStorage.getItem('leafin_onboarded');
   const hasProfile = !!p;
   const hasGoals   = goals && goals.length > 0;
   const hasAssets  = !!assets;
-  const allDone    = hasProfile && hasGoals && hasAssets;
 
-  if (!allDone) {
-    document.getElementById('setup-banner').style.display = '';
-    if (hasProfile) document.getElementById('sb-step1').classList.add('done');
-    if (hasGoals)   document.getElementById('sb-step2').classList.add('done');
-    if (hasAssets)  document.getElementById('sb-step3').classList.add('done');
+  /* N3：已完成引導（onboarded）或資料齊全就不再顯示「先設定人生起點」橫幅，
+     避免引導與完整數據同時出現；剩餘步驟交由側邊欄「財務導航建立進度」checklist 引導。 */
+  if (onboarded || (hasProfile && hasGoals && hasAssets)) {
+    if (banner) banner.style.display = 'none';
+    return;
   }
+
+  if (banner) banner.style.display = '';
+  if (hasProfile) document.getElementById('sb-step1').classList.add('done');
+  if (hasGoals)   document.getElementById('sb-step2').classList.add('done');
+  if (hasAssets)  document.getElementById('sb-step3').classList.add('done');
 }
 
 /* ── 3. 未來準備進度 (Card 1) ── */
