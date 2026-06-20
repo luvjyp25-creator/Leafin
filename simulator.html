@@ -323,28 +323,28 @@ input[type="range"]::-webkit-slider-thumb {
           每月投入金額
           <span class="ctrl-val" id="lbl-monthly">$22,500</span>
         </div>
-        <input type="range" min="5000" max="60000" step="500" value="22500"
+        <input type="range" id="sld-monthly" min="5000" max="60000" step="500" value="22500"
                oninput="updateSlider(this,'lbl-monthly',v=>dollarFmt(v)); runSim()">
 
         <div class="ctrl-label">
           預期年化報酬率
           <span class="ctrl-val" id="lbl-return">7%</span>
         </div>
-        <input type="range" min="0" max="15" step="0.5" value="7"
+        <input type="range" id="sld-return" min="0" max="15" step="0.5" value="7"
                oninput="updateSlider(this,'lbl-return',v=>v+'%'); runSim()">
 
         <div class="ctrl-label">
           通貨膨脹率
           <span class="ctrl-val" id="lbl-inflation">3%</span>
         </div>
-        <input type="range" min="0" max="8" step="0.5" value="3"
+        <input type="range" id="sld-inflation" min="0" max="8" step="0.5" value="3"
                oninput="updateSlider(this,'lbl-inflation',v=>v+'%'); runSim()">
 
         <div class="ctrl-label">
           退休後月支出（今日幣值）
           <span class="ctrl-val" id="lbl-expense">$60,000</span>
         </div>
-        <input type="range" min="20000" max="150000" step="5000" value="60000"
+        <input type="range" id="sld-expense" min="20000" max="150000" step="5000" value="60000"
                oninput="updateSlider(this,'lbl-expense',v=>dollarFmt(v)); runSim()">
       </div>
 
@@ -679,22 +679,27 @@ function toggleCompare() {
 }
 
 function runSim() {
-  const monthly = parseFloat(document.querySelector('input[type=range]:nth-of-type(1)').value) || 22500;
-  const ret = parseFloat(document.querySelector('input[type=range]:nth-of-type(2)').value) || 7;
-  const infl = parseFloat(document.querySelector('input[type=range]:nth-of-type(3)').value) || 3;
-  const expense = parseFloat(document.querySelector('input[type=range]:nth-of-type(4)').value) || 60000;
+  const gv = (id, def) => { const el = document.getElementById(id); const v = el ? parseFloat(el.value) : NaN; return isNaN(v) ? def : v; };
+  const monthly = gv('sld-monthly', 22500);
+  const ret     = gv('sld-return', 7);
+  const infl    = gv('sld-inflation', 3);
+  const expense = gv('sld-expense', 60000);
 
   const annualExpense = expense * 12;
-  const fireTarget = (annualExpense / (wr / 100)) * Math.pow(1 + infl / 100, 20);
+  const baseTarget = annualExpense / (wr / 100); // 以今日購買力計的 FIRE 目標
 
   const r = ret / 100 / 12;
   const current = (profileData && profileData.fund != null) ? profileData.fund : 1828000;
+  // 目標隨通膨逐年膨脹：每年比較餘額 vs「該年的通膨後目標」
   let n = 0, bal = current;
-  while (bal < fireTarget && n < 600) {
+  while (n < 600) {
+    const targetNow = baseTarget * Math.pow(1 + infl / 100, n / 12);
+    if (bal >= targetNow) break;
     bal = bal * (1 + r) + monthly;
     n++;
   }
   const yearsToFire = Math.ceil(n / 12);
+  const fireTarget = baseTarget * Math.pow(1 + infl / 100, yearsToFire); // 達成當年的目標金額
   const fireAge = (profileData && profileData.age ? profileData.age : 29) + yearsToFire;
 
   document.getElementById('res-fire-age').textContent = fireAge + ' 歲';
@@ -716,7 +721,7 @@ function initFromProfile() {
 
   // Set monthly savings slider to profile value
   if (profileData.monthly) {
-    const slider = document.querySelector('input[type=range]:nth-of-type(1)');
+    const slider = document.getElementById('sld-monthly');
     const min = parseFloat(slider.min), max = parseFloat(slider.max);
     const val = Math.min(max, Math.max(min, profileData.monthly));
     slider.value = val;
