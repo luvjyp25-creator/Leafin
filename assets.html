@@ -1107,7 +1107,7 @@ function renderAll(data) {
   renderHistory(data);
   renderNetWorthChart(data);
   renderTreemap(dispAssets);
-  renderAssetTable(data);
+  renderAssetTable(dispAssets, data);
   updateMonthNav();
 
   /* Write to leafin_assets for dashboard (always use current real totals) */
@@ -2202,14 +2202,14 @@ function renderTreemap(assets) {
 /* ══════════════════════════════════════════
    ASSET CATEGORY TABLE
    ══════════════════════════════════════════ */
-function renderAssetTable(data) {
+function renderAssetTable(assets, data) {
   const tbody = document.getElementById('asset-cat-body');
   const totalAmtEl = document.getElementById('cat-total-amt');
   const totalDeltaEl = document.getElementById('cat-total-delta');
   if (!tbody) return;
 
-  const assets = data.assets;
-  const total = assets.reduce((s,a)=>s+a.amount,0);
+  // 用當月 dispAssets + toTWD（轉匯），與 donut／hero 一致
+  const total = assets.reduce((s,a)=>s+toTWD(a),0);
   if (total===0) { tbody.innerHTML='<tr><td colspan="4" style="padding:16px;text-align:center;color:var(--text-3);">尚無資產</td></tr>'; return; }
 
   // Get previous month snapshot for delta
@@ -2222,7 +2222,7 @@ function renderAssetTable(data) {
   assets.forEach(a=>{
     const cat=a.category||'其他';
     if(!byCat[cat]) byCat[cat]={amt:0,prevAmt:0};
-    byCat[cat].amt+=a.amount;
+    byCat[cat].amt+=toTWD(a);
     if(prevSnap && prevSnap[a.id]!=null) byCat[cat].prevAmt+=prevSnap[a.id];
   });
 
