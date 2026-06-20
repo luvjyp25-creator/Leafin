@@ -1553,6 +1553,34 @@ function calcLiabPreview() {
   }
 
   document.getElementById('lm-calc-grid').innerHTML = gridHtml;
+
+  /* ── 總利息比例條（信用卡卡債 group C 不顯示）── */
+  const intBar = document.getElementById('lm-int-bar');
+  if (intBar) {
+    if (cfg.group === 'C' || !monthly || !terms || terms <= 0) {
+      intBar.style.display = 'none';
+      intBar.innerHTML = '';
+    } else {
+      const { totalPayment, totalInterest } = calcLoanInterest(monthly, terms, totalAmt);
+      if (totalInterest <= 0) {
+        intBar.innerHTML = '<div class="lm-int-noint">🎉 此筆無利息</div>';
+      } else {
+        const pPct = (totalAmt / totalPayment) * 100;
+        const iPct = 100 - pPct;
+        intBar.innerHTML =
+          '<div class="lm-int-track">' +
+            '<div class="lm-int-seg-p" style="width:' + pPct.toFixed(1) + '%"></div>' +
+            '<div class="lm-int-seg-i" style="width:' + iPct.toFixed(1) + '%"></div>' +
+          '</div>' +
+          '<div class="lm-int-leg">' +
+            '<span><i class="lm-int-dot" style="background:#4A8C5E"></i>本金 <b>$' + totalAmt.toLocaleString() + '</b></span>' +
+            '<span><i class="lm-int-dot" style="background:#E8A85C"></i>利息 <b>$' + Math.round(totalInterest).toLocaleString() + '</b></span>' +
+          '</div>';
+      }
+      intBar.style.display = '';
+    }
+  }
+
   calcBox.style.display = '';
 }
 
