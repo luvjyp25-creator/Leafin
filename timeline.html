@@ -37,7 +37,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Inter', -apple-system, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-  background: var(--bg);
+  background: #F7F9FB;   /* 頁面底色：淡冷藍灰白（全站統一） */
   color: var(--text);
   font-size: 13px;
   line-height: 1.5;
@@ -453,6 +453,23 @@ button { font-family: inherit; cursor: pointer; border: none; }
   <!-- CONTENT -->
   <div class="content-wrap">
     <div class="content-main">
+
+      <style>
+      .page-hero-wrap{flex-shrink:0}
+      .page-hero{position:relative;overflow:hidden;display:flex;align-items:center;min-height:132px;border-radius:18px;border:1px solid #E4EBE6;background:linear-gradient(105deg,#EFF4E8 0%,#E7F0DF 100%)}
+      .page-hero::after{content:'';position:absolute;top:0;right:0;bottom:0;width:40%;background:var(--ph-img) right center/cover no-repeat;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 34%);mask-image:linear-gradient(to right,transparent 0,#000 34%);pointer-events:none}
+      .page-hero-in{position:relative;z-index:2;padding:22px 30px;max-width:600px}
+      .page-hero-title{font-size:22px;font-weight:800;line-height:1.34;letter-spacing:-.3px;color:#1F3D31}
+      .page-hero-title .leaf{font-weight:400}
+      .page-hero-sub{margin-top:9px;font-size:13px;line-height:1.65;color:#4F6258}
+      @media(max-width:1100px){.page-hero::after{width:32%}.page-hero-in{max-width:none}}
+      </style>
+      <section class="page-hero" style="--ph-img:url('images/banner-timeline.png')">
+        <div class="page-hero-in">
+          <div class="page-hero-title">看見未來每一站，<br>才知道現在該怎麼走 <span class="leaf">🌿</span></div>
+          <div class="page-hero-sub">把重要人生目標排成時間線，幫你掌握哪個目標最急、哪個可以慢慢準備。</div>
+        </div>
+      </section>
 
       <!-- SECTION A: 人生時間軸 -->
       <div class="section-card">

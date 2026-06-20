@@ -13,7 +13,7 @@
    ═══════════════════════════════════════ */
 :root {
   --bg:          #F0F4EC;
-  --card:        #FFFFFF;
+  --card:        #FFFFFF;   /* 卡片維持白（插畫不露白框、最乾淨） */
   --border:      #E4EBE6;
   --shadow:      0 4px 16px rgba(0,0,0,0.08);
   --shadow-sm:   0 2px 8px  rgba(0,0,0,0.05);
@@ -41,7 +41,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Inter', -apple-system, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-  background: var(--bg);
+  background: #F7F9FB;   /* 頁面底色：淡冷藍灰白（取代原本偏綠的 #F0F4EC） */
   color: var(--text);
   font-size: 13px;
   line-height: 1.5;
@@ -57,7 +57,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .sidebar {
   width: var(--sidebar-w);
   min-width: var(--sidebar-w);
-  background: var(--card);
+  background: #FFFFFF;   /* 側欄維持白（chrome） */
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -117,7 +117,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
 .topbar {
-  background: var(--card);
+  background: #FFFFFF;   /* 頂欄維持白（chrome） */
   border-bottom: 1px solid var(--border);
   padding: 0 24px;
   height: 56px;
@@ -592,6 +592,146 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .ncl-cta:hover { text-decoration: underline; }
 
 /* ═══════════════════════════════════════
+   HERO — 人生導航入口（總覽頂部）
+   ═══════════════════════════════════════ */
+.hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  min-height: 210px;
+  margin-bottom: 18px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: linear-gradient(105deg, #EFF4E8 0%, #EAF2E2 46%, #E4EFDD 100%);
+  box-shadow: var(--shadow-sm);
+}
+/* 背景插畫：靠右覆蓋，左側淡出讓文字清晰 */
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  left: 0;
+  width: auto;
+  background: url('images/hero-wide-v2.png') center 36% / cover no-repeat;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 34%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 34%);
+  pointer-events: none;
+}
+.hero-left {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  max-width: 540px;
+  padding: 20px 24px 20px 40px;
+}
+.hero-title {
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.25;
+  color: #1F3D31;
+}
+.hero-title .leaf { font-weight: 400; }
+.hero-sub {
+  margin: 9px 0 16px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #4F6258;
+}
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--primary);
+  box-shadow: 0 6px 16px rgba(62,193,147,0.35);
+  transition: transform .15s, box-shadow .15s;
+}
+.hero-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(62,193,147,0.45); }
+.hero-cta.edit {
+  color: var(--primary-d);
+  background: #FFFFFF;
+  border: 1.5px solid #CFE7DC;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.hero-cta.edit:hover { transform: translateY(-1px); background: #F4FBF8; box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
+
+/* 右側木牌路牌：中央木柱 + 四面牌左右交錯（參考附圖）；整體相對佈局，縮放不跑位 */
+.signpost {
+  position: absolute;
+  top: 50%;
+  right: 56px;
+  transform: translateY(-50%);
+  width: 252px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  z-index: 2;
+}
+.signpost .post {              /* 中央木柱（貫穿所有牌子） */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 4px; bottom: 4px;
+  width: 13px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, #CC9E66 0%, #A9794A 48%, #8A5F35 100%);
+  box-shadow: 0 2px 6px rgba(90,60,25,0.30);
+  z-index: 0;
+}
+.signpost .post::before {      /* 柱頂圓球 */
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -16px;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #DDB57E, #8A5F35);
+  box-shadow: 0 2px 4px rgba(90,60,25,0.32);
+}
+.sign {
+  position: relative;
+  z-index: 1;
+  width: 126px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6B4A2B;
+  background: linear-gradient(180deg, #F3DCB4 0%, #E6C593 100%);
+  border: 1px solid #D8B886;
+  box-shadow: 0 3px 8px rgba(120,80,30,0.22);
+  white-space: nowrap;
+}
+.sign.dir-r {     /* 指向右，左緣貼柱 */
+  align-self: flex-start;
+  margin-left: calc(50% - 6px);
+  clip-path: polygon(0 0, calc(100% - 13px) 0, 100% 50%, calc(100% - 13px) 100%, 0 100%);
+  padding-right: 22px;
+  justify-content: flex-start;
+}
+.sign.dir-l {     /* 指向左，右緣貼柱 */
+  align-self: flex-end;
+  margin-right: calc(50% - 6px);
+  clip-path: polygon(13px 0, 100% 0, 100% 100%, 13px 100%, 0 50%);
+  padding-left: 22px;
+  justify-content: flex-end;
+}
+@media (max-width: 1040px) {
+  .signpost { display: none; }
+  .hero-left { max-width: none; }
+}
+
+/* ═══════════════════════════════════════
    ONBOARDING OVERLAY
    ═══════════════════════════════════════ */
 .ob-overlay {
@@ -610,6 +750,21 @@ button { font-family: inherit; cursor: pointer; border: none; }
   box-shadow: 0 20px 60px rgba(0,0,0,0.13);
   position: relative;
 }
+.ob-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: #F0F4EC;
+  color: #6B7B7D;
+  font-size: 15px;
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer;
+  transition: background .15s, color .15s;
+  z-index: 5;
+}
+.ob-close:hover { background: #E4EBE6; color: var(--text); }
 .ob-steps-indicator {
   display: flex; gap: 6px; margin-bottom: 28px;
 }
@@ -849,6 +1004,22 @@ button { font-family: inherit; cursor: pointer; border: none; }
 
   <div class="scroll-area">
     <div class="content">
+
+      <!-- ── HERO：人生導航入口 ── -->
+      <section class="hero" id="dash-hero">
+        <div class="hero-left">
+          <div class="hero-title">你的未來，不該只是一串數字 <span class="leaf">🌿</span></div>
+          <div class="hero-sub">不論是買房、旅行、FIRE，或是提早過上想要的生活，<br>Leafin 幫你把夢想變成可追蹤的財務計畫，每一步都更靠近目標。</div>
+          <button class="hero-cta" id="hero-cta" onclick="openOnboarding()">🧭 建立我的人生導航（1 分鐘）</button>
+        </div>
+        <div class="signpost">
+          <div class="post"></div>
+          <div class="sign dir-r">🏠 買房成家</div>
+          <div class="sign dir-l">✈️ 環遊世界</div>
+          <div class="sign dir-r">🏝️ 提早退休</div>
+          <div class="sign dir-l">🪙 財務自由</div>
+        </div>
+      </section>
 
       <!-- ── SETUP BANNER (shown when no profile) ── -->
       <div id="setup-banner" style="display:none;">
@@ -1273,6 +1444,8 @@ document.querySelectorAll('.nav-item').forEach(el => {
 <div id="ob-overlay" class="ob-overlay" style="display:none;">
   <div class="ob-card">
 
+    <button class="ob-close" onclick="obClose()" aria-label="關閉" title="關閉">✕</button>
+
     <!-- Step dots -->
     <div class="ob-steps-indicator" id="ob-dots">
       <div class="ob-step-dot" id="dot-1"></div>
@@ -1429,12 +1602,35 @@ document.querySelectorAll('.nav-item').forEach(el => {
 /* ══════════════════════════════════════
    ONBOARDING  LOGIC
    ══════════════════════════════════════ */
-(function checkOnboarding() {
-  if (!localStorage.getItem('leafin_onboarded')) {
-    document.getElementById('ob-overlay').style.display = 'flex';
-    updateDots(1);
+/* 不再自動跳出引導：改由總覽 hero 按鈕觸發。已建立者點擊＝修改設定（帶入現有資料）。 */
+function openOnboarding() {
+  const p = JSON.parse(localStorage.getItem('leafin_profile') || 'null');
+  if (p) {   // 修改設定：把現有 profile 帶入 Step 1 欄位
+    if (p.name)            document.getElementById('ob-name').value = p.name;
+    if (p.age)             document.getElementById('ob-age').value = p.age;
+    if (p.income)          document.getElementById('ob-income').value = p.income;
+    if (p.monthly != null) document.getElementById('ob-monthly').value = p.monthly;
+    if (p.lifestyle) {
+      const r = document.querySelector('[name="ob-lifestyle"][value="' + p.lifestyle + '"]');
+      if (r) { r.checked = true; const lab = r.closest('.ob-radio'); if (lab) lab.classList.add('selected'); }
+    }
   }
-})();
+  showStep(1);
+  document.getElementById('ob-overlay').style.display = 'flex';
+}
+
+/* hero CTA 狀態：已完成引導 → 顯示「✓ 已建立，修改設定」（可點，開啟引導修改）。 */
+function renderHeroCta() {
+  const cta = document.getElementById('hero-cta');
+  if (!cta) return;
+  if (localStorage.getItem('leafin_onboarded')) {
+    cta.classList.add('edit');
+    cta.textContent = '✓ 已建立，修改設定';
+  } else {
+    cta.classList.remove('edit');
+    cta.textContent = '🧭 建立我的人生導航（1 分鐘）';
+  }
+}
 
 let obStep = 1;
 
@@ -1621,23 +1817,9 @@ function bindGreeting(p) {
 
 /* ── 2. Setup Banner ── */
 function bindSetupBanner(p, goals, assets) {
+  /* 頂部 hero（人生導航入口）已取代舊的「先設定人生起點」橫幅，這裡一律隱藏避免重複引導。 */
   const banner = document.getElementById('setup-banner');
-  const onboarded  = !!localStorage.getItem('leafin_onboarded');
-  const hasProfile = !!p;
-  const hasGoals   = goals && goals.length > 0;
-  const hasAssets  = !!assets;
-
-  /* N3：已完成引導（onboarded）或資料齊全就不再顯示「先設定人生起點」橫幅，
-     避免引導與完整數據同時出現；剩餘步驟交由側邊欄「財務導航建立進度」checklist 引導。 */
-  if (onboarded || (hasProfile && hasGoals && hasAssets)) {
-    if (banner) banner.style.display = 'none';
-    return;
-  }
-
-  if (banner) banner.style.display = '';
-  if (hasProfile) document.getElementById('sb-step1').classList.add('done');
-  if (hasGoals)   document.getElementById('sb-step2').classList.add('done');
-  if (hasAssets)  document.getElementById('sb-step3').classList.add('done');
+  if (banner) banner.style.display = 'none';
 }
 
 /* ── 3. 未來準備進度 (Card 1) ── */
@@ -2059,6 +2241,7 @@ function bindAllocation(assets) {
   const expenses = getExpenses();
 
   bindGreeting(p);
+  renderHeroCta();
   bindSetupBanner(p, goals, assets);
   bindProgress(goals);
   bindBalance(expenses, p);

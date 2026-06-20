@@ -7,7 +7,7 @@
 <style>
 :root{--bg:#F0F4EC;--card:#FFF;--border:#E4EBE6;--mint:#3EC193;--mint-h:#31B184;--mint-d:#249870;--mint-s:#E9FAF4;--text:#2D3436;--text-2:#6B7B7D;--text-3:#A0AEB0;--text-4:#BDC8CA;--r:16px;--rsm:10px;--shadow:0 4px 16px rgba(0,0,0,0.08)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,'PingFang TC','Microsoft JhengHei',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5}
+body{font-family:-apple-system,'PingFang TC','Microsoft JhengHei',sans-serif;background:#F7F9FB;color:var(--text);font-size:13px;line-height:1.5}
 .app{display:flex;height:100vh;overflow:hidden}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 .sidebar{width:210px;min-width:210px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 16px;gap:2px;overflow-y:auto}
@@ -315,6 +315,25 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     </div>
     <div class="topbar-sub">選擇你的夢想，設定目標時間與預算</div>
   </header>
+
+  <style>
+  .page-hero-wrap{flex-shrink:0}
+  .page-hero{position:relative;overflow:hidden;display:flex;align-items:center;min-height:124px;border-radius:18px;border:1px solid #E4EBE6;background:linear-gradient(105deg,#EFF4E8 0%,#E7F0DF 100%)}
+  .page-hero::after{content:'';position:absolute;top:0;right:0;bottom:0;width:40%;background:var(--ph-img) right center/cover no-repeat;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 34%);mask-image:linear-gradient(to right,transparent 0,#000 34%);pointer-events:none}
+  .page-hero-in{position:relative;z-index:2;padding:20px 30px;max-width:600px}
+  .page-hero-title{font-size:21px;font-weight:800;line-height:1.32;letter-spacing:-.3px;color:#1F3D31}
+  .page-hero-title .leaf{font-weight:400}
+  .page-hero-sub{margin-top:8px;font-size:13px;line-height:1.6;color:#4F6258}
+  @media(max-width:1100px){.page-hero::after{width:32%}.page-hero-in{max-width:none}}
+  </style>
+  <div class="page-hero-wrap" style="padding:14px 14px 14px">
+    <section class="page-hero" style="--ph-img:url('images/banner-goals.png')">
+      <div class="page-hero-in">
+        <div class="page-hero-title">把想做的事，<br>變成真的走得到的目標 <span class="leaf">✨</span></div>
+        <div class="page-hero-sub">不管是買房、旅行、FIRE 還是教育基金，先把夢想放進清單，Leafin 幫你追蹤進度。</div>
+      </div>
+    </section>
+  </div>
 
   <!-- ── BASELINE BAR ── -->
   <div class="baseline-bar">
