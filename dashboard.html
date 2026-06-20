@@ -1132,8 +1132,8 @@ button { font-family: inherit; cursor: pointer; border: none; }
               <div class="fcard-title">今日小提醒</div>
               <div class="fcard-link">查看詳情</div>
             </div>
-            <div style="font-size:11px;color:#2D3436;">• 結婚基金進度稍慢 🔥</div>
-            <div style="font-size:10px;color:#6B7B7D;">目前已有 78 萬，持續加油！</div>
+            <div style="font-size:11px;color:#2D3436;" id="dash-tip-1">• 載入中…</div>
+            <div style="font-size:10px;color:#6B7B7D;" id="dash-tip-2"></div>
           </div>
         </div>
 
@@ -1141,9 +1141,9 @@ button { font-family: inherit; cursor: pointer; border: none; }
         <div class="fcard" onclick="location.href='expenses.html'" style="cursor:pointer;">
           <div class="fcard-illus"><img src="images/generated-1780080934534.png" alt="" style="height:90px;width:auto;object-fit:contain;"></div>
           <div class="fcard-body">
-            <div class="fcard-title">本月表現優於上個月</div>
-            <div style="font-size:11px;color:#2D3436;">📈 投資收益增加了 +2.3%</div>
-            <div style="font-size:11px;color:#2D3436;">📉 生活花費減少了 -4.6%</div>
+            <div class="fcard-title" id="dash-perf-title">本月收支概況</div>
+            <div style="font-size:11px;color:#2D3436;" id="dash-perf-1"></div>
+            <div style="font-size:11px;color:#2D3436;" id="dash-perf-2"></div>
           </div>
         </div>
 
@@ -1151,12 +1151,12 @@ button { font-family: inherit; cursor: pointer; border: none; }
         <div class="fcard" onclick="location.href='expenses.html'" style="cursor:pointer;">
           <div class="fcard-illus"><img src="images/generated-1780080930343.png" alt="" style="height:90px;width:auto;object-fit:contain;"></div>
           <div class="fcard-body">
-            <div class="fcard-title">連續存款天數</div>
+            <div class="fcard-title">本月儲蓄</div>
             <div class="streak-row">
-              <div class="streak-num">18</div>
-              <div class="streak-unit">天</div>
+              <div class="streak-num" id="dash-save-num">—</div>
+              <div class="streak-unit">元</div>
             </div>
-            <div style="font-size:10px;color:#6B7B7D;">太棒了！保持下去！🎉</div>
+            <div style="font-size:10px;color:#6B7B7D;" id="dash-save-sub"></div>
           </div>
         </div>
 
@@ -1945,6 +1945,44 @@ function bindReminders(profile, goals, assets, expenses) {
     </div>`).join('');
 }
 
+/* ── 11. 底部三卡（今日小提醒 / 本月表現 / 本月儲蓄）── */
+function bindFooter(profile, goals, expenses) {
+  const txs = (expenses && expenses.transactions) || [];
+  const now = new Date();
+  const ym = now.getFullYear() + '/' + String(now.getMonth() + 1).padStart(2, '0');
+  const last = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastYM = last.getFullYear() + '/' + String(last.getMonth() + 1).padStart(2, '0');
+  const sum = (m, type) => txs.filter(t => String(t.date||'').replace(/-/g,'/').slice(0,7) === m && t.type === type).reduce((s,t) => s + (Number(t.amount)||0), 0);
+  const mInc = sum(ym,'income'), mExp = sum(ym,'expense'), lInc = sum(lastYM,'income'), lExp = sum(lastYM,'expense');
+  const bal = mInc - mExp;
+
+  // 今日小提醒：最近期限目標
+  const tip1 = document.getElementById('dash-tip-1'), tip2 = document.getElementById('dash-tip-2');
+  if (tip1 && tip2) {
+    const up = (goals||[]).filter(g => g.targetDate).map(g => {
+      const p = String(g.targetDate).split('/'); const y = parseInt(p[0]), mo = p[1] ? parseInt(p[1]) : 12;
+      return { name:g.name, pct:g.pct||0, current:g.current||0, days: Math.round((new Date(y, mo-1, 1) - now) / 86400000) };
+    }).filter(g => g.days >= 0).sort((a,b) => a.days - b.days)[0];
+    if (up) { tip1.textContent = '• ' + up.name + ' 進度 ' + up.pct + '% 🔥'; tip2.textContent = '已累積 ' + fmtMoney(up.current) + '，持續加油！'; }
+    else { tip1.textContent = '• 還沒有夢想目標'; tip2.textContent = '去新增第一個目標吧！'; }
+  }
+
+  // 本月表現：本月 vs 上月
+  const pt = document.getElementById('dash-perf-title'), p1 = document.getElementById('dash-perf-1'), p2 = document.getElementById('dash-perf-2');
+  if (pt && p1 && p2) {
+    const incDiff = lInc > 0 ? Math.round((mInc - lInc) / lInc * 100) : null;
+    const expDiff = lExp > 0 ? Math.round((mExp - lExp) / lExp * 100) : null;
+    pt.textContent = (expDiff !== null && expDiff < 0) ? '本月表現優於上個月' : '本月收支概況';
+    p1.textContent = incDiff !== null ? ('📈 收入 ' + (incDiff>=0?'↑ +':'↓ ') + Math.abs(incDiff) + '% vs 上月') : ('收入 ' + fmtMoney(mInc) + ' 元');
+    p2.textContent = expDiff !== null ? ('📉 支出 ' + (expDiff<=0?'↓ ':'↑ +') + Math.abs(expDiff) + '% vs 上月') : ('支出 ' + fmtMoney(mExp) + ' 元');
+  }
+
+  // 本月儲蓄（原連續存款天數）
+  const sNum = document.getElementById('dash-save-num'), sSub = document.getElementById('dash-save-sub');
+  if (sNum) { sNum.textContent = fmtMoney(bal); sNum.style.color = bal >= 0 ? 'var(--primary)' : '#FF7B7B'; }
+  if (sSub) sSub.textContent = bal >= 0 ? '本月存下這些，繼續保持！🎉' : '本月支出超過收入，留意一下';
+}
+
 /* ── 9. 資產配置健康度（依 leafin_assets 真實類別佔比）── */
 function bindAllocation(assets) {
   const wrap = document.getElementById('dash-alloc');
@@ -1989,6 +2027,7 @@ function bindAllocation(assets) {
   bindSavings(p);
   bindAllocation(assets);
   bindReminders(p, goals, assets, expenses);
+  bindFooter(p, goals, expenses);
 })();
 </script>
 </body>
