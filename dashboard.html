@@ -1805,7 +1805,7 @@ function leafinHealthScore(profile, expenses, assets) {
   const income = mInc || (profile && profile.income) || 0;
   const sav = (profile && profile.monthly) || 0;
   const savingsRate = income > 0 ? sav / income : 0;
-  const savingsScore = Math.min(20, Math.round(savingsRate * 60));
+  const savingsScore = Math.min(25, Math.round(savingsRate * 75));
 
   // 退休準備：以淨資產佔 FIRE 目標比例（取代原本的 profile.fund）
   const assetTotal = (assets && assets.total) || 0;
@@ -1818,13 +1818,22 @@ function leafinHealthScore(profile, expenses, assets) {
   // 負債管理：負債佔年收入比例越低越好（無負債=滿分）
   const annualIncome = income * 12;
   let debtScore;
-  if (liabTotal <= 0) debtScore = 20;
-  else if (annualIncome <= 0) debtScore = 10;
-  else debtScore = Math.min(20, Math.max(4, Math.round(20 - (liabTotal / annualIncome) * 3.2)));
+  if (liabTotal <= 0) debtScore = 25;
+  else if (annualIncome <= 0) debtScore = 13;
+  else debtScore = Math.min(25, Math.max(5, Math.round(25 - (liabTotal / annualIncome) * 4)));
 
-  const investScore = 16, insuranceScore = 9, familyScore = 5; // 暫無資料來源，維持中性值
-  const total = savingsScore + debtScore + investScore + insuranceScore + retireScore + familyScore;
-  return { savingsScore, retireScore, debtScore, investScore, insuranceScore, familyScore, fireTarget, total };
+  // 暫無資料來源的三維：以中性「假設適當」值計（接真前）
+  const investScore = 12, insuranceScore = 9, familyScore = 9;
+  const total = savingsScore + debtScore + retireScore + investScore + insuranceScore + familyScore; // 滿分 100
+  const dims = [
+    { key:'savings',   score:savingsScore,   max:25 },
+    { key:'debt',      score:debtScore,      max:25 },
+    { key:'invest',    score:investScore,    max:12 },
+    { key:'insurance', score:insuranceScore, max:9  },
+    { key:'retire',    score:retireScore,    max:20 },
+    { key:'family',    score:familyScore,    max:9  },
+  ];
+  return { savingsScore, retireScore, debtScore, investScore, insuranceScore, familyScore, fireTarget, total, dims };
 }
 
 function bindHealth(profile, expenses, assets) {

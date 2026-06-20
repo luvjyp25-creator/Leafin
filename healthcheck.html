@@ -601,7 +601,7 @@ function leafinHealthScore(profile, expenses, assets) {
   const income = mInc || (profile && profile.income) || 0;
   const sav = (profile && profile.monthly) || 0;
   const savingsRate = income > 0 ? sav / income : 0;
-  const savingsScore = Math.min(20, Math.round(savingsRate * 60));
+  const savingsScore = Math.min(25, Math.round(savingsRate * 75));
 
   // 退休準備：以淨資產佔 FIRE 目標比例（取代原本的 profile.fund）
   const assetTotal = (assets && assets.total) || 0;
@@ -614,13 +614,22 @@ function leafinHealthScore(profile, expenses, assets) {
   // 負債管理：負債佔年收入比例越低越好（無負債=滿分）
   const annualIncome = income * 12;
   let debtScore;
-  if (liabTotal <= 0) debtScore = 20;
-  else if (annualIncome <= 0) debtScore = 10;
-  else debtScore = Math.min(20, Math.max(4, Math.round(20 - (liabTotal / annualIncome) * 3.2)));
+  if (liabTotal <= 0) debtScore = 25;
+  else if (annualIncome <= 0) debtScore = 13;
+  else debtScore = Math.min(25, Math.max(5, Math.round(25 - (liabTotal / annualIncome) * 4)));
 
-  const investScore = 16, insuranceScore = 9, familyScore = 5; // 暫無資料來源，維持中性值
-  const total = savingsScore + debtScore + investScore + insuranceScore + retireScore + familyScore;
-  return { savingsScore, retireScore, debtScore, investScore, insuranceScore, familyScore, fireTarget, total };
+  // 暫無資料來源的三維：以中性「假設適當」值計（接真前）
+  const investScore = 12, insuranceScore = 9, familyScore = 9;
+  const total = savingsScore + debtScore + retireScore + investScore + insuranceScore + familyScore; // 滿分 100
+  const dims = [
+    { key:'savings',   score:savingsScore,   max:25 },
+    { key:'debt',      score:debtScore,      max:25 },
+    { key:'invest',    score:investScore,    max:12 },
+    { key:'insurance', score:insuranceScore, max:9  },
+    { key:'retire',    score:retireScore,    max:20 },
+    { key:'family',    score:familyScore,    max:9  },
+  ];
+  return { savingsScore, retireScore, debtScore, investScore, insuranceScore, familyScore, fireTarget, total, dims };
 }
 
 (function() {
@@ -639,20 +648,30 @@ function leafinHealthScore(profile, expenses, assets) {
   const insuranceScore = H.insuranceScore, familyScore = H.familyScore;
   const totalScore = H.total;
 
-  // --- Update score displays ---
-  // Savings category score
-  const savingsEl = document.getElementById('score-savings');
-  savingsEl.textContent = savingsScore;
-  savingsEl.style.color = savingsScore >= 15 ? 'var(--primary)' : savingsScore >= 10 ? '#C48B00' : 'var(--danger)';
-  document.getElementById('hc-savings-fill').style.width = (savingsScore / 20 * 100) + '%';
+  // --- 6 維類別卡（資料驅動，per-dim 滿分）---
+  const catColor = (s, max) => { const r = max > 0 ? s / max : 0; return r >= 0.75 ? 'var(--primary)' : r >= 0.5 ? '#C48B00' : 'var(--danger)'; };
+  H.dims.forEach(d => {
+    const el = document.getElementById('score-' + d.key);
+    if (!el) return;
+    const col = catColor(d.score, d.max);
+    el.textContent = d.score;
+    el.style.color = col;
+    const maxEl = el.nextElementSibling; // .cat-max
+    if (maxEl && maxEl.classList.contains('cat-max')) maxEl.textContent = '/ ' + d.max;
+    const card = el.closest('.cat-card');
+    if (card) {
+      const fill = card.querySelector('.cat-fill');
+      if (fill) { fill.style.width = (d.score / d.max * 100) + '%'; fill.style.background = col; }
+      const badge = card.querySelector('.cat-badge');
+      if (badge) {
+        const r = d.max > 0 ? d.score / d.max : 0;
+        badge.textContent = r >= 0.75 ? '🟢 健康' : r >= 0.5 ? '🟡 注意' : '🔴 有風險';
+        badge.className = 'cat-badge ' + (r >= 0.75 ? 'green' : r >= 0.5 ? 'yellow' : 'red');
+      }
+    }
+  });
 
-  // Retire category score
-  const retireEl = document.getElementById('score-retire');
-  retireEl.textContent = retireScore;
-  retireEl.style.color = retireScore >= 15 ? 'var(--primary)' : retireScore >= 10 ? '#C48B00' : 'var(--danger)';
-  document.getElementById('hc-retire-fill').style.width = (retireScore / 20 * 100) + '%';
-
-  // Total score — SVG ring
+  // Total score — SVG ring（滿分 100）
   const circ = 314.16;
   const filled = Math.round(circ * totalScore / 100);
   const gap = Math.round(circ - filled);
@@ -661,37 +680,32 @@ function leafinHealthScore(profile, expenses, assets) {
   ring.setAttribute('stroke-dashoffset', '0'); // 重設起點，避免弧線偏移
   document.getElementById('hc-total-score').textContent = totalScore;
 
-  // Score hero text
   const numEl = document.getElementById('hc-score-num');
   if (numEl) numEl.innerHTML = totalScore + ' <span class="score-100">/ 100</span>';
 
   const dateEl = document.getElementById('hc-score-date');
   if (dateEl) dateEl.textContent = '最後更新：' + new Date().toLocaleDateString('zh-TW');
 
-  // Avatar — show first character of user name
   if (profile && profile.name) {
     const av = document.getElementById('hc-avatar');
     if (av) av.textContent = profile.name.charAt(0);
   }
 
-  // Radar polygon
-  const scores = [savingsScore, debtScore, investScore, insuranceScore, retireScore, familyScore];
-  const angles = [-90, -30, 30, 90, 150, 210].map(d => d * Math.PI / 180);
-  const pts = scores.map((s, i) => {
-    const r = 80 * s / 20;
-    return (110 + r * Math.cos(angles[i])).toFixed(1) + ',' + (110 + r * Math.sin(angles[i])).toFixed(1);
-  }).join(' ');
+  // Radar polygon + dots（per-dim 滿分）
+  const angles = [-90, -30, 30, 90, 150, 210].map(a => a * Math.PI / 180);
+  const radarR = d => 80 * (d.max > 0 ? d.score / d.max : 0);
+  const pts = H.dims.map((d, i) => (110 + radarR(d) * Math.cos(angles[i])).toFixed(1) + ',' + (110 + radarR(d) * Math.sin(angles[i])).toFixed(1)).join(' ');
   document.getElementById('hc-radar-polygon').setAttribute('points', pts);
 
-  // Radar dots
   const dotIds = ['hc-radar-dot-savings','hc-radar-dot-debt','hc-radar-dot-invest','hc-radar-dot-insurance','hc-radar-dot-retire','hc-radar-dot-family'];
-  scores.forEach((s, i) => {
-    const r = 80 * s / 20;
+  H.dims.forEach((d, i) => {
     const el = document.getElementById(dotIds[i]);
-    if (el) {
-      el.setAttribute('cx', (110 + r * Math.cos(angles[i])).toFixed(1));
-      el.setAttribute('cy', (110 + r * Math.sin(angles[i])).toFixed(1));
-    }
+    if (el) { el.setAttribute('cx', (110 + radarR(d) * Math.cos(angles[i])).toFixed(1)); el.setAttribute('cy', (110 + radarR(d) * Math.sin(angles[i])).toFixed(1)); }
+  });
+
+  // Radar legend（順序同 dims）
+  document.querySelectorAll('.rl-val').forEach((el, i) => {
+    if (H.dims[i]) { el.textContent = H.dims[i].score + ' / ' + H.dims[i].max; el.style.color = catColor(H.dims[i].score, H.dims[i].max); }
   });
 })();
 </script>
