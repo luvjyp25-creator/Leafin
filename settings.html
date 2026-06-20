@@ -101,7 +101,10 @@ button { font-family:inherit; cursor:pointer; border:none; }
       <div class="page-title">⚙️ 設定</div>
       <div class="page-sub">個人資料與財務假設，全站共用</div>
     </div>
-    <div class="avatar" id="set-avatar">我</div>
+    <div style="display:flex;align-items:center;">
+      <span class="sync-indicator" id="sync-indicator" title="雲端同步狀態" style="font-size:11px;color:var(--text-3);margin-right:8px;"></span>
+      <div class="avatar" id="set-avatar">我</div>
+    </div>
   </div>
 
   <div class="scroll-area">
@@ -163,10 +166,40 @@ button { font-family:inherit; cursor:pointer; border:none; }
       <button class="btn-primary" onclick="saveAssumptions()">儲存財務假設 ✓</button>
     </div>
 
-    <!-- 資料管理 -->
+    <!-- 帳號與雲端同步 -->
+    <div class="card" id="acct-section">
+      <div class="card-title">帳號與雲端同步</div>
+      <div class="card-sub">登入 Google，把資料同步到你自己的 Google Drive，跨裝置都能用。Leafin 不會儲存你的任何資料。</div>
+
+      <div id="acct-unconfigured" style="display:none;font-size:12px;color:#A07000;background:#FFF8E1;border-radius:8px;padding:10px 12px;margin-bottom:10px;">
+        ⚙ 尚未設定雲端同步。請依 <a href="docs/setup-google-signin.md" style="color:var(--primary);">設定說明</a> 取得 Google Client ID 後填入 <code>leafin-sync.js</code>。在那之前，網站仍可正常使用（資料存在本機，可用下方「手動備份」跨裝置）。
+      </div>
+
+      <div id="acct-signedout">
+        <button id="acct-signin-btn" style="display:flex;align-items:center;gap:8px;padding:9px 16px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:13px;">
+          <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35 24 35c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 5.1 29.6 3 24 3 16 3 9.1 7.6 6.3 14.7z"/><path fill="#4CAF50" d="M24 45c5.2 0 10-2 13.6-5.2l-6.3-5.3C29.2 35.9 26.7 37 24 37c-5.3 0-9.7-2.6-11.3-7l-6.5 5C9.1 42.3 16 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.5l6.3 5.3C41.5 36.3 45 31 45 24c0-1.2-.1-2.3-.4-3.5z"/></svg>
+          以 Google 登入
+        </button>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button disabled style="flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:#F5F5F5;color:#A0AEB0;font-size:12px;cursor:not-allowed;">Facebook（即將支援）</button>
+          <button disabled style="flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:#F5F5F5;color:#A0AEB0;font-size:12px;cursor:not-allowed;">LINE（即將支援）</button>
+        </div>
+      </div>
+
+      <div id="acct-signedin" style="display:none;">
+        <div id="acct-user" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"></div>
+        <div id="acct-status" style="font-size:12px;color:var(--text-2);margin-bottom:10px;"></div>
+        <div class="btn-row">
+          <button class="btn-outline" id="acct-syncnow-btn">↻ 立即同步</button>
+          <button class="btn-outline" id="acct-signout-btn">登出</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 手動備份（免登入） -->
     <div class="card">
-      <div class="card-title">資料管理</div>
-      <div class="card-sub">你的資料只存在這台裝置的瀏覽器（localStorage）。建議定期匯出備份。</div>
+      <div class="card-title">手動備份（免登入）</div>
+      <div class="card-sub">不想登入也能跨裝置：在這台匯出 JSON 檔，到另一台匯入即可。資料只存在這台瀏覽器，建議定期備份。</div>
       <div class="btn-row">
         <button class="btn-outline" onclick="exportData()">⬇ 匯出備份（JSON）</button>
         <button class="btn-outline" onclick="document.getElementById('set-import-file').click()">⬆ 匯入備份</button>
@@ -181,8 +214,36 @@ button { font-family:inherit; cursor:pointer; border:none; }
 
 <div class="toast" id="set-toast"></div>
 
+<script src="leafin-sync.js"></script>
 <script>
 const LS_KEYS = ['leafin_profile','leafin_goals','leafin_assets','leafin_expenses','leafin_expanded_groups','leafin_onboarded'];
+
+/* 帳號與雲端同步 UI 綁定 */
+(function bindAccount() {
+  if (!window.LeafinSync) return;
+  const $ = id => document.getElementById(id);
+  const fmtTime = ts => ts ? new Date(ts).toLocaleString('zh-TW') : '尚未同步';
+  window.LeafinSync.onChange(st => {
+    const unconf = st.status === 'unconfigured';
+    const signedIn = st.status === 'signedin' || st.status === 'syncing' || st.status === 'synced';
+    if ($('acct-unconfigured')) $('acct-unconfigured').style.display = unconf ? '' : 'none';
+    if ($('acct-signedout'))   $('acct-signedout').style.display = (!unconf && !signedIn) ? '' : 'none';
+    if ($('acct-signedin'))    $('acct-signedin').style.display = signedIn ? '' : 'none';
+    if (signedIn && st.user && $('acct-user')) {
+      $('acct-user').innerHTML =
+        (st.user.picture ? `<img src="${st.user.picture}" width="32" height="32" style="border-radius:50%;">` : '') +
+        `<div><div style="font-weight:600;font-size:13px;">${st.user.name || ''}</div><div style="font-size:11px;color:var(--text-3);">${st.user.email || ''}</div></div>`;
+    }
+    if ($('acct-status')) {
+      $('acct-status').textContent = st.status === 'syncing' ? '同步中…'
+        : st.status === 'error' ? '同步發生問題，稍後重試'
+        : '已同步 · ' + fmtTime(st.lastSync);
+    }
+  });
+  const signin = $('acct-signin-btn'); if (signin) signin.onclick = () => window.LeafinSync.signIn();
+  const signout = $('acct-signout-btn'); if (signout) signout.onclick = () => window.LeafinSync.signOut();
+  const syncnow = $('acct-syncnow-btn'); if (syncnow) syncnow.onclick = () => window.LeafinSync.syncNow();
+})();
 
 function toast(msg) {
   const t = document.getElementById('set-toast');
