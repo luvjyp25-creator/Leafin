@@ -238,7 +238,8 @@ const LS_KEYS = ['leafin_profile','leafin_goals','leafin_assets','leafin_expense
     if ($('acct-status')) {
       $('acct-status').textContent = st.status === 'syncing' ? '同步中…'
         : st.status === 'error' ? ('同步發生問題：' + (st.error || '請稍後重試') + '（多半是尚未啟用 Drive API）')
-        : '已同步 · ' + fmtTime(st.lastSync);
+        : st.lastSync ? ('已同步 · ' + fmtTime(st.lastSync))
+        : '已連線（尚未有同步紀錄，改一筆資料或按「立即同步」即會上傳）';
       $('acct-status').style.color = st.status === 'error' ? '#FF7B7B' : 'var(--text-2)';
     }
   });

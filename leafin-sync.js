@@ -11,6 +11,7 @@
   const PREFIX = 'leafin_';
   const META_KEY = 'leafin_sync_meta';        // {updatedAt} 本機同步基準（不上傳）
   const ENABLED_KEY = 'leafin_sync_enabled';  // '1' 表使用者已啟用過同步（決定是否靜默登入）
+  const SESSION_KEY = 'leafin_sync_session';  // sessionStorage：同分頁 session 內保留登入（切頁/重整不掉）
   const FILE_NAME = 'leafin-data.json';
   const SCOPE = 'openid email profile https://www.googleapis.com/auth/drive.appdata';
   const DEBOUNCE_MS = 3000;
@@ -52,6 +53,16 @@
   function localMeta() { try { return JSON.parse(localStorage.getItem(META_KEY)) || {}; } catch (e) { return {}; } }
   function setLocalMeta(m) { _rawSet(META_KEY, JSON.stringify(m)); }
 
+  /* sessionStorage 內保留登入：同分頁切頁/重整不掉登入（憑證到期或關分頁才需重點） */
+  function saveSession(token, expiresInSec, user) {
+    try {
+      const expiresAt = Date.now() + (Number(expiresInSec) || 3600) * 1000 - 60000; // 提前 60s 視為過期
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ token: token, expiresAt: expiresAt, user: user }));
+    } catch (e) {}
+  }
+  function loadSession() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch (e) { return null; } }
+  function clearSession() { try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {} }
+
   /* ── setItem 攔截器：任何頁面寫 leafin_* → 標 dirty + 重置 debounce ── */
   localStorage.setItem = function (k, v) {
     _rawSet(k, v);
@@ -91,6 +102,7 @@
     accessToken = resp.access_token;
     _rawSet(ENABLED_KEY, '1');
     state.user = await fetchUserInfo();
+    saveSession(accessToken, resp.expires_in, state.user);
     setStatus('signedin');
     onSignedInSync();
   }
@@ -98,12 +110,22 @@
   async function initAuth() {
     const id = LEAFIN_SYNC_CONFIG.GOOGLE_CLIENT_ID;
     if (!id) { setStatus('unconfigured'); return; }
-    try { await loadGis(); } catch (e) { setStatus('offline'); return; }
+    // 先從 sessionStorage 還原登入（同分頁切頁/重整不掉登入）
+    const s = loadSession();
+    if (s && s.token && s.expiresAt > Date.now()) {
+      accessToken = s.token;
+      state.user = s.user || null;
+      setStatus('signedin');
+      onSignedInSync();
+    }
+    try { await loadGis(); } catch (e) { if (!accessToken) setStatus('offline'); return; }
     tokenClient = google.accounts.oauth2.initTokenClient({ client_id: id, scope: SCOPE, callback: onToken });
-    setStatus('signedout');
-    // 僅在使用者先前已啟用過同步時，嘗試靜默取得 token（避免未經請求的彈窗）
-    if (localStorage.getItem(ENABLED_KEY) === '1') {
-      try { tokenClient.requestAccessToken({ prompt: '' }); } catch (e) {}
+    if (!accessToken) {
+      setStatus('signedout');
+      // 先前已啟用過同步 → 嘗試靜默取得 token（第三方 cookie 被擋時可能失敗，屬正常）
+      if (localStorage.getItem(ENABLED_KEY) === '1') {
+        try { tokenClient.requestAccessToken({ prompt: '' }); } catch (e) {}
+      }
     }
   }
 
@@ -116,6 +138,7 @@
     const t = accessToken;
     accessToken = null;
     cachedFileId = null;
+    clearSession();
     _rawSet(ENABLED_KEY, '0');
     state.user = null;
     setStatus('signedout');
@@ -179,7 +202,7 @@
       else cachedFileId = await createFile(payload);
       setLocalMeta({ updatedAt: updatedAt });
       dirty = false; state.lastSync = updatedAt; state.error = null; setStatus('synced');
-    } catch (e) { state.error = String((e && e.message) || e); console.error('[LeafinSync] syncUp', e); setStatus('error'); }
+    } catch (e) { handleSyncError('syncUp', e); }
   }
 
   async function syncDown() {
@@ -198,7 +221,16 @@
       }
       if (remote) state.lastSync = remote.updatedAt;
       state.error = null; setStatus('synced'); return false;
-    } catch (e) { state.error = String((e && e.message) || e); console.error('[LeafinSync] syncDown', e); setStatus('error'); return false; }
+    } catch (e) { handleSyncError('syncDown', e); return false; }
+  }
+
+  // 同步錯誤處理：401 視為登入過期 → 清 session、退回未登入讓使用者重點；其餘顯示錯誤
+  function handleSyncError(where, e) {
+    const msg = String((e && e.message) || e);
+    state.error = msg;
+    console.error('[LeafinSync] ' + where, e);
+    if (msg.indexOf('401') >= 0) { accessToken = null; clearSession(); setStatus('signedout'); }
+    else setStatus('error');
   }
 
   async function syncNow() { await syncDown(); await syncUp(); }
