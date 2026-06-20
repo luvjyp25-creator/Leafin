@@ -385,14 +385,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       <div class="bl-item">
         <div class="bl-circle" style="background:#FFF8E1;">🏦</div>
         <div class="bl-info">
-          <div class="bl-label">目前夢想基金</div>
-          <div class="bl-display" id="bld-fund" onclick="startEdit('fund')">
-            <span id="bl-fund">843 萬元</span>
-            <span class="bl-pencil">✏</span>
+          <div class="bl-label">已累積夢想基金</div>
+          <div class="bl-display" id="bld-fund" style="cursor:default;">
+            <span id="bl-fund">—</span>
           </div>
-          <input class="bl-inline-input" id="bli-fund" type="number" style="width:120px;display:none"
-                 onblur="finishEdit('fund')"
-                 onkeydown="if(event.key==='Enter')this.blur()">
         </div>
       </div>
 
@@ -556,7 +552,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       </div>
       <div class="r-card stats-card">
         <div class="stats-top">
-          <div class="stat-block"><span class="lbl">夢想基金合計</span><span class="val" id="rc-total-assets">—</span></div>
+          <div class="stat-block"><span class="lbl">已累積 / 目標</span><span class="val" id="rc-total-assets">—</span></div>
           <div class="stat-block" style="text-align:right"><span class="lbl">每月需存合計</span><span class="val" id="rc-monthly-needed">—</span></div>
         </div>
         <div class="sdivider"></div>
@@ -625,7 +621,8 @@ function renderBaseline() {
   document.getElementById('bl-age').textContent = p.age + ' 歲';
   document.getElementById('bl-lifestyle').textContent = p.lifestyle;
   document.getElementById('bl-monthly').textContent = p.monthly.toLocaleString() + ' 元';
-  document.getElementById('bl-fund').textContent = fmtFund(p.fund);
+  // 已累積夢想基金 = 所有目標 current 加總（與右欄「已累積」一致，不再用 profile.fund）
+  document.getElementById('bl-fund').textContent = fmtFund(GOALS.reduce((s, g) => s + (g.current || 0), 0));
   document.getElementById('bl-name').textContent = p.name;
 }
 
@@ -683,6 +680,7 @@ function loadGoals() {
 function saveGoals() {
   localStorage.setItem(GOALS_KEY, JSON.stringify(GOALS));
   renderRightColumn();
+  renderBaseline(); // 已累積夢想基金需隨目標金額更新
 }
 
 function yearsLeft(targetDate) {
@@ -717,14 +715,14 @@ function renderGoalList() {
          ondragover="dragOver(event,${i})"
          ondragleave="dragLeave(event)"
          ondrop="dropGoal(event,${i})">
-      <div class="goal-icon" style="background:${g.iconBg}">${g.icon}</div>
+      <div class="goal-icon" style="background:${g.iconBg || '#EAF6EF'}">${g.icon}</div>
       <div class="goal-body">
         <div class="goal-name-row">
           <span class="goal-name">${g.name}</span>
           <span class="goal-amt">${fmtAmt(g.target)}</span>
         </div>
         <div class="goal-bar-row">
-          <div class="goal-track"><div class="goal-fill" style="width:${g.pct}%;background:${g.color}"></div></div>
+          <div class="goal-track"><div class="goal-fill" style="width:${g.pct}%;background:${g.color || '#3EC193'}"></div></div>
           <span class="goal-pct">${g.pct}%</span>
         </div>
       </div>
@@ -743,13 +741,20 @@ function selectGoalByIdx(i) {
   document.getElementById('midContent').style.display = 'flex';
   document.getElementById('midActions').style.display = 'flex';
 
+  /* G1：切換目標時強制退出編輯模式，避免把上一個目標的編輯值存到這個目標 */
+  document.getElementById('midEditPanel').style.display = 'none';
+  document.getElementById('midActions').innerHTML =
+    '<button class="btn-cancel" id="act-cancel">取消</button>' +
+    '<button class="btn-submit" id="act-submit">加入我的任務</button>';
+  bindActionButtons();
+
   document.getElementById('midIcon').textContent = g.icon;
-  document.getElementById('midIcon').style.background = g.iconBg;
+  document.getElementById('midIcon').style.background = g.iconBg || '#EAF6EF';
   document.getElementById('midName').textContent = g.name;
 
   const fill = CIRC * g.pct/100;
   document.getElementById('donutFill').setAttribute('stroke-dasharray', fill.toFixed(1) + ' ' + CIRC);
-  document.getElementById('donutFill').setAttribute('stroke', g.color);
+  document.getElementById('donutFill').setAttribute('stroke', g.color || '#3EC193');
   document.getElementById('donutPct').textContent = g.pct + '%';
 
   document.getElementById('statCur').textContent = g.current.toLocaleString() + ' 元';
@@ -931,7 +936,7 @@ function showEditPanel() {
   if (activeIdx < 0) return;
   const g = GOALS[activeIdx];
   document.getElementById('ep-icon').textContent = g.icon;
-  document.getElementById('ep-icon').style.background = g.iconBg;
+  document.getElementById('ep-icon').style.background = g.iconBg || '#EAF6EF';
   document.getElementById('ep-name').value    = g.name;
   document.getElementById('ep-current').value = g.current;
   document.getElementById('ep-target').value  = g.target;
@@ -1104,7 +1109,7 @@ function renderRightColumn() {
   const elMonthly = document.getElementById('rc-monthly-needed');
   const elProb    = document.getElementById('rc-prob');
   const elBar     = document.getElementById('rc-prob-bar');
-  if (elAssets)  elAssets.textContent  = fmtAmt(totalAccum);
+  if (elAssets)  elAssets.textContent  = fmtAmtShort(totalAccum) + ' / ' + fmtAmtShort(totalTarget);
   if (elMonthly) elMonthly.textContent = totalPMT > 0 ? totalPMT.toLocaleString() + ' 元' : '—';
   if (elProb)    elProb.textContent    = weightedPct + '%';
   if (elBar)     elBar.style.width     = weightedPct + '%';
