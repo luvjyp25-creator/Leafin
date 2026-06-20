@@ -1106,7 +1106,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
           <div class="sav-link">查看計算方式 →</div>
           <div class="sav-tip">
             <div style="font-weight:600;font-size:11px;color:#2D3436;">💡 小提示</div>
-            <div>只需多存 3,000，買房頭期款可提早半年達成！</div>
+            <div id="dash-savings-tip">設定夢想目標後，這裡會給你專屬建議。</div>
           </div>
         </div>
 
@@ -1904,11 +1904,37 @@ function bindGoalsRow(goals) {
   }).join('');
 }
 
-/* ── 8. 本月建議存下 ── */
-function bindSavings(profile) {
+/* ── 8. 本月建議存下（+ 依最近夢想目標算真實小提示，取代寫死「多存3000」） ── */
+function bindSavings(profile, goals) {
   const el = document.getElementById('dash-savings-amt');
-  if (!profile) return;
-  el.textContent = 'NT$' + (profile.monthly || 0).toLocaleString();
+  const monthly = (profile && profile.monthly) || 0;
+  if (el && profile) el.textContent = 'NT$' + monthly.toLocaleString();
+
+  const tip = document.getElementById('dash-savings-tip');
+  if (!tip) return;
+  const now = new Date();
+  const up = (goals || [])
+    .filter(g => g.targetDate && (g.current || 0) < (g.target || 0))
+    .map(g => {
+      const parts = String(g.targetDate).split('/');
+      const y = parseInt(parts[0]), mo = parts[1] ? parseInt(parts[1]) : 12;
+      const monthsLeft = Math.max(0, Math.round((new Date(y, mo - 1, 1) - now) / (30.4 * 86400000)));
+      return { name: g.name, monthsLeft, remaining: Math.max(0, (g.target || 0) - (g.current || 0)) };
+    })
+    .sort((a, b) => a.monthsLeft - b.monthsLeft)[0];
+
+  if (!up) {
+    tip.textContent = monthly > 0 ? `維持每月存 $${monthly.toLocaleString()}，朝目標穩定前進！` : '設定夢想目標後，這裡會給你專屬建議。';
+    return;
+  }
+  const needed = up.monthsLeft > 0 ? Math.ceil(up.remaining / up.monthsLeft) : up.remaining;
+  if (needed <= 0) {
+    tip.textContent = `「${up.name}」即將到期，加緊腳步衝刺！`;
+  } else if (monthly >= needed) {
+    tip.textContent = `照目前每月 $${monthly.toLocaleString()}，「${up.name}」可如期達成 👍`;
+  } else {
+    tip.textContent = `要如期達成「${up.name}」，建議每月存 $${needed.toLocaleString()}（再多 $${(needed - monthly).toLocaleString()}）`;
+  }
 }
 
 /* ── 10. 本月重點提醒（依真實資料的規則引擎）── */
@@ -2038,7 +2064,7 @@ function bindAllocation(assets) {
   bindNetworth(assets, p);
   bindHealth(p, expenses, assets);
   bindGoalsRow(goals);
-  bindSavings(p);
+  bindSavings(p, goals);
   bindAllocation(assets);
   bindReminders(p, goals, assets, expenses);
   bindFooter(p, goals, expenses);
