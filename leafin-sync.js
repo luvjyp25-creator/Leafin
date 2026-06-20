@@ -5,7 +5,7 @@
   'use strict';
 
   const LEAFIN_SYNC_CONFIG = {
-    GOOGLE_CLIENT_ID: '', // ← 貼上你的 OAuth Client ID（xxxx.apps.googleusercontent.com）
+    GOOGLE_CLIENT_ID: '652509750726-56hedfeo1g83fbvakflf1a0bm9s9h0ln.apps.googleusercontent.com',
   };
 
   const PREFIX = 'leafin_';
