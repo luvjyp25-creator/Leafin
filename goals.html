@@ -897,6 +897,18 @@ function calcPMT(target, current, annualReturn, months) {
   return Math.ceil((fv * r)/(Math.pow(1 + r, months) - 1));
 }
 
+/* 以目前月投入，幾個月可達標（年金迭代，含複利）；無法達成回傳 null */
+function monthsToReach(current, target, monthlyAmt, annualRetPct) {
+  if (current >= target) return 0;
+  const r = (annualRetPct || 0) / 100 / 12;
+  let bal = current, n = 0;
+  while (bal < target && n < 1200) {
+    bal = bal * (1 + r) + monthlyAmt;
+    n++;
+  }
+  return n < 1200 ? n : null;
+}
+
 function updateSimulation() {
   if (activeIdx < 0) return;
   const g = GOALS[activeIdx];
@@ -920,7 +932,8 @@ function updateSimulation() {
     document.getElementById('res-ok').textContent = '✓ 投入足夠，可提早達成！';
     document.getElementById('res-ok-sub').textContent = '比需求多 ' + (monthly - needed).toLocaleString() + ' 元';
     document.getElementById('res-warn').textContent = '若維持現在金額';
-    document.getElementById('res-warn-sub').textContent = '約 ' + Math.floor(ml * needed/monthly) + ' 個月後達標';
+    const moTo = monthsToReach(g.current, g.target, monthly, ret);
+    document.getElementById('res-warn-sub').textContent = (moTo === null) ? '需提高投入才能達成' : ('約 ' + moTo + ' 個月後達標');
   } else {
     document.getElementById('res-ok').textContent = '⚠ 每月還差 ' + (needed - monthly).toLocaleString() + ' 元';
     document.getElementById('res-ok-sub').textContent = '建議提高投入或延後目標年份';
