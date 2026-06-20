@@ -775,7 +775,9 @@ function renderAll(transactions) {
   const income  = curTxs.filter(t => t.type === 'income').reduce((s,t) => s+t.amount, 0);
   const expense = curTxs.filter(t => t.type === 'expense').reduce((s,t) => s+t.amount, 0);
   const balance = income - expense;
-  const rate    = income > 0 ? Math.round(balance / income * 100) : 0;
+  // 投資（category 投資）視為儲蓄，不應拉低儲蓄率：儲蓄率 =（結餘 + 投資）/ 收入
+  const invest  = curTxs.filter(t => t.type === 'expense' && t.category === '投資').reduce((s,t) => s+t.amount, 0);
+  const rate    = income > 0 ? Math.round((balance + invest) / income * 100) : 0;
 
   // Month label e.g. "2026年5月"
   const [kpiY, kpiM] = curYM.split('-');
@@ -1023,9 +1025,10 @@ function setTxType(type) {
 function submitTx() {
   const date   = document.getElementById('tx-date').value.replace(/-/g, '/');
   const name   = document.getElementById('tx-name').value.trim();
-  const amount = parseInt(document.getElementById('tx-amount').value);
+  const amtRaw = document.getElementById('tx-amount').value;
+  const amount = parseFloat(amtRaw);
   const cat    = document.getElementById('tx-category').value;
-  if (!name || !amount || !date) { alert('請填入日期、名稱和金額'); return; }
+  if (!name || amtRaw.trim() === '' || isNaN(amount) || !date) { alert('請填入日期、名稱和金額'); return; }
 
   const saved = loadExpenses();
   let txs = saved ? [...saved.transactions] : [...DEFAULT_TX];
