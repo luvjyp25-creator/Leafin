@@ -1054,8 +1054,8 @@ button { font-family: inherit; cursor: pointer; border: none; }
            ─────────────────────────── -->
       <div class="bottom-row">
 
-        <!-- 同步記帳 -->
-        <div class="bcard">
+        <!-- 同步記帳 → 收支與花費 -->
+        <div class="bcard" onclick="location.href='expenses.html'" style="cursor:pointer;">
           <div class="bcard-title">同步你的記帳數據（推薦）</div>
           <div class="upload-area">
             <div class="upload-icon">
@@ -1073,8 +1073,8 @@ button { font-family: inherit; cursor: pointer; border: none; }
           <div class="sync-time">上次同步：2025/05/18　來自 Moneybook</div>
         </div>
 
-        <!-- 資產配置健康度 -->
-        <div class="bcard">
+        <!-- 資產配置健康度 → 資產與負債 -->
+        <div class="bcard" onclick="location.href='assets.html'" style="cursor:pointer;">
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div class="bcard-title">資產配置健康度</div>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A0AEB0" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
@@ -1097,8 +1097,8 @@ button { font-family: inherit; cursor: pointer; border: none; }
           <div class="ah-cta">查看再平衡建議 →</div>
         </div>
 
-        <!-- 為了實現所有夢想 (savings) -->
-        <div class="bcard">
+        <!-- 為了實現所有夢想 (savings) → 我的夢想任務 -->
+        <div class="bcard" onclick="location.href='goals.html'" style="cursor:pointer;">
           <div class="bcard-title">為了實現所有夢想</div>
           <div class="sav-body">
             <div class="sav-left">
@@ -1118,8 +1118,8 @@ button { font-family: inherit; cursor: pointer; border: none; }
           </div>
         </div>
 
-        <!-- 本月重點提醒 -->
-        <div class="bcard">
+        <!-- 本月重點提醒 → 財務小健檢 -->
+        <div class="bcard" onclick="location.href='healthcheck.html'" style="cursor:pointer;">
           <div class="bcard-title">本月重點提醒</div>
           <div class="rem-item">
             <div class="rem-icon" style="background:#FFF3E6;">
@@ -1161,8 +1161,8 @@ button { font-family: inherit; cursor: pointer; border: none; }
            ─────────────────────────── -->
       <div class="footer-row">
 
-        <!-- 今日小提醒 -->
-        <div class="fcard">
+        <!-- 今日小提醒 → 我的夢想任務 -->
+        <div class="fcard" onclick="location.href='goals.html'" style="cursor:pointer;">
           <div class="fcard-illus"><img src="images/generated-1780080925752.png" alt="" style="height:90px;width:auto;object-fit:contain;"></div>
           <div class="fcard-body">
             <div class="fcard-hd">
@@ -1174,8 +1174,8 @@ button { font-family: inherit; cursor: pointer; border: none; }
           </div>
         </div>
 
-        <!-- 本月表現 -->
-        <div class="fcard">
+        <!-- 本月表現 → 收支與花費 -->
+        <div class="fcard" onclick="location.href='expenses.html'" style="cursor:pointer;">
           <div class="fcard-illus"><img src="images/generated-1780080934534.png" alt="" style="height:90px;width:auto;object-fit:contain;"></div>
           <div class="fcard-body">
             <div class="fcard-title">本月表現優於上個月</div>
@@ -1184,8 +1184,8 @@ button { font-family: inherit; cursor: pointer; border: none; }
           </div>
         </div>
 
-        <!-- 連續存款天數 -->
-        <div class="fcard">
+        <!-- 連續存款天數 → 收支與花費 -->
+        <div class="fcard" onclick="location.href='expenses.html'" style="cursor:pointer;">
           <div class="fcard-illus"><img src="images/generated-1780080930343.png" alt="" style="height:90px;width:auto;object-fit:contain;"></div>
           <div class="fcard-body">
             <div class="fcard-title">連續存款天數</div>
@@ -1201,25 +1201,25 @@ button { font-family: inherit; cursor: pointer; border: none; }
         <div class="fcard sc-card">
           <div class="fcard-title">快速捷徑</div>
           <div class="sc-grid">
-            <div class="sc-item">
+            <div class="sc-item" onclick="location.href='goals.html'" style="cursor:pointer;">
               <div class="sc-circle" style="background:#E8F3ED;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3EC193" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
               </div>
               <div class="sc-label">夢想任務</div>
             </div>
-            <div class="sc-item">
+            <div class="sc-item" onclick="location.href='healthcheck.html'" style="cursor:pointer;">
               <div class="sc-circle" style="background:#EBF4FB;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6BADE0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
               </div>
               <div class="sc-label">財務健檢</div>
             </div>
-            <div class="sc-item">
+            <div class="sc-item" onclick="location.href='simulator.html'" style="cursor:pointer;">
               <div class="sc-circle" style="background:#FFF3E6;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F0A868" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
               </div>
               <div class="sc-label">未來模擬</div>
             </div>
-            <div class="sc-item">
+            <div class="sc-item" onclick="location.href='expenses.html'" style="cursor:pointer;">
               <div class="sc-circle" style="background:#F3EFF8;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8A9D4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
               </div>
