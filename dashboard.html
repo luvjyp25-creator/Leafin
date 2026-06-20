@@ -1061,16 +1061,16 @@ button { font-family: inherit; cursor: pointer; border: none; }
             <div class="upload-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3EC193" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             </div>
-            <div class="upload-label">拖放 CSV / Excel 檔案到這裡</div>
-            <div class="upload-sub">我們會自動幫你分析！</div>
+            <div class="upload-label">到收支頁匯入 CSV / Excel</div>
+            <div class="upload-sub">支援逐月與逐筆兩種格式</div>
           </div>
           <div class="sync-or">或選擇其他方式</div>
           <div class="sync-btns">
-            <button class="sync-btn">連接記帳 App</button>
-            <button class="sync-btn">手動微調</button>
-            <button class="sync-btn">隨機再說</button>
+            <button class="sync-btn" onclick="event.stopPropagation();alert('連接外部記帳 App 功能開發中，目前可在收支頁手動或以 CSV 匯入。');">連接記帳 App<span style="font-size:9px;color:#A0AEB0;">（開發中）</span></button>
+            <button class="sync-btn">手動記帳</button>
+            <button class="sync-btn" onclick="event.stopPropagation();">稍後再說</button>
           </div>
-          <div class="sync-time">上次同步：2025/05/18　來自 Moneybook</div>
+          <div class="sync-time" id="dash-sync-time">尚未有記帳資料</div>
         </div>
 
         <!-- 資產配置健康度 → 資產與負債 -->
@@ -1598,9 +1598,13 @@ function getGoals()    { try { return JSON.parse(localStorage.getItem(GOALS_KEY)
 function getAssets()   { try { return JSON.parse(localStorage.getItem(ASSETS_KEY));  } catch { return null; } }
 function getExpenses() { try { return JSON.parse(localStorage.getItem(EXPENSE_KEY)); } catch { return null; } }
 
+/* 全站唯一金錢格式器：萬位保留 1 位小數（去尾零）、≥1000萬取整、缺值顯示「—」。
+   原本另有一個區域性 fmt() 精度不同（萬位 1 位 vs fmtMoney 整數），已統一到此函式。 */
 function fmtMoney(n) {
-  if (!n && n !== 0) return '—';
-  if (Math.abs(n) >= 10000) return (n / 10000).toFixed(0) + ' 萬';
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  const a = Math.abs(n);
+  if (a >= 10000000) return (n / 10000).toFixed(0) + ' 萬';
+  if (a >= 10000)    return (n / 10000).toFixed(1).replace(/\.0$/, '') + ' 萬';
   return n.toLocaleString();
 }
 
@@ -1651,7 +1655,6 @@ function bindProgress(goals) {
   const totalCurrent = goals.reduce((s, g) => s + (g.current || 0), 0);
   const circ = 238.8;
   const offset = circ * (1 - avg / 100);
-  const fmt = v => v >= 10000000 ? (v/10000).toFixed(0)+'萬' : v >= 10000 ? (v/10000).toFixed(1)+'萬' : v.toLocaleString();
 
   const now = new Date();
   const upcoming = goals
@@ -1680,8 +1683,8 @@ function bindProgress(goals) {
     </div>
     <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;">
       <div style="font-size:10px;color:var(--text-3);font-weight:600;letter-spacing:0.3px;">夢想基金・目標總額</div>
-      <div style="font-size:20px;font-weight:800;color:var(--text);letter-spacing:-0.5px;">${fmt(totalTarget)}<span style="font-size:12px;font-weight:500;color:var(--text-2);">元</span></div>
-      <div style="font-size:11px;color:var(--text-2);">還差 <strong style="color:var(--text);">${fmt(totalTarget - totalCurrent)}</strong> 元・${goals.length} 個目標</div>
+      <div style="font-size:20px;font-weight:800;color:var(--text);letter-spacing:-0.5px;">${fmtMoney(totalTarget)}<span style="font-size:12px;font-weight:500;color:var(--text-2);">元</span></div>
+      <div style="font-size:11px;color:var(--text-2);">還差 <strong style="color:var(--text);">${fmtMoney(totalTarget - totalCurrent)}</strong> 元・${goals.length} 個目標</div>
       ${upcoming ? `<div style="font-size:11px;color:var(--primary);font-weight:600;margin-top:2px;">⏳ ${upcoming.name} 還剩 ${upcoming.days} 天</div>` : ''}
       <a href="goals.html" style="font-size:11px;color:var(--primary);font-weight:500;text-decoration:none;margin-top:2px;">查看全部 →</a>
     </div>`;
@@ -1725,6 +1728,16 @@ function bindBalance(expenses, profile) {
     <div class="illus">
       <img src="images/generated-1780080933350.png" width="100" height="100" alt="" style="object-fit:contain;">
     </div>`;
+}
+
+/* ── 4b. 同步記帳卡：顯示真實「最近記錄」日期（無後端，以收支頁資料為準） ── */
+function bindSyncCard(expenses) {
+  const el = document.getElementById('dash-sync-time');
+  if (!el) return;
+  const txs = (expenses && Array.isArray(expenses.transactions)) ? expenses.transactions : [];
+  const dates = txs.map(t => String(t.date || '').replace(/-/g, '/').slice(0, 10)).filter(Boolean).sort();
+  if (dates.length === 0) { el.textContent = '尚未有記帳資料'; return; }
+  el.textContent = `最近記錄：${dates[dates.length - 1]}・共 ${txs.length} 筆`;
 }
 
 /* ── 5. 淨資產 (Card 3) ── */
@@ -2021,6 +2034,7 @@ function bindAllocation(assets) {
   bindSetupBanner(p, goals, assets);
   bindProgress(goals);
   bindBalance(expenses, p);
+  bindSyncCard(expenses);
   bindNetworth(assets, p);
   bindHealth(p, expenses, assets);
   bindGoalsRow(goals);
