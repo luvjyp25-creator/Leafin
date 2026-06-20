@@ -1779,11 +1779,14 @@ function renderExpenseDonut() {
 
   // Populate month selector
   const months = [...new Set(txs.filter(t=>t.type==='expense').map(t=>t.date.replace(/\//g,'-').slice(0,7)))].sort().reverse();
-  if (sel && sel.options.length === 0) {
+  if (sel) {
+    // 每次都重建月份選項（讓新增月份出現），並保留目前選取
+    const prev = sel.value;
     sel.innerHTML = months.map(m=>{
       const [y,mo]=m.split('-');
       return `<option value="${m}">${y}年${parseInt(mo)}月</option>`;
     }).join('') || `<option value="${new Date().toISOString().slice(0,7)}">本月</option>`;
+    if (prev && months.includes(prev)) sel.value = prev;
   }
   const ym = sel?.value || new Date().toISOString().slice(0,7);
 
