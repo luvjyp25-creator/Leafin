@@ -410,7 +410,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
     <div class="topbar-left">
       <div>
         <div class="page-title">🏦 資產與負債</div>
-        <div class="page-sub">資產追蹤 · 更新於 2026 / 05 / 30</div>
+        <div class="page-sub" id="asset-page-sub">資產追蹤</div>
       </div>
     </div>
     <div class="topbar-right">
@@ -2527,7 +2527,7 @@ function importWideFormat(rows) {
       updates++;
     } else {
       id = 'imp_' + name.replace(/\s/g,'_') + '_' + Math.random().toString(36).slice(2,6);
-      data.assets.push({ id, name, category: currency==='TWD'?'現金/儲蓄':'外幣', amount: latestAmt, currency, sub: '' });
+      data.assets.push({ id, name, category: currency==='TWD'?'現金 / 儲蓄':'外幣現金', amount: latestAmt, currency, sub: '' });
       adds++;
     }
     amounts.forEach((amt, i) => {
@@ -2579,7 +2579,7 @@ function importLongFormat(rows) {
       existing.amount = latestAmt;
       updates++;
     } else {
-      data.assets.push({ id: assetIds[i], name, category: '現金/儲蓄', amount: latestAmt, currency: 'TWD', sub: '' });
+      data.assets.push({ id: assetIds[i], name, category: '現金 / 儲蓄', amount: latestAmt, currency: 'TWD', sub: '' });
       adds++;
     }
   });
@@ -2658,7 +2658,7 @@ function applyAssetsColMap() {
     if (isLiab) {
       data.liabilities.push({ id: 'imp_'+Date.now()+'_'+Math.random().toString(36).slice(2), name, amount: amt, sub, paidPct: 0, monthlyPayment: 0 });
     } else {
-      data.assets.push({ id: 'imp_'+Date.now()+'_'+Math.random().toString(36).slice(2), name, category: category||'現金/儲蓄', amount: amt, currency: currency||'TWD', sub, ...(parsedMonth && { month: parsedMonth }) });
+      data.assets.push({ id: 'imp_'+Date.now()+'_'+Math.random().toString(36).slice(2), name, category: category||'現金 / 儲蓄', amount: amt, currency: currency||'TWD', sub, ...(parsedMonth && { month: parsedMonth }) });
     }
     added++;
   });
@@ -2670,6 +2670,8 @@ function applyAssetsColMap() {
 
 (function init() {
   activeMonth = curYM();
+  const _sub = document.getElementById('asset-page-sub');
+  if (_sub) _sub.textContent = '資產追蹤 · 更新於 ' + new Date().toLocaleDateString('zh-TW');
   const picker = document.getElementById('snapshot-month');
   if (picker) picker.value = curYM();
   injectDonutContainers();
