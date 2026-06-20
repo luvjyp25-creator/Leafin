@@ -1,0 +1,660 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>財務小健檢 — Leafin 小森理財</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:          #F0F4EC;
+  --card:        #FFFFFF;
+  --border:      #E4EBE6;
+  --shadow-sm:   0 2px 8px rgba(0,0,0,0.05);
+  --primary:     #3EC193;
+  --primary-s:   #E9FAF4;
+  --primary-d:   #249870;
+  --text:        #2D3436;
+  --text-2:      #6B7B7D;
+  --text-3:      #A0AEB0;
+  --sidebar-w:   210px;
+  --r:           16px;
+  --danger:      #FF7B7B;
+  --warning:     #FFB84C;
+  --blue:        #4EA8DE;
+  --blue-s:      #EAF6FD;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+button { font-family: inherit; cursor: pointer; border: none; }
+
+.app { display: flex; height: 100vh; overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar {
+  width: var(--sidebar-w); min-width: var(--sidebar-w);
+  background: var(--card); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  padding: 24px 16px; gap: 6px; overflow-y: auto;
+}
+.logo { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.logo-text { display: flex; flex-direction: column; gap: 1px; }
+.logo-name { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; line-height: 1.1; }
+.logo-sub  { font-size: 11px; color: var(--text-2); }
+.nav-group { display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; }
+.nav-head  { font-size: 11px; font-weight: 700; color: var(--primary); letter-spacing: 1px; padding: 4px 10px; margin-top: 8px; }
+.nav-item  {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: 8px;
+  font-size: 13px; color: var(--text);
+  cursor: pointer; text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.nav-item:hover { background: var(--bg); }
+.nav-item.active { background: var(--primary-s); color: var(--primary); font-weight: 500; }
+.nav-item .ni { flex-shrink: 0; display: flex; align-items: center; }
+.nav-spacer { flex: 1; }
+.nav-foot { display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--bg); padding-top: 8px; }
+
+/* MAIN */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.topbar {
+  background: var(--card); border-bottom: 1px solid var(--border);
+  padding: 0 28px; height: 60px;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.page-title { font-size: 17px; font-weight: 700; color: var(--text); }
+.page-sub   { font-size: 12px; color: var(--text-2); }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary-s); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--primary); cursor: pointer; }
+.icon-btn { width: 32px; height: 32px; border-radius: 8px; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-2); transition: background 0.15s; }
+.icon-btn:hover { background: var(--bg); }
+
+/* CONTENT */
+.scroll-area { flex: 1; overflow-y: auto; padding: 24px 28px; display: flex; flex-direction: column; gap: 18px; }
+.scroll-area::-webkit-scrollbar { width: 5px; }
+.scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.card { background: var(--card); border-radius: var(--r); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+.card-header { padding: 18px 20px 0; display: flex; justify-content: space-between; align-items: flex-start; }
+.card-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.card-sub { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+.card-body { padding: 14px 20px 18px; }
+
+/* SCORE HERO */
+.score-hero {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 24px 28px;
+  background: linear-gradient(135deg, #E9FAF4 0%, #EAF6FD 100%);
+  border-radius: var(--r);
+  border: 1px solid #C8EEE0;
+}
+.score-ring { flex-shrink: 0; }
+.score-info {}
+.score-title { font-size: 13px; font-weight: 600; color: var(--primary-d); margin-bottom: 4px; }
+.score-num { font-size: 48px; font-weight: 800; color: var(--text); letter-spacing: -2px; line-height: 1; }
+.score-100 { font-size: 20px; font-weight: 400; color: var(--text-3); }
+.score-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--primary-s); color: var(--primary);
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 700; margin-top: 8px;
+}
+.score-date { font-size: 11px; color: var(--text-3); margin-top: 6px; }
+.score-msg { font-size: 12px; color: var(--text-2); margin-top: 8px; line-height: 1.6; max-width: 380px; }
+
+/* CATEGORY GRID */
+.cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.cat-card {
+  background: var(--card); border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.cat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: var(--primary); }
+.cat-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.cat-icon { font-size: 22px; }
+.cat-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 700;
+}
+.cat-badge.green { background: #E9FAF4; color: #249870; }
+.cat-badge.yellow { background: #FFF8E1; color: #A07000; }
+.cat-badge.red { background: #FDEAEA; color: #D93B3B; }
+.cat-name { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.cat-score-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.cat-score { font-size: 22px; font-weight: 800; color: var(--text); }
+.cat-max { font-size: 11px; color: var(--text-3); }
+.cat-bar { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.cat-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+.cat-tip { font-size: 10px; color: var(--text-3); margin-top: 5px; }
+
+/* RADAR CHART */
+.radar-wrap { display: flex; align-items: flex-start; gap: 24px; }
+.radar-legend { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.rl-item { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.rl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.rl-name { color: var(--text-2); flex: 1; }
+.rl-val { font-weight: 700; color: var(--text); }
+
+/* ACTION LIST */
+.action-list { display: flex; flex-direction: column; gap: 8px; }
+.action-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 14px; border-radius: 10px;
+  background: var(--bg); border: 1px solid var(--border);
+}
+.action-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.action-info { flex: 1; }
+.action-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.action-desc { font-size: 11px; color: var(--text-2); line-height: 1.5; }
+.action-tag {
+  display: inline-block; font-size: 10px; font-weight: 600;
+  padding: 2px 8px; border-radius: 10px; margin-top: 4px;
+}
+.action-priority { flex-shrink: 0; }
+.priority-high { background: #FDEAEA; color: #D93B3B; }
+.priority-mid  { background: #FFF8E1; color: #A07000; }
+.priority-low  { background: #E9FAF4; color: #249870; }
+
+/* HISTORY */
+.history-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.history-row:last-child { border-bottom: none; }
+.history-date { font-size: 11px; color: var(--text-3); }
+.history-score { font-size: 14px; font-weight: 700; }
+.history-delta { font-size: 11px; }
+.history-delta.up { color: var(--primary); }
+.history-delta.down { color: var(--danger); }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div style="color:var(--primary);display:flex;align-items:center;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3EC193" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22C4 16 8 10 14 6 18 3 22 2 22 2c0 4-1 8-5 12-4 4-10 6-15 8Z"/><line x1="2" y1="22" x2="13" y2="11"/></svg>
+    </div>
+    <div class="logo-text">
+      <div class="logo-name">Leafin</div>
+      <div class="logo-sub">小森理財</div>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-head">規劃未來</div>
+    <a class="nav-item" href="dashboard.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+      總覽
+    </a>
+    <a class="nav-item" href="goals.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg></span>
+      我的夢想任務
+    </a>
+    <a class="nav-item" href="timeline.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="22" y2="12"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></span>
+      人生時間軸
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-head">看現在</div>
+    <a class="nav-item" href="expenses.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
+      收支與花費
+    </a>
+    <a class="nav-item" href="assets.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span>
+      資產與負債
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-head">想看看</div>
+    <a class="nav-item" href="simulator.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>
+      未來模擬
+    </a>
+    <a class="nav-item active" href="healthcheck.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+      財務小健檢
+    </a>
+  </div>
+
+  <div class="nav-spacer"></div>
+  <div class="nav-foot">
+    <a class="nav-item" href="#">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+      設定
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">🩺 財務小健檢</div>
+      <div class="page-sub">每季更新一次，幫你掌握財務健康狀態</div>
+    </div>
+    <div class="topbar-right">
+      <button style="background:var(--primary);color:#fff;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:background 0.15s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='var(--primary-d)'" onmouseout="this.style.background='var(--primary)'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.75"/></svg>
+        重新評分
+      </button>
+      <div class="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+      <div class="avatar" id="hc-avatar">P</div>
+    </div>
+  </div>
+
+  <div class="scroll-area">
+
+    <!-- SCORE HERO -->
+    <div class="score-hero">
+      <div class="score-ring">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#C8EEE0" stroke-width="14"/>
+          <circle id="hc-score-ring-fill" cx="60" cy="60" r="50" fill="none" stroke="#3EC193" stroke-width="14"
+                  stroke-dasharray="226 88" stroke-dashoffset="55"
+                  stroke-linecap="round"
+                  transform="rotate(-90 60 60)"/>
+          <text id="hc-total-score" x="60" y="56" text-anchor="middle" font-size="28" font-weight="800" fill="#2D3436" font-family="Inter">72</text>
+          <text x="60" y="72" text-anchor="middle" font-size="12" fill="#A0AEB0" font-family="Inter">/ 100</text>
+        </svg>
+      </div>
+      <div class="score-info">
+        <div class="score-title">你的財務健康分數</div>
+        <div class="score-num" id="hc-score-num">72 <span class="score-100">/ 100</span></div>
+        <div class="score-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          🟡 注意
+        </div>
+        <div class="score-date">最後更新：2026 / 05 / 30 · 比上季 ↑ +5 分</div>
+        <div class="score-msg">
+          整體財務狀況正在改善！儲蓄與投資表現良好，保險與退休準備仍有空間提升。
+          <strong style="color:var(--primary);">繼續保持，距離健康（80分）只差 8 分！</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 CATEGORIES -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">六大評分項目</div>
+        <div class="card-sub" style="margin-top:2px;">各項目滿分 20 分，點選查看建議</div>
+      </div>
+      <div class="card-body">
+        <div class="cat-grid">
+
+          <!-- 儲蓄能力 -->
+          <div class="cat-card" onclick="showDetail(this,'savings')">
+            <div class="cat-card-top">
+              <div class="cat-icon">💰</div>
+              <div class="cat-badge green">🟢 健康</div>
+            </div>
+            <div class="cat-name">儲蓄能力</div>
+            <div class="cat-score-row">
+              <div class="cat-score" id="score-savings" style="color:var(--primary);">17</div>
+              <div class="cat-max">/ 20</div>
+            </div>
+            <div class="cat-bar"><div class="cat-fill" id="hc-savings-fill" style="width:85%;background:var(--primary);"></div></div>
+            <div class="cat-tip">儲蓄率 46% · 遠超建議 20%</div>
+          </div>
+
+          <!-- 負債健康 -->
+          <div class="cat-card" onclick="showDetail(this,'debt')">
+            <div class="cat-card-top">
+              <div class="cat-icon">💳</div>
+              <div class="cat-badge yellow">🟡 注意</div>
+            </div>
+            <div class="cat-name">負債健康</div>
+            <div class="cat-score-row">
+              <div class="cat-score" id="score-debt" style="color:#C48B00;">14</div>
+              <div class="cat-max">/ 20</div>
+            </div>
+            <div class="cat-bar"><div class="cat-fill" style="width:70%;background:#C48B00;"></div></div>
+            <div class="cat-tip">負債比偏高，房貸規劃合理</div>
+          </div>
+
+          <!-- 投資穩定度 -->
+          <div class="cat-card" onclick="showDetail(this,'invest')">
+            <div class="cat-card-top">
+              <div class="cat-icon">📈</div>
+              <div class="cat-badge green">🟢 健康</div>
+            </div>
+            <div class="cat-name">投資穩定度</div>
+            <div class="cat-score-row">
+              <div class="cat-score" id="score-invest" style="color:var(--primary);">16</div>
+              <div class="cat-max">/ 20</div>
+            </div>
+            <div class="cat-bar"><div class="cat-fill" style="width:80%;background:var(--primary);"></div></div>
+            <div class="cat-tip">ETF 定期定額 · 分散得宜</div>
+          </div>
+
+          <!-- 保險完整性 -->
+          <div class="cat-card" onclick="showDetail(this,'insurance')">
+            <div class="cat-card-top">
+              <div class="cat-icon">🛡️</div>
+              <div class="cat-badge red">🔴 有風險</div>
+            </div>
+            <div class="cat-name">保險完整性</div>
+            <div class="cat-score-row">
+              <div class="cat-score" id="score-insurance" style="color:var(--danger);">9</div>
+              <div class="cat-max">/ 20</div>
+            </div>
+            <div class="cat-bar"><div class="cat-fill" style="width:45%;background:var(--danger);"></div></div>
+            <div class="cat-tip">缺乏醫療 / 失能險</div>
+          </div>
+
+          <!-- 退休準備 -->
+          <div class="cat-card" onclick="showDetail(this,'retire')">
+            <div class="cat-card-top">
+              <div class="cat-icon">🌴</div>
+              <div class="cat-badge yellow">🟡 注意</div>
+            </div>
+            <div class="cat-name">退休準備</div>
+            <div class="cat-score-row">
+              <div class="cat-score" id="score-retire" style="color:#C48B00;">11</div>
+              <div class="cat-max">/ 20</div>
+            </div>
+            <div class="cat-bar"><div class="cat-fill" id="hc-retire-fill" style="width:55%;background:#C48B00;"></div></div>
+            <div class="cat-tip">距 FIRE 目標 7%</div>
+          </div>
+
+          <!-- 家庭規劃 -->
+          <div class="cat-card" onclick="showDetail(this,'family')">
+            <div class="cat-card-top">
+              <div class="cat-icon">👨‍👩‍👧</div>
+              <div class="cat-badge yellow">🟡 注意</div>
+            </div>
+            <div class="cat-name">家庭規劃</div>
+            <div class="cat-score-row">
+              <div class="cat-score" id="score-family" style="color:#C48B00;">5</div>
+              <div class="cat-max">/ 20</div>
+            </div>
+            <div class="cat-bar"><div class="cat-fill" style="width:25%;background:#C48B00;"></div></div>
+            <div class="cat-tip">結婚基金 65% · 其餘待規劃</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- RADAR CHART -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">財務雷達圖</div>
+        <div class="card-sub" style="margin-top:2px;">六維度視覺化</div>
+      </div>
+      <div class="card-body">
+        <div class="radar-wrap">
+          <svg width="220" height="220" viewBox="0 0 220 220" style="flex-shrink:0;">
+            <!-- Background hexagon rings -->
+            <polygon points="110,30 178,70 178,150 110,190 42,150 42,70" fill="none" stroke="#E4EBE6" stroke-width="1"/>
+            <polygon points="110,55 161,82.5 161,137.5 110,165 59,137.5 59,82.5" fill="none" stroke="#E4EBE6" stroke-width="1"/>
+            <polygon points="110,80 144,97.5 144,132.5 110,150 76,132.5 76,97.5" fill="none" stroke="#E4EBE6" stroke-width="1"/>
+
+            <!-- Axis lines -->
+            <line x1="110" y1="30" x2="110" y2="190" stroke="#E4EBE6" stroke-width="1"/>
+            <line x1="42" y1="70" x2="178" y2="150" stroke="#E4EBE6" stroke-width="1"/>
+            <line x1="178" y1="70" x2="42" y2="150" stroke="#E4EBE6" stroke-width="1"/>
+
+            <!-- Data polygon (85%, 70%, 80%, 45%, 55%, 25% of max radius=80) -->
+            <!-- Pts: top(儲蓄), top-right(負債), bottom-right(投資), bottom(保險), bottom-left(退休), top-left(家庭) -->
+            <!-- Max radius from center(110,110): 80 -->
+            <!-- 儲蓄 85% → 68, top: (110, 110-68) = (110, 42) -->
+            <!-- 負債 70% → 56, top-right: (110+56*cos30, 110-56*sin30) = (158.5, 82) -->
+            <!-- 投資 80% → 64, bot-right: (110+64*cos30, 110+64*sin30) = (165.4, 142) -->
+            <!-- 保險 45% → 36, bot: (110, 110+36) = (110, 146) -->
+            <!-- 退休 55% → 44, bot-left: (110-44*cos30, 110+44*sin30) = (71.9, 132) -->
+            <!-- 家庭 25% → 20, top-left: (110-20*cos30, 110-20*sin30) = (92.7, 100) -->
+            <polygon id="hc-radar-polygon" points="110,42 158.5,82 165.4,142 110,146 71.9,132 92.7,100"
+                     fill="rgba(62,193,147,0.2)" stroke="#3EC193" stroke-width="2"/>
+
+            <!-- Dots -->
+            <circle id="hc-radar-dot-savings" cx="110" cy="42" r="4" fill="#3EC193"/>
+            <circle id="hc-radar-dot-debt" cx="158.5" cy="82" r="4" fill="#C48B00"/>
+            <circle id="hc-radar-dot-invest" cx="165.4" cy="142" r="4" fill="#3EC193"/>
+            <circle id="hc-radar-dot-insurance" cx="110" cy="146" r="4" fill="#FF7B7B"/>
+            <circle id="hc-radar-dot-retire" cx="71.9" cy="132" r="4" fill="#C48B00"/>
+            <circle id="hc-radar-dot-family" cx="92.7" cy="100" r="4" fill="#C48B00"/>
+
+            <!-- Labels -->
+            <text x="110" y="22" text-anchor="middle" font-size="11" font-weight="600" fill="#2D3436" font-family="Inter">儲蓄能力</text>
+            <text x="185" y="75" text-anchor="start" font-size="11" font-weight="600" fill="#2D3436" font-family="Inter">負債</text>
+            <text x="185" y="155" text-anchor="start" font-size="11" font-weight="600" fill="#2D3436" font-family="Inter">投資</text>
+            <text x="110" y="210" text-anchor="middle" font-size="11" font-weight="600" fill="#2D3436" font-family="Inter">保險</text>
+            <text x="30" y="155" text-anchor="end" font-size="11" font-weight="600" fill="#2D3436" font-family="Inter">退休</text>
+            <text x="30" y="75" text-anchor="end" font-size="11" font-weight="600" fill="#2D3436" font-family="Inter">家庭</text>
+          </svg>
+
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;">各維度分析</div>
+            <div class="radar-legend">
+              <div class="rl-item">
+                <div class="rl-dot" style="background:var(--primary);"></div>
+                <span class="rl-name">儲蓄能力</span>
+                <span class="rl-val" style="color:var(--primary);">17 / 20</span>
+              </div>
+              <div class="rl-item">
+                <div class="rl-dot" style="background:#C48B00;"></div>
+                <span class="rl-name">負債健康</span>
+                <span class="rl-val" style="color:#C48B00;">14 / 20</span>
+              </div>
+              <div class="rl-item">
+                <div class="rl-dot" style="background:var(--primary);"></div>
+                <span class="rl-name">投資穩定度</span>
+                <span class="rl-val" style="color:var(--primary);">16 / 20</span>
+              </div>
+              <div class="rl-item">
+                <div class="rl-dot" style="background:var(--danger);"></div>
+                <span class="rl-name">保險完整性</span>
+                <span class="rl-val" style="color:var(--danger);">9 / 20</span>
+              </div>
+              <div class="rl-item">
+                <div class="rl-dot" style="background:#C48B00;"></div>
+                <span class="rl-name">退休準備</span>
+                <span class="rl-val" style="color:#C48B00;">11 / 20</span>
+              </div>
+              <div class="rl-item">
+                <div class="rl-dot" style="background:#C48B00;"></div>
+                <span class="rl-name">家庭規劃</span>
+                <span class="rl-val" style="color:#C48B00;">5 / 20</span>
+              </div>
+              <div style="margin-top:8px;padding:8px 10px;background:var(--primary-s);border-radius:8px;">
+                <div style="font-size:11px;font-weight:700;color:var(--primary-d);">總分 72 分 / 100 分</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTION PLAN -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">行動建議</div>
+        <div class="card-sub" style="margin-top:2px;">優先處理以下 3 件事，分數可上升到 83 分</div>
+      </div>
+      <div class="card-body">
+        <div class="action-list">
+
+          <div class="action-item">
+            <div class="action-icon">🛡️</div>
+            <div class="action-info">
+              <div class="action-title">補足醫療 + 失能保險</div>
+              <div class="action-desc">你目前只有儲蓄型保單，缺乏實支實付醫療險與失能險。建議保費控制在月收入 5-10%（$2,400–$4,800）。</div>
+              <div class="action-tag priority-high">🔴 優先處理 · 可 +7 分</div>
+            </div>
+          </div>
+
+          <div class="action-item">
+            <div class="action-icon">👨‍👩‍👧</div>
+            <div class="action-info">
+              <div class="action-title">建立家庭應急計畫</div>
+              <div class="action-desc">緊急預備金建議達 6 個月支出（約 $157,200）。目前狀態未知，建議先盤點現有流動資金。</div>
+              <div class="action-tag priority-mid">🟡 近期處理 · 可 +5 分</div>
+            </div>
+          </div>
+
+          <div class="action-item">
+            <div class="action-icon">🌴</div>
+            <div class="action-info">
+              <div class="action-title">加速退休準備進度</div>
+              <div class="action-desc">FIRE 目標 2,400 萬目前僅達 7%。若每月投資額再提升 $5,000，可提早 2 年達標。</div>
+              <div class="action-tag priority-low">🟢 持續推進 · 可 +3 分</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">歷史紀錄</div>
+        <div class="card-sub" style="margin-top:2px;">每季評分追蹤</div>
+      </div>
+      <div class="card-body">
+        <div class="history-row">
+          <div class="history-date">2026 / Q2 · 最新</div>
+          <div class="history-score" style="color:var(--primary);">72 分</div>
+          <div class="history-delta up">↑ +5 比上季</div>
+        </div>
+        <div class="history-row">
+          <div class="history-date">2026 / Q1</div>
+          <div class="history-score">67 分</div>
+          <div class="history-delta up">↑ +4</div>
+        </div>
+        <div class="history-row">
+          <div class="history-date">2025 / Q4</div>
+          <div class="history-score">63 分</div>
+          <div class="history-delta up">↑ +8</div>
+        </div>
+        <div class="history-row">
+          <div class="history-date">2025 / Q3</div>
+          <div class="history-score">55 分</div>
+          <div class="history-delta down">↓ -2</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /scroll-area -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+function showDetail(el, cat) {
+  // Highlight selected card
+  document.querySelectorAll('.cat-card').forEach(c => c.style.borderColor = '');
+  el.style.borderColor = 'var(--primary)';
+}
+
+// Animate score bars on load
+window.addEventListener('load', () => {
+  document.querySelectorAll('.cat-fill').forEach(el => {
+    const w = el.style.width;
+    el.style.width = '0%';
+    setTimeout(() => { el.style.width = w; }, 300);
+  });
+});
+</script>
+
+<script>
+/* ══════════════════════════════
+   HEALTHCHECK × localStorage
+   ══════════════════════════════ */
+(function() {
+  function get(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } }
+
+  const profile  = get('leafin_profile');
+  const expenses = get('leafin_expenses');
+  // const assets = get('leafin_assets'); // reserved for future debt scoring
+
+  if (!profile && !expenses) return; // no data → keep hardcoded values
+
+  // --- Scoring ---
+  const inc = (expenses && expenses.income) || (profile && profile.income) || 0;
+  const sav = (profile && profile.monthly) || 0;
+  const savingsRate = inc > 0 ? sav / inc : 0;
+  const savingsScore = Math.min(20, Math.round(savingsRate * 60));
+
+  const fund = (profile && profile.fund != null) ? profile.fund : 0;
+  const monthlyExpense = (expenses && expenses.expense) ||
+                         (profile ? Math.max(0, (profile.income || 0) - (profile.monthly || 0)) : 30000);
+  const fireTarget = monthlyExpense * 12 * 25;
+  const retireProgress = fireTarget > 0 ? fund / fireTarget : 0;
+  const retireScore = Math.min(20, Math.round(retireProgress * 40));
+
+  const debtScore = 14, investScore = 16, insuranceScore = 9, familyScore = 5;
+  const totalScore = savingsScore + debtScore + investScore + insuranceScore + retireScore + familyScore;
+
+  // --- Update score displays ---
+  // Savings category score
+  const savingsEl = document.getElementById('score-savings');
+  savingsEl.textContent = savingsScore;
+  savingsEl.style.color = savingsScore >= 15 ? 'var(--primary)' : savingsScore >= 10 ? '#C48B00' : 'var(--danger)';
+  document.getElementById('hc-savings-fill').style.width = (savingsScore / 20 * 100) + '%';
+
+  // Retire category score
+  const retireEl = document.getElementById('score-retire');
+  retireEl.textContent = retireScore;
+  retireEl.style.color = retireScore >= 15 ? 'var(--primary)' : retireScore >= 10 ? '#C48B00' : 'var(--danger)';
+  document.getElementById('hc-retire-fill').style.width = (retireScore / 20 * 100) + '%';
+
+  // Total score — SVG ring
+  const circ = 314.16;
+  const filled = Math.round(circ * totalScore / 100);
+  const gap = Math.round(circ - filled);
+  document.getElementById('hc-score-ring-fill').setAttribute('stroke-dasharray', filled + ' ' + gap);
+  document.getElementById('hc-total-score').textContent = totalScore;
+
+  // Score hero text
+  const numEl = document.getElementById('hc-score-num');
+  if (numEl) numEl.innerHTML = totalScore + ' <span class="score-100">/ 100</span>';
+
+  // Avatar — show first character of user name
+  if (profile && profile.name) {
+    const av = document.getElementById('hc-avatar');
+    if (av) av.textContent = profile.name.charAt(0);
+  }
+
+  // Radar polygon
+  const scores = [savingsScore, debtScore, investScore, insuranceScore, retireScore, familyScore];
+  const angles = [-90, -30, 30, 90, 150, 210].map(d => d * Math.PI / 180);
+  const pts = scores.map((s, i) => {
+    const r = 80 * s / 20;
+    return (110 + r * Math.cos(angles[i])).toFixed(1) + ',' + (110 + r * Math.sin(angles[i])).toFixed(1);
+  }).join(' ');
+  document.getElementById('hc-radar-polygon').setAttribute('points', pts);
+
+  // Radar dots
+  const dotIds = ['hc-radar-dot-savings','hc-radar-dot-debt','hc-radar-dot-invest','hc-radar-dot-insurance','hc-radar-dot-retire','hc-radar-dot-family'];
+  scores.forEach((s, i) => {
+    const r = 80 * s / 20;
+    const el = document.getElementById(dotIds[i]);
+    if (el) {
+      el.setAttribute('cx', (110 + r * Math.cos(angles[i])).toFixed(1));
+      el.setAttribute('cy', (110 + r * Math.sin(angles[i])).toFixed(1));
+    }
+  });
+})();
+</script>
+</body>
+</html>

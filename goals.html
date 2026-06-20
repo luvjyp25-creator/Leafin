@@ -1,0 +1,1200 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leafin - 我的夢想任務</title>
+<style>
+:root{--bg:#F0F4EC;--card:#FFF;--border:#E4EBE6;--mint:#3EC193;--mint-h:#31B184;--mint-d:#249870;--mint-s:#E9FAF4;--text:#2D3436;--text-2:#6B7B7D;--text-3:#A0AEB0;--text-4:#BDC8CA;--r:16px;--rsm:10px;--shadow:0 4px 16px rgba(0,0,0,0.08)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'PingFang TC','Microsoft JhengHei',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5}
+.app{display:flex;height:100vh;overflow:hidden}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.sidebar{width:210px;min-width:210px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 16px;gap:2px;overflow-y:auto}
+.logo{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.logo-icon{color:var(--mint);display:flex}
+.logo-name{font-size:16px;font-weight:700;color:var(--text)}
+.logo-sub{font-size:9px;color:var(--text-3)}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;font-size:13px;color:var(--text-2);cursor:pointer;text-decoration:none;transition:background .15s}
+.nav-item:hover{background:var(--bg)}
+.nav-item.active{background:var(--mint-s);color:var(--mint);font-weight:600}
+.nav-item.active svg{stroke:var(--mint)}
+.nav-item svg{stroke:var(--text-3);flex-shrink:0}
+.nav-spacer{flex:1}
+.nav-foot{border-top:1px solid var(--border);padding-top:8px;display:flex;flex-direction:column;gap:2px}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:14px 24px 12px;flex-shrink:0}
+.topbar-h1{font-size:18px;font-weight:700;color:var(--text)}
+.topbar-title-row{display:flex;align-items:center;gap:8px}
+.topbar-sub{font-size:12px;color:var(--text-3);margin-top:2px}
+
+/* ── BASELINE BAR ── */
+.baseline-bar{
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  padding:10px 24px;
+  display:flex;
+  align-items:center;
+  gap:0;
+  flex-shrink:0;
+}
+.bl-left{flex:1;display:flex;align-items:center;gap:0}
+.bl-title-block{margin-right:20px;min-width:120px}
+.bl-title{font-size:12px;font-weight:700;color:var(--text)}
+.bl-sub{font-size:10px;color:var(--text-3);margin-top:1px}
+.bl-divider{width:1px;height:28px;background:var(--border);margin:0 20px;flex-shrink:0}
+.bl-item{display:flex;align-items:center;gap:8px}
+.bl-circle{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.bl-info{}
+.bl-label{font-size:10px;color:var(--text-3)}
+.bl-value{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:4px;line-height:1.3}
+.bl-pencil{cursor:pointer;color:var(--text-4);font-size:11px;opacity:0;transition:opacity .15s;padding:1px 3px;border-radius:4px}
+.bl-item:hover .bl-pencil{opacity:1}
+.bl-pencil:hover{background:var(--bg);color:var(--mint)}
+/* ── INLINE EDIT PANEL ── */
+.ep-label{font-size:11px;font-weight:600;color:var(--text-2)}
+.ep-input{border:1.5px solid var(--border);border-radius:10px;padding:8px 12px;font-family:inherit;font-size:14px;font-weight:600;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s;width:100%}
+.ep-input:focus{border-color:var(--mint);background:var(--card)}
+.btn-reset-sm{flex:1;background:var(--bg);border:1.5px solid #FFB84C;border-radius:10px;padding:9px;font-size:12px;font-weight:600;color:#C48B00;cursor:pointer;transition:all .15s}
+.btn-reset-sm:hover{background:#FFF8E1}
+.btn-delete-sm{flex:1;background:var(--bg);border:1.5px solid #FF7B7B;border-radius:10px;padding:9px;font-size:12px;font-weight:600;color:#D93B3B;cursor:pointer;transition:all .15s}
+.btn-delete-sm:hover{background:#FDEAEA}
+
+/* ── DRAG HANDLE ── */
+.goal-card[draggable]{cursor:grab}
+.goal-card[draggable]:active{cursor:grabbing}
+.goal-card.drag-over{border-color:var(--mint);background:var(--mint-s);opacity:.7}
+
+/* ── EDIT GOAL MODAL ── */
+.eg-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.25);display:none;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(2px)}
+.eg-modal-overlay.open{display:flex}
+.eg-modal{background:var(--card);border-radius:20px;padding:26px 28px 22px;width:460px;box-shadow:0 16px 48px rgba(0,0,0,0.14)}
+.eg-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
+.eg-sub{font-size:12px;color:var(--text-3);margin-bottom:18px}
+.eg-fields{display:flex;flex-direction:column;gap:12px}
+.eg-row{display:flex;flex-direction:column;gap:4px}
+.eg-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.eg-label{font-size:11px;font-weight:600;color:var(--text-2)}
+.eg-input{border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-family:inherit;font-size:14px;font-weight:600;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s;width:100%}
+.eg-input:focus{border-color:var(--mint);background:var(--card)}
+.eg-hint{font-size:10px;color:var(--text-4);margin-top:2px}
+.eg-actions{display:flex;gap:8px;margin-top:18px}
+.eg-danger-row{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.eg-btn-cancel{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer;transition:border-color .15s}
+.eg-btn-cancel:hover{border-color:var(--text-3)}
+.eg-btn-save{flex:2;background:var(--mint);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;transition:background .15s}
+.eg-btn-save:hover{background:var(--mint-d)}
+.eg-btn-reset{flex:1;background:var(--bg);border:1.5px solid #FFB84C;border-radius:10px;padding:8px;font-size:12px;font-weight:600;color:#C48B00;cursor:pointer;transition:all .15s}
+.eg-btn-reset:hover{background:#FFF8E1}
+.eg-btn-delete{flex:1;background:var(--bg);border:1.5px solid #FF7B7B;border-radius:10px;padding:8px;font-size:12px;font-weight:600;color:#D93B3B;cursor:pointer;transition:all .15s}
+.eg-btn-delete:hover{background:#FDEAEA}
+
+/* ── ADD GOAL MODAL ── */
+.ag-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.25);display:none;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(2px)}
+.ag-modal-overlay.open{display:flex}
+.ag-modal{background:var(--card);border-radius:20px;padding:26px 28px 22px;width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,0.14)}
+.ag-modal::-webkit-scrollbar{width:4px}.ag-modal::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.ag-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
+.ag-sub{font-size:12px;color:var(--text-3);margin-bottom:16px}
+.ag-presets-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px}
+.ag-preset{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);cursor:pointer;background:var(--bg);transition:all .15s}
+.ag-preset:hover{border-color:var(--mint);background:var(--mint-s)}
+.ag-preset.selected{border-color:var(--mint);background:var(--mint-s)}
+.ag-fields{display:flex;flex-direction:column;gap:12px}
+.ag-row{display:flex;flex-direction:column;gap:4px}
+.ag-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ag-label{font-size:11px;font-weight:600;color:var(--text-2)}
+.ag-input{border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-family:inherit;font-size:14px;font-weight:600;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s;width:100%}
+.ag-input:focus{border-color:var(--mint);background:var(--card)}
+.ag-actions{display:flex;gap:10px;margin-top:18px}
+.ag-cancel{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer;transition:border-color .15s}
+.ag-cancel:hover{border-color:var(--text-3)}
+.ag-confirm{flex:2;background:var(--mint);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;transition:background .15s}
+.ag-confirm:hover{background:var(--mint-d)}
+
+.bl-edit-btn{
+  background:transparent;
+  border:1.5px solid var(--border);
+  border-radius:8px;
+  padding:6px 14px;
+  font-size:12px;
+  font-weight:500;
+  color:var(--text-2);
+  cursor:pointer;
+  transition:border-color .15s, color .15s;
+  display:flex;align-items:center;gap:5px;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.bl-edit-btn:hover{border-color:var(--mint);color:var(--mint)}
+
+/* ── INLINE EDIT ── */
+.bl-display{display:flex;align-items:center;gap:4px;cursor:pointer}
+.bl-inline-input{
+  border:1.5px solid var(--mint);border-radius:6px;
+  padding:2px 8px;font-family:inherit;font-size:13px;font-weight:700;color:var(--text);
+  background:var(--card);outline:none;width:90px;
+}
+.bl-inline-select{
+  border:1.5px solid var(--mint);border-radius:6px;
+  padding:2px 6px;font-family:inherit;font-size:12px;font-weight:600;color:var(--text);
+  background:var(--card);outline:none;cursor:pointer;
+}
+
+/* ── 3-col: 左右放寬，中間留空間但不過大 ── */
+.goals-layout{flex:1;display:grid;grid-template-columns:285px 1fr 228px;gap:12px;padding:14px;overflow:hidden;min-height:0}
+
+/* LEFT */
+.left-col{background:var(--card);border-radius:var(--r);border:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.lc-header{padding:16px 14px 10px;flex-shrink:0}
+.lc-title{font-size:14px;font-weight:700;color:var(--text)}
+.lc-sub{font-size:11px;color:var(--text-3);margin-top:2px}
+.goal-list{flex:1;overflow-y:auto;padding:0 10px;display:flex;flex-direction:column;gap:6px}
+.goal-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;border:1px solid var(--border);cursor:pointer;transition:border-color .15s,box-shadow .15s;background:var(--card)}
+.goal-card:hover{border-color:var(--text-4);box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.goal-card.active{border-color:var(--mint);background:#FDFFFE;border-width:2px;box-shadow:0 2px 12px rgba(62,193,147,.12)}
+.goal-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.goal-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.goal-name-row{display:flex;align-items:center;justify-content:space-between}
+.goal-name{font-size:13px;font-weight:600;color:var(--text)}
+.goal-amt{font-size:11px;color:var(--text-3)}
+.goal-bar-row{display:flex;align-items:center;gap:6px}
+.goal-track{flex:1;height:6px;border-radius:3px;background:#E8EEF2;overflow:hidden}
+.goal-fill{height:100%;border-radius:3px;transition:width .3s ease}
+.goal-pct{font-size:11px;color:var(--text-3);min-width:28px;text-align:right}
+.goal-arrow{flex-shrink:0;color:var(--text-4);font-size:16px}
+.add-btn{margin:10px 10px 12px;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1.5px dashed var(--text-4);color:var(--mint);font-size:13px;font-weight:500;cursor:pointer;background:#FAFAFA;transition:border-color .15s}
+.add-btn:hover{border-color:var(--mint);background:var(--mint-s)}
+
+/* MIDDLE */
+.mid-col{background:var(--card);border-radius:var(--r);border:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.mid-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text-3);padding:40px}
+.mid-empty-icon{font-size:40px;opacity:.5}
+.mid-inner{flex:1;overflow-y:auto;padding:18px 18px 0;display:flex;flex-direction:column;gap:12px}
+.goal-title-row{display:flex;align-items:center;gap:10px}
+.goal-title-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;transition:background .2s}
+.goal-title-name{font-size:17px;font-weight:700;color:var(--text);flex:1}
+.edit-icon{color:var(--text-3);cursor:pointer;display:flex}
+.section-label{font-size:11px;font-weight:600;color:var(--text-3);letter-spacing:.3px}
+.progress-row{display:flex;align-items:center;gap:20px}
+.donut-wrap{flex-shrink:0;width:120px;height:120px}
+.donut-wrap svg{width:100%;height:100%}
+.stats-col{flex:1;display:flex;flex-direction:column;gap:10px}
+.stat-item{display:flex;flex-direction:column;gap:1px}
+.stat-label{font-size:10px;color:var(--text-3)}
+.stat-value{font-size:14px;font-weight:700;color:var(--text)}
+.stat-value.big{font-size:17px}
+.divider{height:1px;background:var(--border);flex-shrink:0}
+.settings-header{display:flex;align-items:center;justify-content:space-between}
+.settings-label{font-size:13px;font-weight:600;color:var(--text)}
+.edit-link{display:flex;align-items:center;gap:3px;color:var(--mint);font-size:11px;cursor:pointer}
+.settings-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.setting-card{background:#F7F9FA;border-radius:var(--rsm);padding:9px 10px;display:flex;flex-direction:column;gap:2px}
+.setting-card-label{font-size:10px;color:var(--text-3)}
+.setting-card-value{font-size:12px;font-weight:600;color:var(--text)}
+.sim-header{display:flex;align-items:center;gap:6px}
+.sim-label{font-size:13px;font-weight:600;color:var(--text)}
+
+/* 模擬三欄更緊湊 */
+.sim-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sim-col{background:#F7F9FA;border-radius:10px;padding:10px 10px 8px;display:flex;flex-direction:column;gap:6px}
+.sim-col-label{font-size:10px;color:var(--text-3)}
+.sim-col-value{font-size:15px;font-weight:700}
+.sim-col-value.green{color:var(--mint)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:3px;background:#E0E7EF;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--mint);cursor:pointer;box-shadow:0 1px 4px rgba(62,193,147,.4)}
+.slider-ticks{display:flex;justify-content:space-between;font-size:8px;color:var(--text-4);margin-top:1px}
+
+/* 可能結果 — 圖示風格，無色塊 */
+.result-items{display:flex;flex-direction:column;gap:5px}
+.result-item{display:flex;align-items:center;gap:8px;padding:4px 0}
+.result-ic{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:#fff}
+.result-ic.blue{background:#3B82F6}
+.result-ic.green{background:#3EC193}
+.result-ic.orange{background:#F59E0B}
+.result-text-col{display:flex;flex-direction:column;gap:0}
+.result-name{font-size:11px;font-weight:600;color:var(--text)}
+.result-date{font-size:10px;color:var(--text-3)}
+
+.mid-actions{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0;background:var(--card)}
+.btn-cancel{flex:1;padding:10px;border:1.5px solid var(--text-4);border-radius:var(--rsm);background:var(--card);font-size:13px;font-weight:500;color:var(--text-2);cursor:pointer;font-family:inherit;transition:border-color .15s}
+.btn-cancel:hover{border-color:var(--text-3)}
+.btn-submit{flex:2;padding:10px;border-radius:var(--rsm);background:var(--mint-d);font-size:13px;font-weight:600;color:#fff;cursor:pointer;border:none;font-family:inherit;transition:background .15s}
+.btn-submit:hover{background:var(--mint-h)}
+
+/* RIGHT */
+.right-col{display:flex;flex-direction:column;gap:10px;overflow-y:auto;min-width:0}
+.r-card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:16px;flex-shrink:0}
+.tl-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.tl-header-left{display:flex;flex-direction:column;gap:1px}
+.tl-header-title{font-size:13px;font-weight:700;color:var(--text)}
+.tl-header-sub{font-size:10px;color:var(--text-3)}
+.tl-view-all{font-size:11px;color:var(--mint);cursor:pointer}
+.tl-list{display:flex;flex-direction:column}
+.tl-item{display:flex;align-items:flex-start;gap:10px}
+.tl-connector{display:flex;flex-direction:column;align-items:center;width:10px;flex-shrink:0;padding-top:3px}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.tl-line{width:2px;flex:1;min-height:20px;border-left:2px dashed #E2E8F0;margin:3px 0}
+.tl-icon-wrap{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.tl-info{flex:1;padding-top:2px}
+.tl-date{font-size:10px;font-weight:600}
+.tl-name{font-size:12px;font-weight:600;color:var(--text);margin-top:1px}
+.tl-dur{font-size:10px;color:var(--text-3);white-space:nowrap;padding-top:5px;flex-shrink:0}
+.tl-row-content{display:flex;align-items:flex-start;gap:8px;flex:1;padding-bottom:16px}
+.tl-item:last-child .tl-row-content{padding-bottom:0}
+
+/* Stats card */
+.stats-card{background:var(--mint-s);border-color:#C6EED9}
+.stats-card .sdivider{height:1px;background:#C6EED9;margin:10px 0}
+.stats-top{display:flex;justify-content:space-between}
+.stat-block{display:flex;flex-direction:column;gap:3px}
+.stat-block .lbl{font-size:11px;color:#5BA88C}
+.stat-block .val{font-size:20px;font-weight:700;color:var(--text);line-height:1.1}
+.achieve-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.achieve-label{font-size:12px;color:var(--mint-d)}
+.achieve-val{font-size:15px;font-weight:700;color:var(--mint-d)}
+.achieve-bar-bg{height:8px;border-radius:4px;background:#C6EED9;overflow:hidden}
+.achieve-bar-fill{height:100%;border-radius:4px;background:var(--mint)}
+
+/* 鼓勵卡 — 圖三風格：白底彈出感 */
+.motive-card{background:#fff;border:1px solid #FFE4D6;border-radius:var(--r);padding:16px;flex-shrink:0;position:relative;box-shadow:0 4px 20px rgba(255,120,70,.08)}
+.motive-close{position:absolute;top:10px;right:12px;color:var(--text-3);cursor:pointer;background:none;border:none;font-size:16px;line-height:1;transition:color .15s}
+.motive-close:hover{color:var(--text)}
+.motive-top{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.motive-big-icon{font-size:28px;line-height:1}
+.motive-heading{font-size:15px;font-weight:800;color:var(--text)}
+.motive-sub{font-size:11px;color:var(--text-3);margin-bottom:12px;line-height:1.5}
+.motive-items{display:flex;flex-direction:column;gap:8px}
+.motive-item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#F9F9FB;border-radius:10px}
+.motive-item-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.motive-item-body{flex:1}
+.motive-item-name{font-size:12px;font-weight:700;color:var(--text)}
+.motive-item-desc{font-size:10px;color:var(--text-3)}
+.motive-item-delta{font-size:13px;font-weight:700;color:var(--mint);background:var(--mint-s);padding:2px 9px;border-radius:99px;flex-shrink:0}
+.nav-group{display:flex;flex-direction:column;gap:2px;margin-bottom:2px}
+.nav-head{font-size:11px;font-weight:700;color:var(--mint);letter-spacing:1px;padding:4px 10px;margin-top:6px}
+.logo-text{display:flex;flex-direction:column;gap:1px}
+.ni{flex-shrink:0;display:flex;align-items:center}
+.ni svg{stroke:currentColor}
+.nav-item.active .ni svg{stroke:var(--mint)}</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3EC193" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22C4 16 8 10 14 6 18 3 22 2 22 2c0 4-1 8-5 12-4 4-10 6-15 8Z"/><line x1="2" y1="22" x2="13" y2="11"/></svg></div>
+    <div class="logo-text"><div class="logo-name">Leafin</div><div class="logo-sub">小森理財</div></div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-head">規劃未來</div>
+    <a class="nav-item" href="dashboard.html"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>總覽</a>
+    <a class="nav-item active" href="goals.html"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg></span>我的夢想任務</a>
+    <a class="nav-item" href="timeline.html"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="22" y2="12"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></span>人生時間軸</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-head">看現在</div>
+    <a class="nav-item" href="expenses.html"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>收支與花費</a>
+    <a class="nav-item" href="assets.html"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span>資產與負債</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-head">想看看</div>
+    <a class="nav-item" href="simulator.html"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>未來模擬</a>
+    <a class="nav-item" href="healthcheck.html"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>財務小健檢</a>
+  </div>
+  <div class="nav-spacer"></div>
+  <div class="nav-foot">
+    <a class="nav-item" href="#"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>設定</a>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-title-row">
+      <span class="topbar-h1">我的夢想任務</span>
+    </div>
+    <div class="topbar-sub">選擇你的夢想，設定目標時間與預算</div>
+  </header>
+
+  <!-- ── BASELINE BAR ── -->
+  <div class="baseline-bar">
+    <div class="bl-left">
+      <div class="bl-title-block">
+        <div class="bl-title">你的現在（人生起點）</div>
+        <div class="bl-sub">點擊數字即可直接編輯</div>
+      </div>
+      <div class="bl-divider"></div>
+
+      <!-- 年齡 -->
+      <div class="bl-item">
+        <div class="bl-circle" style="background:#F0F4EC;">🙂</div>
+        <div class="bl-info">
+          <div class="bl-label">現在年齡</div>
+          <div class="bl-display" id="bld-age" onclick="startEdit('age')">
+            <span id="bl-age">29 歲</span>
+            <span class="bl-pencil">✏</span>
+          </div>
+          <input class="bl-inline-input" id="bli-age" type="number" min="18" max="80"
+                 style="display:none"
+                 onblur="finishEdit('age')"
+                 onkeydown="if(event.key==='Enter')this.blur()">
+        </div>
+      </div>
+
+      <div class="bl-divider"></div>
+
+      <!-- 生活型態 -->
+      <div class="bl-item">
+        <div class="bl-circle" style="background:#E9FAF4;">🌿</div>
+        <div class="bl-info">
+          <div class="bl-label">生活型態</div>
+          <div class="bl-display" id="bld-lifestyle" onclick="startEdit('lifestyle')">
+            <span id="bl-lifestyle">單身</span>
+            <span class="bl-pencil">✏</span>
+          </div>
+          <select class="bl-inline-select" id="bli-lifestyle"
+                  style="display:none"
+                  onblur="finishEdit('lifestyle')"
+                  onchange="finishEdit('lifestyle')">
+            <option value="單身">單身</option>
+            <option value="有伴侶">有伴侶</option>
+            <option value="已婚">已婚</option>
+            <option value="已婚有小孩">已婚有小孩</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="bl-divider"></div>
+
+      <!-- 每月可存 -->
+      <div class="bl-item">
+        <div class="bl-circle" style="background:#E9FAF4;">💰</div>
+        <div class="bl-info">
+          <div class="bl-label">每月可存</div>
+          <div class="bl-display" id="bld-monthly" onclick="startEdit('monthly')">
+            <span id="bl-monthly">22,500 元</span>
+            <span class="bl-pencil">✏</span>
+          </div>
+          <input class="bl-inline-input" id="bli-monthly" type="number" style="width:110px;display:none"
+                 onblur="finishEdit('monthly')"
+                 onkeydown="if(event.key==='Enter')this.blur()">
+        </div>
+      </div>
+
+      <div class="bl-divider"></div>
+
+      <!-- 夢想基金 -->
+      <div class="bl-item">
+        <div class="bl-circle" style="background:#FFF8E1;">🏦</div>
+        <div class="bl-info">
+          <div class="bl-label">目前夢想基金</div>
+          <div class="bl-display" id="bld-fund" onclick="startEdit('fund')">
+            <span id="bl-fund">843 萬元</span>
+            <span class="bl-pencil">✏</span>
+          </div>
+          <input class="bl-inline-input" id="bli-fund" type="number" style="width:120px;display:none"
+                 onblur="finishEdit('fund')"
+                 onkeydown="if(event.key==='Enter')this.blur()">
+        </div>
+      </div>
+
+      <div class="bl-divider"></div>
+
+      <!-- 名字 -->
+      <div class="bl-item">
+        <div class="bl-circle" style="background:#FFF0F5;">👤</div>
+        <div class="bl-info">
+          <div class="bl-label">名字</div>
+          <div class="bl-display" id="bld-name" onclick="startEdit('name')">
+            <span id="bl-name">小葉</span>
+            <span class="bl-pencil">✏</span>
+          </div>
+          <input class="bl-inline-input" id="bli-name" type="text" style="width:80px;display:none"
+                 onblur="finishEdit('name')"
+                 onkeydown="if(event.key==='Enter')this.blur()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="goals-layout">
+
+    <!-- LEFT -->
+    <div class="left-col">
+      <div class="lc-header"><div class="lc-title">我的夢想任務</div><div class="lc-sub">點選任務進行設定</div></div>
+      <div class="goal-list" id="goal-list-render"></div>
+      <div class="add-btn" onclick="openAddGoal()">+ 新增人生任務</div>
+    </div>
+
+    <!-- MIDDLE -->
+    <div class="mid-col">
+      <!-- 空狀態 -->
+      <div class="mid-empty" id="midEmpty">
+        <div class="mid-empty-icon">🎯</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text-2)">選擇左側任務</div>
+        <div style="font-size:12px;color:var(--text-3);text-align:center">點選你的人生任務<br>查看詳情與建議模擬</div>
+      </div>
+      <!-- 內容（點選後顯示） -->
+      <div class="mid-inner" id="midContent" style="display:none">
+        <div class="goal-title-row">
+          <div class="goal-title-icon" id="midIcon">💍</div>
+          <span class="goal-title-name" id="midName">結婚基金</span>
+            <div class="edit-icon" onclick="showEditPanel()" title="編輯目標"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></div>
+        </div>
+        <div class="section-label">目標進度</div>
+        <div class="progress-row">
+          <div class="donut-wrap">
+            <svg viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="46" fill="none" stroke="#E8EEF2" stroke-width="12"/>
+              <circle id="donutFill" cx="60" cy="60" r="46" fill="none" stroke="#3EC193" stroke-width="12" stroke-dasharray="188.5 289.0" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+              <text id="donutPct" x="60" y="60" text-anchor="middle" dy=".35em" font-size="18" font-weight="700" fill="#2D3436">65%</text>
+            </svg>
+          </div>
+          <div class="stats-col">
+            <div class="stat-item"><span class="stat-label">已累積</span><span class="stat-value big" id="statCur">780,000 元</span></div>
+            <div class="stat-item"><span class="stat-label">目標金額</span><span class="stat-value" id="statTgt">1,200,000 元</span></div>
+            <div class="stat-item"><span class="stat-label">距離目標</span><span class="stat-value" id="statYrs">2 年</span></div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="settings-header"><span class="settings-label">目標設定</span><span style="font-size:10px;color:var(--text-4);margin-left:6px;">點擊格子可編輯</span></div>
+        <div class="settings-cards">
+          <div class="setting-card" onclick="showEditPanel()" style="cursor:pointer;" title="點擊編輯"><span class="setting-card-label">目標年齡</span><span class="setting-card-value" id="setAge">32 歲</span></div>
+          <div class="setting-card" onclick="showEditPanel()" style="cursor:pointer;" title="點擊編輯"><span class="setting-card-label">預計達成日</span><span class="setting-card-value" id="setDate">2027 / 06</span></div>
+          <div class="setting-card" onclick="showEditPanel()" style="cursor:pointer;" title="點擊編輯"><span class="setting-card-label">目標用途</span><span class="setting-card-value" id="setUsage">結婚相關支出</span></div>
+        </div>
+        <div class="divider"></div>
+        <div class="sim-header"><span class="sim-label">建議模擬</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div>
+        <div class="sim-cols">
+          <div class="sim-col">
+            <span class="sim-col-label">每月投入</span>
+            <span class="sim-col-value green" id="inputVal">18,000 元</span>
+            <input id="sliderMonthly" type="range" min="5000" max="60000" value="18000" step="500" oninput="updateSimulation()">
+            <div class="slider-ticks"><span>5,000</span><span>20,000</span><span>40,000</span><span>60,000</span></div>
+          </div>
+          <div class="sim-col">
+            <span class="sim-col-label">預期投資報酬率（年化）</span>
+            <span class="sim-col-value" id="returnVal">4 %</span>
+            <input id="sliderReturn" type="range" min="0" max="12" value="4" step="0.5" oninput="updateSimulation()">
+            <div class="slider-ticks"><span>0%</span><span>4%</span><span>8%</span><span>12%</span></div>
+          </div>
+          <div class="sim-col">
+            <span class="sim-col-label">達成分析</span>
+            <div class="result-items" id="simResults">
+              <div class="result-item"><div class="result-ic blue">🛡</div><div class="result-text-col"><span class="result-name" id="res-pmt">計算中…</span><span class="result-date" id="res-pmt-sub"></span></div></div>
+              <div class="result-item"><div class="result-ic green">✓</div><div class="result-text-col"><span class="result-name" id="res-ok">—</span><span class="result-date" id="res-ok-sub"></span></div></div>
+              <div class="result-item"><div class="result-ic orange">!</div><div class="result-text-col"><span class="result-name" id="res-warn">—</span><span class="result-date" id="res-warn-sub"></span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INLINE EDIT PANEL -->
+      <div class="mid-inner" id="midEditPanel" style="display:none">
+        <div class="goal-title-row" style="margin-bottom:4px;">
+          <div class="goal-title-icon" id="ep-icon">💍</div>
+          <span class="goal-title-name" style="flex:1">編輯目標</span>
+          <div class="edit-icon" onclick="hideEditPanel()" title="關閉">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:16px;">儲存後資料同步到 dashboard</div>
+
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div class="ep-label">任務名稱</div>
+            <input class="ep-input" id="ep-name" type="text" placeholder="例：結婚基金">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div class="ep-label">已累積金額（元）</div>
+              <input class="ep-input" id="ep-current" type="number" placeholder="0" oninput="previewPct()">
+              <div style="font-size:10px;color:var(--text-4)">= 目標進度 <span id="ep-pct-preview">—</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div class="ep-label">目標金額（元）</div>
+              <input class="ep-input" id="ep-target" type="number" placeholder="1200000" oninput="previewPct()">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:90px 1fr 1fr;gap:10px;">
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div class="ep-label">目標年齡</div>
+              <div style="display:flex;align-items:center;gap:3px;">
+                <input class="ep-input" id="ep-age" type="number" min="1" max="100" placeholder="32" oninput="syncYearFromAge()" style="width:100%;">
+                <span style="font-size:11px;color:var(--text-3);flex-shrink:0;">歲</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div class="ep-label">預計完成年月</div>
+              <div style="display:flex;gap:6px;">
+                <input class="ep-input" id="ep-year" type="number" min="2025" max="2080" placeholder="2030" style="width:auto;flex:3;" oninput="syncAgeFromYear()">
+                <select class="ep-input" id="ep-month" style="width:auto;flex:2;">
+                  <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+                  <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+                  <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+                  <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div class="ep-label">目標用途</div>
+              <input class="ep-input" id="ep-usage" type="text" placeholder="結婚相關支出">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mid-actions" id="midActions" style="display:none">
+        <button class="btn-cancel" id="act-cancel">取消</button>
+        <button class="btn-submit" id="act-submit">加入我的任務</button>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="right-col">
+      <div class="r-card">
+        <div class="tl-header"><div class="tl-header-left"><span class="tl-header-title">即將到來</span><span class="tl-header-sub">最近 6 個月</span></div><div class="tl-view-all">查看全部 ›</div></div>
+        <div class="tl-list" id="rc-timeline"></div>
+      </div>
+      <div class="r-card stats-card">
+        <div class="stats-top">
+          <div class="stat-block"><span class="lbl">夢想基金合計</span><span class="val" id="rc-total-assets">—</span></div>
+          <div class="stat-block" style="text-align:right"><span class="lbl">每月需存合計</span><span class="val" id="rc-monthly-needed">—</span></div>
+        </div>
+        <div class="sdivider"></div>
+        <div class="achieve-row"><span class="achieve-label">目標達成機率</span><span class="achieve-val" id="rc-prob">—</span></div>
+        <div class="achieve-bar-bg"><div class="achieve-bar-fill" id="rc-prob-bar" style="width:0%"></div></div>
+      </div>
+
+      <!-- 鼓勵卡 — 圖三風格 -->
+      <div class="motive-card" id="motiveCard">
+        <button class="motive-close" onclick="document.getElementById('motiveCard').style.display='none'">✕</button>
+        <div class="motive-top"><div class="motive-big-icon">🎉</div><span class="motive-heading">太棒了！</span></div>
+        <div class="motive-sub">這個月因為你維持良好的記帳紀錄，<br>你的夢想又更近一步囉！</div>
+        <div class="motive-items">
+          <div class="motive-item">
+            <div class="motive-item-icon" style="background:#FEF3C7">🏠</div>
+            <div class="motive-item-body"><div class="motive-item-name">買房頭期款</div><div class="motive-item-desc">進度往前推進了🔥</div></div>
+            <div class="motive-item-delta">+3%</div>
+          </div>
+          <div class="motive-item">
+            <div class="motive-item-icon" style="background:#DBEAFE">✈️</div>
+            <div class="motive-item-body"><div class="motive-item-name">出國留學</div><div class="motive-item-desc">也更近一步囉！</div></div>
+            <div class="motive-item-delta">+2%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   PROFILE
+   ══════════════════════════════════════════ */
+const PROFILE_KEY = 'leafin_profile';
+const GOALS_KEY   = 'leafin_goals';
+
+function defaultProfile() {
+  return { name:'小葉', age:29, lifestyle:'單身', income:48500, monthly:22500, fund:8430000 };
+}
+function loadProfile() {
+  try { return JSON.parse(localStorage.getItem(PROFILE_KEY)) || defaultProfile(); }
+  catch { return defaultProfile(); }
+}
+function saveProfileData(p) { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
+
+function fmtFund(n) {
+  if (!n) return '0 元';
+  if (n >= 10000) return (n / 10000).toFixed(0) + ' 萬元';
+  return n.toLocaleString() + ' 元';
+}
+function fmtAmt(n) {
+  if (!n) return '—';
+  if (n >= 10000) return (n / 10000).toFixed(0) + ' 萬元';
+  return n.toLocaleString() + ' 元';
+}
+function fmtAmtShort(n) {
+  if (!n) return '—';
+  if (n >= 10000) return (n / 10000).toFixed(0) + ' 萬';
+  return n.toLocaleString();
+}
+
+function renderBaseline() {
+  const p = loadProfile();
+  document.getElementById('bl-age').textContent = p.age + ' 歲';
+  document.getElementById('bl-lifestyle').textContent = p.lifestyle;
+  document.getElementById('bl-monthly').textContent = p.monthly.toLocaleString() + ' 元';
+  document.getElementById('bl-fund').textContent = fmtFund(p.fund);
+  document.getElementById('bl-name').textContent = p.name;
+}
+
+function startEdit(field) {
+  const p = loadProfile();
+  document.getElementById('bld-' + field).style.display = 'none';
+  const inp = document.getElementById('bli-' + field);
+  inp.style.display = '';
+  inp.value = p[field] !== undefined ? p[field] : '';
+  inp.focus();
+  if (inp.tagName === 'INPUT') inp.select();
+}
+
+function finishEdit(field) {
+  const p = loadProfile();
+  const inp = document.getElementById('bli-' + field);
+  const v = inp.value;
+  if (['age','income','monthly','fund'].includes(field)) p[field] = parseInt(v) || p[field];
+  else p[field] = v.trim() || p[field];
+  saveProfileData(p);
+  inp.style.display = 'none';
+  document.getElementById('bld-' + field).style.display = '';
+  renderBaseline();
+  renderRightColumn();
+}
+
+/* ══════════════════════════════════════════
+   GOALS
+   ══════════════════════════════════════════ */
+const DEFAULT_GOALS = [
+  { id:'wedding',   name:'結婚基金',    icon:'💍', iconBg:'#FFCAD4', color:'#FF7B7B',
+    pct:65, current:780000,   target:1200000,  targetAge:'32 歲', targetDate:'2027 / 06', usage:'結婚相關支出',   monthlyInput:18000, expectedReturn:4 },
+  { id:'house',     name:'買房頭期款',  icon:'🏠', iconBg:'#FEF3C7', color:'#F59E0B',
+    pct:28, current:1120000,  target:4000000,  targetAge:'34 歲', targetDate:'2031 / 08', usage:'頭期款+裝潢',    monthlyInput:12000, expectedReturn:4 },
+  { id:'baby',      name:'第一胎教育金',icon:'👶', iconBg:'#EDE9FE', color:'#8B5CF6',
+    pct:10, current:300000,   target:3000000,  targetAge:'37 歲', targetDate:'2034 / 03', usage:'子女教育費用',   monthlyInput:5000,  expectedReturn:5 },
+  { id:'study',     name:'出國留學',    icon:'✈️', iconBg:'#DBEAFE', color:'#3B82F6',
+    pct:35, current:280000,   target:800000,   targetAge:'31 歲', targetDate:'2028 / 07', usage:'語言學校費用',   monthlyInput:8000,  expectedReturn:3 },
+  { id:'fire',      name:'退休 / FIRE', icon:'🌴', iconBg:'#E9FAF4', color:'#3EC193',
+    pct:33, current:8430000,  target:25000000, targetAge:'55 歲', targetDate:'2048 / 01', usage:'財務自由退休',   monthlyInput:22500, expectedReturn:7 },
+];
+
+let GOALS = [];
+let activeIdx = -1;
+
+function loadGoals() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(GOALS_KEY));
+    GOALS = (saved && saved.length) ? saved : JSON.parse(JSON.stringify(DEFAULT_GOALS));
+  } catch {
+    GOALS = JSON.parse(JSON.stringify(DEFAULT_GOALS));
+  }
+}
+
+function saveGoals() {
+  localStorage.setItem(GOALS_KEY, JSON.stringify(GOALS));
+  renderRightColumn();
+}
+
+function yearsLeft(targetDate) {
+  if (!targetDate) return '—';
+  const parts = targetDate.replace(/\s/g,'').split('/').map(Number);
+  const ty = parts[0], tm = (parts[1] || 1);
+  const now = new Date();
+  const diff = (ty - now.getFullYear()) * 12 + (tm - now.getMonth() - 1);
+  if (diff <= 0) return '已達成';
+  const y = Math.floor(diff / 12), m = diff % 12;
+  if (y === 0) return m + ' 個月';
+  if (m === 0) return y + ' 年';
+  return y + ' 年 ' + m + ' 個月';
+}
+
+function renderGoalList() {
+  const container = document.getElementById('goal-list-render');
+  if (GOALS.length === 0) {
+    container.innerHTML = `
+      <div style="padding:24px 16px;text-align:center;color:var(--text-3);">
+        <div style="font-size:28px;margin-bottom:8px;">🌱</div>
+        <div style="font-size:12px;line-height:1.6;">還沒有夢想任務<br>點下方按鈕新增第一個！</div>
+      </div>`;
+    return;
+  }
+  container.innerHTML = GOALS.map((g, i) => `
+    <div class="goal-card${i === activeIdx ? ' active' : ''}"
+         onclick="selectGoalByIdx(${i})"
+         draggable="true"
+         ondragstart="dragStart(event,${i})"
+         ondragend="dragEnd(event)"
+         ondragover="dragOver(event,${i})"
+         ondragleave="dragLeave(event)"
+         ondrop="dropGoal(event,${i})">
+      <div class="goal-icon" style="background:${g.iconBg}">${g.icon}</div>
+      <div class="goal-body">
+        <div class="goal-name-row">
+          <span class="goal-name">${g.name}</span>
+          <span class="goal-amt">${fmtAmt(g.target)}</span>
+        </div>
+        <div class="goal-bar-row">
+          <div class="goal-track"><div class="goal-fill" style="width:${g.pct}%;background:${g.color}"></div></div>
+          <span class="goal-pct">${g.pct}%</span>
+        </div>
+      </div>
+      <span class="goal-arrow" style="flex-shrink:0;color:var(--text-4);font-size:11px;user-select:none;" title="拖曳排序">⠿</span>
+    </div>`).join('');
+}
+
+const CIRC = 289.0;
+
+function selectGoalByIdx(i) {
+  activeIdx = i;
+  const g = GOALS[i];
+  renderGoalList();
+
+  document.getElementById('midEmpty').style.display = 'none';
+  document.getElementById('midContent').style.display = 'flex';
+  document.getElementById('midActions').style.display = 'flex';
+
+  document.getElementById('midIcon').textContent = g.icon;
+  document.getElementById('midIcon').style.background = g.iconBg;
+  document.getElementById('midName').textContent = g.name;
+
+  const fill = CIRC * g.pct / 100;
+  document.getElementById('donutFill').setAttribute('stroke-dasharray', fill.toFixed(1) + ' ' + CIRC);
+  document.getElementById('donutFill').setAttribute('stroke', g.color);
+  document.getElementById('donutPct').textContent = g.pct + '%';
+
+  document.getElementById('statCur').textContent = g.current.toLocaleString() + ' 元';
+  document.getElementById('statTgt').textContent = g.target.toLocaleString() + ' 元';
+  document.getElementById('statYrs').textContent = yearsLeft(g.targetDate);
+  document.getElementById('setAge').textContent  = g.targetAge;
+  document.getElementById('setDate').textContent = g.targetDate;
+  document.getElementById('setUsage').textContent = g.usage;
+
+  /* slider 初始值 */
+  document.getElementById('sliderMonthly').value = g.monthlyInput || 18000;
+  document.getElementById('sliderReturn').value  = g.expectedReturn || 4;
+  updateSimulation();
+}
+
+function selectGoal(el) { selectGoalByIdx(parseInt(el.dataset.idx)); }
+
+function bindActionButtons() {
+  document.getElementById('act-cancel').onclick = function() {
+    document.getElementById('midEmpty').style.display = 'flex';
+    document.getElementById('midContent').style.display = 'none';
+    document.getElementById('midEditPanel').style.display = 'none';
+    document.getElementById('midActions').style.display = 'none';
+    activeIdx = -1;
+    renderGoalList();
+  };
+  document.getElementById('act-submit').onclick = saveCurrentGoal;
+}
+
+function saveCurrentGoal() {
+  if (activeIdx < 0) return;
+  GOALS[activeIdx].monthlyInput   = parseInt(document.getElementById('sliderMonthly').value);
+  GOALS[activeIdx].expectedReturn = parseFloat(document.getElementById('sliderReturn').value);
+  saveGoals();
+  const btn = document.getElementById('act-submit');
+  if (!btn) return;
+  const orig = btn.textContent;
+  btn.textContent = '✓ 已儲存！';
+  btn.style.background = 'var(--mint-d)';
+  setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1800);
+}
+
+document.addEventListener('DOMContentLoaded', bindActionButtons);
+
+/* ── 新增目標 ── */
+const PRESET_GOALS = [
+  { name:'緊急預備金', icon:'🛡️', iconBg:'#E9FAF4', color:'#3EC193', usage:'緊急備用金' },
+  { name:'結婚基金',   icon:'💍', iconBg:'#FFCAD4', color:'#FF7B7B', usage:'結婚相關支出' },
+  { name:'買房基金',   icon:'🏠', iconBg:'#FEF3C7', color:'#F59E0B', usage:'頭期款+裝潢' },
+  { name:'小孩教育金', icon:'👶', iconBg:'#EDE9FE', color:'#8B5CF6', usage:'子女教育費用' },
+  { name:'出國留學',   icon:'✈️', iconBg:'#DBEAFE', color:'#3B82F6', usage:'語言學校費用' },
+  { name:'買車',       icon:'🚗', iconBg:'#FFF3E6', color:'#F0A868', usage:'購車費用' },
+  { name:'旅遊基金',   icon:'🌏', iconBg:'#E0F2FE', color:'#0EA5E9', usage:'旅遊體驗' },
+  { name:'退休 / FIRE',icon:'🌴', iconBg:'#E9FAF4', color:'#3EC193', usage:'財務自由退休' },
+  { name:'自訂目標',   icon:'⭐', iconBg:'#FFF8E1', color:'#C48B00', usage:'' },
+];
+
+function openAddGoal() {
+  document.getElementById('add-goal-modal').classList.add('open');
+  renderPresets();
+}
+function closeAddGoal() {
+  document.getElementById('add-goal-modal').classList.remove('open');
+}
+function closeAddIfOutside(e) {
+  if (e.target === document.getElementById('add-goal-modal')) closeAddGoal();
+}
+
+let selectedPreset = null;
+function renderPresets() {
+  selectedPreset = null;
+  document.getElementById('ag-name').value = '';
+  document.getElementById('ag-target').value = '';
+  document.getElementById('ag-date').value = '';
+  document.getElementById('ag-usage').value = '';
+
+  const grid = document.getElementById('ag-presets');
+  grid.innerHTML = PRESET_GOALS.map((p, i) => `
+    <div class="ag-preset" onclick="pickPreset(${i})" id="agp-${i}">
+      <span style="font-size:20px;">${p.icon}</span>
+      <span style="font-size:11px;color:var(--text-2);margin-top:2px;">${p.name}</span>
+    </div>`).join('');
+}
+
+function pickPreset(i) {
+  selectedPreset = PRESET_GOALS[i];
+  document.querySelectorAll('.ag-preset').forEach(el => el.classList.remove('selected'));
+  document.getElementById('agp-' + i).classList.add('selected');
+  document.getElementById('ag-name').value  = selectedPreset.name !== '自訂目標' ? selectedPreset.name : '';
+  document.getElementById('ag-usage').value = selectedPreset.usage;
+}
+
+function confirmAddGoal() {
+  const name   = document.getElementById('ag-name').value.trim();
+  const target = parseInt(document.getElementById('ag-target').value);
+  const date   = document.getElementById('ag-date').value;
+  const usage  = document.getElementById('ag-usage').value.trim();
+
+  if (!name)   { alert('請輸入任務名稱'); return; }
+  if (!target) { alert('請輸入目標金額'); return; }
+
+  const preset = selectedPreset || PRESET_GOALS[PRESET_GOALS.length - 1];
+  const profile = loadProfile();
+  const targetYear = date ? parseInt(date) : (new Date().getFullYear() + 10);
+  const ageAtTarget = profile.age + (targetYear - new Date().getFullYear());
+
+  GOALS.push({
+    id: 'goal_' + Date.now(),
+    name, icon: preset.icon, iconBg: preset.iconBg, color: preset.color,
+    pct: 0, current: 0, target,
+    targetAge: ageAtTarget + ' 歲',
+    targetDate: targetYear + ' / 01',
+    usage: usage || preset.usage,
+    monthlyInput: 10000, expectedReturn: 5,
+  });
+  saveGoals();
+  renderGoalList();
+  closeAddGoal();
+
+  /* 自動展開新目標 */
+  setTimeout(() => selectGoalByIdx(GOALS.length - 1), 100);
+}
+
+/* ══════════════════════════════════════════
+   SIMULATION & PMT CALC
+   ══════════════════════════════════════════ */
+function monthsLeftFromDate(targetDate) {
+  if (!targetDate) return 120;
+  const parts = String(targetDate).replace(/\s/g,'').split('/').map(Number);
+  const ty = parts[0], tm = parts[1] || 1;
+  const now = new Date();
+  return Math.max(1, (ty - now.getFullYear()) * 12 + (tm - now.getMonth() - 1));
+}
+
+function calcPMT(target, current, annualReturn, months) {
+  const fv = Math.max(0, target - current);
+  if (months <= 0) return fv;
+  if (annualReturn === 0) return Math.ceil(fv / months);
+  const r = annualReturn / 100 / 12;
+  return Math.ceil((fv * r) / (Math.pow(1 + r, months) - 1));
+}
+
+function updateSimulation() {
+  if (activeIdx < 0) return;
+  const g = GOALS[activeIdx];
+  const monthly = parseInt(document.getElementById('sliderMonthly').value) || 10000;
+  const ret = parseFloat(document.getElementById('sliderReturn').value) || 4;
+
+  document.getElementById('inputVal').textContent = monthly.toLocaleString() + ' 元';
+  document.getElementById('returnVal').textContent = ret + ' %';
+
+  const ml = monthsLeftFromDate(g.targetDate);
+  const needed = calcPMT(g.target, g.current, ret, ml);
+  const profile = loadProfile();
+  const canSave = profile.monthly || 0;
+
+  /* 月需投入 */
+  document.getElementById('res-pmt').textContent = '每月需存入 ' + needed.toLocaleString() + ' 元';
+  document.getElementById('res-pmt-sub').textContent = '按 ' + ret + '% 年報酬率試算';
+
+  /* 足夠/不足 */
+  if (monthly >= needed) {
+    document.getElementById('res-ok').textContent = '✓ 投入足夠，可提早達成！';
+    document.getElementById('res-ok-sub').textContent = '比需求多 ' + (monthly - needed).toLocaleString() + ' 元';
+    document.getElementById('res-warn').textContent = '若維持現在金額';
+    document.getElementById('res-warn-sub').textContent = '約 ' + Math.floor(ml * needed / monthly) + ' 個月後達標';
+  } else {
+    document.getElementById('res-ok').textContent = '⚠ 每月還差 ' + (needed - monthly).toLocaleString() + ' 元';
+    document.getElementById('res-ok-sub').textContent = '建議提高投入或延後目標年份';
+    document.getElementById('res-warn').textContent = '現在月存 ' + canSave.toLocaleString() + ' 元';
+    document.getElementById('res-warn-sub').textContent = needed <= canSave ? '你的存款足夠，加油！' : '超過目前月存能力';
+  }
+}
+
+/* ══════════════════════════════════════════
+   INLINE EDIT PANEL
+   ══════════════════════════════════════════ */
+function showEditPanel() {
+  if (activeIdx < 0) return;
+  const g = GOALS[activeIdx];
+  document.getElementById('ep-icon').textContent = g.icon;
+  document.getElementById('ep-icon').style.background = g.iconBg;
+  document.getElementById('ep-name').value    = g.name;
+  document.getElementById('ep-current').value = g.current;
+  document.getElementById('ep-target').value  = g.target;
+  const tdParts = (g.targetDate || '').split('/').map(s => parseInt(s.trim()));
+  const epYear = tdParts[0] || (new Date().getFullYear() + 5);
+  document.getElementById('ep-year').value  = epYear;
+  document.getElementById('ep-month').value = tdParts[1] || 1;
+  document.getElementById('ep-usage').value = g.usage || '';
+  const profile = loadProfile();
+  const curAge = parseInt(profile.age) || 28;
+  document.getElementById('ep-age').value = curAge + (epYear - new Date().getFullYear());
+  previewPct();
+
+  document.getElementById('midContent').style.display = 'none';
+  document.getElementById('midEditPanel').style.display = 'flex';
+
+  /* 切換 action buttons */
+  const actions = document.getElementById('midActions');
+  actions.style.display = 'flex';
+  actions.innerHTML = `
+    <button class="btn-reset-sm" onclick="resetGoal()">⟳ 歸零</button>
+    <button class="btn-delete-sm" onclick="deleteGoal()">🗑 刪除</button>
+    <button class="btn-submit" style="flex:2" onclick="saveGoalEdit()">儲存 ✓</button>`;
+}
+
+function hideEditPanel() {
+  document.getElementById('midEditPanel').style.display = 'none';
+  document.getElementById('midContent').style.display = 'flex';
+  /* 恢復原本按鈕 */
+  const actions = document.getElementById('midActions');
+  actions.innerHTML = `
+    <button class="btn-cancel" id="act-cancel">取消</button>
+    <button class="btn-submit" id="act-submit">加入我的任務</button>`;
+  bindActionButtons();
+}
+
+function previewPct() {
+  const cur = parseInt(document.getElementById('ep-current').value) || 0;
+  const tgt = parseInt(document.getElementById('ep-target').value) || 0;
+  const pct = tgt > 0 ? Math.min(100, Math.round(cur / tgt * 100)) : 0;
+  document.getElementById('ep-pct-preview').textContent = pct + '%';
+}
+
+function syncYearFromAge() {
+  const age = parseInt(document.getElementById('ep-age').value);
+  if (!age || isNaN(age)) return;
+  const profile = loadProfile();
+  const curAge = parseInt(profile.age) || 28;
+  const year = new Date().getFullYear() + Math.max(0, age - curAge);
+  document.getElementById('ep-year').value = year;
+}
+
+function syncAgeFromYear() {
+  const year = parseInt(document.getElementById('ep-year').value);
+  if (!year || isNaN(year)) return;
+  const profile = loadProfile();
+  const curAge = parseInt(profile.age) || 28;
+  const age = curAge + (year - new Date().getFullYear());
+  if (age > 0) document.getElementById('ep-age').value = age;
+}
+
+function saveGoalEdit() {
+  if (activeIdx < 0) return;
+  const g = GOALS[activeIdx];
+  const name    = document.getElementById('ep-name').value.trim()    || g.name;
+  const current = parseInt(document.getElementById('ep-current').value) || 0;
+  const target  = parseInt(document.getElementById('ep-target').value)  || g.target;
+  const year    = parseInt(document.getElementById('ep-year').value)    || parseInt(g.targetDate);
+  const month   = parseInt(document.getElementById('ep-month').value)   || 1;
+  const usage   = document.getElementById('ep-usage').value.trim()    || g.usage;
+  const profile = loadProfile();
+  const curAge  = parseInt(profile.age) || 28;
+  const ageAtTarget = curAge + (year - new Date().getFullYear());
+  const pct = target > 0 ? Math.min(100, Math.round(current / target * 100)) : 0;
+  Object.assign(GOALS[activeIdx], {
+    name, current, target, usage, pct,
+    targetDate: year + ' / ' + String(month).padStart(2, '0'),
+    targetAge: ageAtTarget + ' 歲',
+  });
+  saveGoals();
+  hideEditPanel();
+  renderGoalList();
+  selectGoalByIdx(activeIdx);
+}
+
+function resetGoal() {
+  if (activeIdx < 0) return;
+  if (!confirm('確定要把「' + GOALS[activeIdx].name + '」的累積金額歸零嗎？')) return;
+  GOALS[activeIdx].current = 0;
+  GOALS[activeIdx].pct     = 0;
+  saveGoals();
+  hideEditPanel();
+  renderGoalList();
+  selectGoalByIdx(activeIdx);
+}
+
+function deleteGoal() {
+  if (activeIdx < 0) return;
+  if (!confirm('確定要刪除「' + GOALS[activeIdx].name + '」嗎？')) return;
+  GOALS.splice(activeIdx, 1);
+  saveGoals();
+  activeIdx = -1;
+  renderGoalList();
+  document.getElementById('midEmpty').style.display = 'flex';
+  document.getElementById('midContent').style.display = 'none';
+  document.getElementById('midEditPanel').style.display = 'none';
+  document.getElementById('midActions').style.display = 'none';
+}
+
+/* ══════════════════════════════════════════
+   DRAG-AND-DROP REORDER
+   ══════════════════════════════════════════ */
+let dragSrcIdx = -1;
+
+function dragStart(e, i) {
+  dragSrcIdx = i;
+  e.dataTransfer.effectAllowed = 'move';
+  e.currentTarget.style.opacity = '0.5';
+}
+function dragEnd(e) { e.currentTarget.style.opacity = ''; }
+function dragOver(e, i) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.goal-card').forEach((c, idx) => {
+    c.classList.toggle('drag-over', idx === i && idx !== dragSrcIdx);
+  });
+}
+function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function dropGoal(e, targetIdx) {
+  e.preventDefault();
+  document.querySelectorAll('.goal-card').forEach(c => c.classList.remove('drag-over'));
+  if (dragSrcIdx === -1 || dragSrcIdx === targetIdx) return;
+  const item = GOALS.splice(dragSrcIdx, 1)[0];
+  GOALS.splice(targetIdx, 0, item);
+  if      (activeIdx === dragSrcIdx)                                    activeIdx = targetIdx;
+  else if (activeIdx > dragSrcIdx && activeIdx <= targetIdx)            activeIdx--;
+  else if (activeIdx < dragSrcIdx && activeIdx >= targetIdx)            activeIdx++;
+  dragSrcIdx = -1;
+  saveGoals();
+  renderGoalList();
+  if (activeIdx >= 0) selectGoalByIdx(activeIdx);
+}
+
+/* ══════════════════════════════════════════
+   RIGHT COLUMN — 連動更新
+   ══════════════════════════════════════════ */
+function renderRightColumn() {
+  const profile = loadProfile();
+
+  /* ── 夢想基金合計：所有目標 current 加總 ── */
+  const totalAccum = GOALS.reduce((s, g) => s + (g.current || 0), 0);
+
+  /* ── 每月需存合計：對每個目標計算 PMT 相加 ── */
+  const totalPMT = GOALS.reduce((s, g) => {
+    const ml  = monthsLeftFromDate(g.targetDate);
+    const ret = g.expectedReturn || 4;
+    return s + calcPMT(g.target, g.current, ret, ml);
+  }, 0);
+
+  /* ── 達成機率：各目標 pct 加權平均（依目標金額） ── */
+  const totalTarget = GOALS.reduce((s, g) => s + (g.target || 0), 0);
+  const weightedPct = totalTarget > 0
+    ? Math.min(100, Math.round(
+        GOALS.reduce((s, g) => s + g.pct * (g.target || 0), 0) / totalTarget
+      ))
+    : 0;
+
+  /* ── 更新 DOM ── */
+  const elAssets  = document.getElementById('rc-total-assets');
+  const elMonthly = document.getElementById('rc-monthly-needed');
+  const elProb    = document.getElementById('rc-prob');
+  const elBar     = document.getElementById('rc-prob-bar');
+  if (elAssets)  elAssets.textContent  = fmtAmt(totalAccum);
+  if (elMonthly) elMonthly.textContent = totalPMT > 0 ? totalPMT.toLocaleString() + ' 元' : '—';
+  if (elProb)    elProb.textContent    = weightedPct + '%';
+  if (elBar)     elBar.style.width     = weightedPct + '%';
+
+  renderRightTimeline();
+}
+
+function renderRightTimeline() {
+  const container = document.getElementById('rc-timeline');
+  if (!container) return;
+
+  if (!GOALS.length) {
+    container.innerHTML = '<div style="padding:12px 0;font-size:12px;color:var(--text-3);text-align:center;">還沒有目標</div>';
+    return;
+  }
+
+  /* 依目標年份排序，取最近 3 個 */
+  const sorted = [...GOALS]
+    .filter(g => g.targetDate)
+    .sort((a, b) => parseInt(a.targetDate) - parseInt(b.targetDate))
+    .slice(0, 3);
+
+  container.innerHTML = sorted.map((g, i) => {
+    const isLast = i === sorted.length - 1;
+    const parts  = String(g.targetDate).replace(/\s/g, '').split('/');
+    const yr = parts[0], mo = parseInt(parts[1] || '1');
+    const dateFmt = yr + ' 年 ' + mo + ' 月';
+    const dur = yearsLeft(g.targetDate);
+    return `
+      <div class="tl-item">
+        <div class="tl-connector">
+          <div class="tl-dot" style="background:${g.color}"></div>
+          ${!isLast ? '<div class="tl-line"></div>' : ''}
+        </div>
+        <div class="tl-row-content">
+          <div class="tl-icon-wrap" style="background:${g.iconBg}">${g.icon}</div>
+          <div class="tl-info">
+            <div class="tl-date" style="color:${g.color}">${dateFmt}</div>
+            <div class="tl-name">${g.name}</div>
+          </div>
+          <span class="tl-dur">${dur}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════ */
+loadGoals();
+renderGoalList();
+renderBaseline();
+renderRightColumn();
+</script>
+
+
+<!-- ── ADD GOAL MODAL ── -->
+<div class="ag-modal-overlay" id="add-goal-modal" onclick="closeAddIfOutside(event)">
+  <div class="ag-modal">
+    <div class="ag-title">+ 新增人生任務</div>
+    <div class="ag-sub">選擇類型，或直接填入自訂目標</div>
+
+    <div class="ag-presets-grid" id="ag-presets"></div>
+
+    <div class="ag-fields">
+      <div class="ag-row">
+        <div class="ag-label">任務名稱</div>
+        <input class="ag-input" id="ag-name" type="text" placeholder="例：買車基金">
+      </div>
+      <div class="ag-row-2">
+        <div class="ag-row">
+          <div class="ag-label">目標金額（元）</div>
+          <input class="ag-input" id="ag-target" type="number" placeholder="例：500000">
+        </div>
+        <div class="ag-row">
+          <div class="ag-label">預計完成年份</div>
+          <input class="ag-input" id="ag-date" type="number" min="2025" max="2080" placeholder="例：2030">
+        </div>
+      </div>
+      <div class="ag-row">
+        <div class="ag-label">目標用途（選填）</div>
+        <input class="ag-input" id="ag-usage" type="text" placeholder="例：買第一台車">
+      </div>
+    </div>
+
+    <div class="ag-actions">
+      <button class="ag-cancel" onclick="closeAddGoal()">取消</button>
+      <button class="ag-confirm" onclick="confirmAddGoal()">加入 ✓</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

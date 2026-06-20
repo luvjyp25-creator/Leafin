@@ -1,0 +1,990 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人生時間軸 — Leafin 小森理財</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:          #F0F4EC;
+  --card:        #FFFFFF;
+  --border:      #E4EBE6;
+  --shadow:      0 4px 16px rgba(0,0,0,0.08);
+  --shadow-sm:   0 2px 8px rgba(0,0,0,0.05);
+
+  --primary:     #3EC193;
+  --primary-s:   #E9FAF4;
+  --primary-d:   #249870;
+
+  --text:        #2D3436;
+  --text-2:      #6B7B7D;
+  --text-3:      #A0AEB0;
+
+  --g1: #E57373;  --g1s: #FDEAEA;
+  --g2: #F0A868;  --g2s: #FFF3E6;
+  --g3: #C48B00;  --g3s: #FFF8E1;
+  --g4: #6BADE0;  --g4s: #EBF4FB;
+  --g5: #7B6AA0;  --g5s: #F3EFF8;
+  --g6: #FF7BAC;  --g6s: #FFF0F5;
+
+  --sidebar-w: 210px;
+  --r: 16px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+button { font-family: inherit; cursor: pointer; border: none; }
+
+/* ── LAYOUT ── */
+.app { display: flex; height: 100vh; overflow: hidden; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  gap: 6px;
+  overflow-y: auto;
+}
+.logo { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-shrink: 0; }
+.logo-icon { color: var(--primary); display: flex; align-items: center; }
+.logo-text { display: flex; flex-direction: column; gap: 1px; }
+.logo-name { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; line-height: 1.1; }
+.logo-sub  { font-size: 11px; color: var(--text-2); }
+
+.nav-group { display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; }
+.nav-head  { font-size: 11px; font-weight: 700; color: var(--primary); letter-spacing: 1px; padding: 4px 10px; margin-top: 8px; }
+.nav-item  {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: 8px;
+  font-size: 13px; font-weight: 400; color: var(--text);
+  cursor: pointer; transition: background 0.15s, color 0.15s;
+  text-decoration: none;
+}
+.nav-item:hover { background: var(--bg); }
+.nav-item.active { background: var(--primary-s); color: var(--primary); font-weight: 500; }
+.nav-item .ni { flex-shrink: 0; display: flex; align-items: center; }
+.nav-item .ni svg { stroke: currentColor; }
+.nav-spacer { flex: 1; }
+.nav-foot { display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--bg); padding-top: 8px; flex-shrink: 0; }
+
+/* ── MAIN ── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+.topbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.page-title  { font-size: 17px; font-weight: 700; color: var(--text); }
+.page-sub    { font-size: 12px; color: var(--text-2); }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary:hover { background: var(--primary-d); }
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--primary-s);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 600; color: var(--primary);
+  cursor: pointer;
+}
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-2);
+  transition: background 0.15s;
+}
+.icon-btn:hover { background: var(--bg); }
+
+/* ── CONTENT AREA ── */
+.content-wrap {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+}
+.content-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+.content-sidebar {
+  width: 284px;
+  min-width: 284px;
+  border-left: 1px solid var(--border);
+  background: var(--card);
+  overflow-y: auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── SECTION CARDS ── */
+.section-card {
+  background: var(--card);
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sm);
+}
+.section-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.section-sub { font-size: 12px; color: var(--text-2); margin-bottom: 16px; }
+
+/* ── LEGEND ── */
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-2); }
+.legend-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+
+/* ── TIMELINE ── */
+.timeline-scroll {
+  overflow-x: auto;
+  padding-bottom: 12px;
+}
+.timeline-scroll::-webkit-scrollbar { height: 4px; }
+.timeline-scroll::-webkit-scrollbar-track { background: transparent; }
+.timeline-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.timeline-track {
+  display: flex;
+  align-items: flex-end;
+  min-width: max-content;
+  padding: 20px 0 8px 0;
+  gap: 0;
+  position: relative;
+}
+
+.tl-connector {
+  height: 2px;
+  flex: 1;
+  min-width: 60px;
+  max-width: 100px;
+  background: linear-gradient(to right, var(--primary), #B8E6D4);
+  align-self: center;
+  margin-top: -40px;
+}
+
+.tl-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.tl-node:hover { transform: translateY(-2px); }
+
+.tl-icon-wrap {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 3px solid transparent;
+  position: relative;
+  transition: box-shadow 0.15s;
+}
+.tl-icon-wrap.done  { border-color: var(--primary); background: var(--primary-s); }
+.tl-icon-wrap.active { border-color: var(--primary); background: var(--primary); box-shadow: 0 0 0 4px rgba(62,193,147,0.2); }
+.tl-icon-wrap.prog  { border-color: var(--g4); background: var(--g4s); }
+.tl-icon-wrap.plan  { border-color: var(--g2); background: var(--g2s); }
+.tl-icon-wrap.long  { border-color: var(--g5); background: var(--g5s); }
+
+.tl-icon { font-size: 22px; }
+.tl-icon-wrap.active .tl-icon { filter: brightness(0) invert(1); }
+
+.tl-age {
+  font-size: 12px; font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-s);
+  border-radius: 10px;
+  padding: 2px 8px;
+}
+.tl-age.neutral { color: var(--text-2); background: var(--bg); }
+
+.tl-info { text-align: center; max-width: 90px; }
+.tl-name { font-size: 12px; font-weight: 600; color: var(--text); }
+.tl-amount { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+.tl-year { font-size: 10px; color: var(--text-3); }
+
+/* ── AREA CHART ── */
+.area-chart-wrap { position: relative; width: 100%; }
+
+.phase-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+.phase-label {
+  font-size: 11px;
+  text-align: center;
+  flex: 1;
+}
+.phase-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* ── SCENARIO CARDS ── */
+.scenario-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+.scenario-scroll::-webkit-scrollbar { height: 4px; }
+.scenario-scroll::-webkit-scrollbar-track { background: transparent; }
+.scenario-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.scenario-card {
+  min-width: 200px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  flex-shrink: 0;
+}
+.scenario-card:hover { border-color: var(--primary); }
+.scenario-card.active { border-color: var(--primary); background: var(--primary-s); box-shadow: 0 4px 16px rgba(62,193,147,0.15); }
+
+.sc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.sc-emoji { font-size: 20px; }
+.sc-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.sc-desc { font-size: 11px; color: var(--text-2); margin-bottom: 10px; }
+.sc-order { font-size: 10px; color: var(--primary); font-weight: 600; line-height: 1.6; }
+
+.sc-stats { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px; }
+.sc-stat-row { display: flex; justify-content: space-between; font-size: 11px; }
+.sc-stat-label { color: var(--text-2); }
+.sc-stat-val { font-weight: 600; color: var(--text); }
+.sc-stat-val.good { color: var(--primary); }
+.sc-stat-val.warn { color: #F0A868; }
+
+/* ── RIGHT SIDEBAR ── */
+.rcard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px;
+}
+.rcard-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+.rcard-sub { font-size: 11px; color: var(--text-2); margin-bottom: 12px; }
+
+.kpi-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.kpi-label { font-size: 11px; color: var(--text-2); }
+.kpi-val { font-size: 15px; font-weight: 700; color: var(--text); }
+.kpi-val.green { color: var(--primary); }
+.kpi-val.orange { color: #F0A868; }
+
+.donut-wrap { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+.donut-legend { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.dl-item { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.dl-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dl-label { color: var(--text-2); flex: 1; }
+.dl-val { font-weight: 600; color: var(--text); }
+
+.saving-card {
+  background: var(--primary-s);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.saving-label { font-size: 11px; color: var(--primary-d); margin-bottom: 2px; }
+.saving-amount { font-size: 22px; font-weight: 800; color: var(--primary); }
+.saving-unit { font-size: 12px; font-weight: 500; color: var(--primary-d); margin-left: 2px; }
+
+.compare-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+.compare-label { color: var(--text-2); }
+.compare-val { font-weight: 600; }
+.compare-val.pos { color: var(--primary); }
+
+.progress-wrap { margin-bottom: 4px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+.progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; background: var(--primary); transition: width 0.6s ease; }
+
+.cheer-card {
+  background: linear-gradient(135deg, #E9FAF4 0%, #EBF4FB 100%);
+  border-radius: 10px;
+  padding: 12px 14px;
+  text-align: center;
+}
+.cheer-emoji { font-size: 24px; margin-bottom: 4px; }
+.cheer-text { font-size: 12px; color: var(--primary-d); font-weight: 600; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3EC193" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22C4 16 8 10 14 6 18 3 22 2 22 2c0 4-1 8-5 12-4 4-10 6-15 8Z"/><line x1="2" y1="22" x2="13" y2="11"/></svg>
+    </div>
+    <div class="logo-text">
+      <div class="logo-name">Leafin</div>
+      <div class="logo-sub">小森理財</div>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-head">規劃未來</div>
+    <a class="nav-item" href="dashboard.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+      總覽
+    </a>
+    <a class="nav-item" href="goals.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg></span>
+      我的夢想任務
+    </a>
+    <a class="nav-item active" href="timeline.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="22" y2="12"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></span>
+      人生時間軸
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-head">看現在</div>
+    <a class="nav-item" href="expenses.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
+      收支與花費
+    </a>
+    <a class="nav-item" href="assets.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span>
+      資產與負債
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-head">想看看</div>
+    <a class="nav-item" href="simulator.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>
+      未來模擬
+    </a>
+    <a class="nav-item" href="healthcheck.html">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+      財務小健檢
+    </a>
+  </div>
+
+  <div class="nav-spacer"></div>
+  <div class="nav-foot">
+    <a class="nav-item" href="#">
+      <span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+      設定
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div>
+        <div class="page-title">🗺️ 人生時間軸</div>
+        <div class="page-sub">預覽你的人生旅程，模擬不同人生劇本</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-primary" onclick="openScenario()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        模擬不同人生劇本
+      </button>
+      <div class="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+      <div id="tl-avatar" class="avatar">P</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content-wrap">
+    <div class="content-main">
+
+      <!-- SECTION A: 人生時間軸 -->
+      <div class="section-card">
+        <div class="section-title">我的人生時間軸</div>
+        <div class="section-sub">點擊節點查看詳情，拖曳可調整順序</div>
+
+        <div class="legend-row">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#3EC193;"></div> 進行中
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#6BADE0;"></div> 規劃中
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#F0A868;"></div> 即將到來
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#7B6AA0;"></div> 長期目標
+          </div>
+          <div style="flex:1;"></div>
+          <button style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--text-2);cursor:pointer;">
+            + 新增事件
+          </button>
+        </div>
+
+        <div class="timeline-scroll">
+          <div class="timeline-track">
+            <!-- 現在 -->
+            <div class="tl-node" onclick="selectNode(0)">
+              <div class="tl-info">
+                <div class="tl-name">現在</div>
+                <div id="tl-now-amount" class="tl-amount">月存 $22,500</div>
+                <div id="tl-now-year" class="tl-year">2026</div>
+              </div>
+              <div class="tl-icon-wrap active">
+                <span class="tl-icon">😊</span>
+              </div>
+              <div id="tl-now-age" class="tl-age">29 歲</div>
+            </div>
+
+            <div class="tl-connector" style="background:linear-gradient(to right, #3EC193, #6BADE0);"></div>
+
+            <!-- 出國留學 -->
+            <div class="tl-node" onclick="selectNode(1)">
+              <div class="tl-info">
+                <div class="tl-name">出國留學</div>
+                <div class="tl-amount">目標 80 萬</div>
+                <div class="tl-year">2028</div>
+              </div>
+              <div class="tl-icon-wrap prog">
+                <span class="tl-icon">✈️</span>
+              </div>
+              <div class="tl-age" style="background:#EBF4FB;color:#6BADE0;">31 歲</div>
+            </div>
+
+            <div class="tl-connector" style="background:linear-gradient(to right, #6BADE0, #F0A868);"></div>
+
+            <!-- 買房頭期款 -->
+            <div class="tl-node" onclick="selectNode(2)">
+              <div class="tl-info">
+                <div class="tl-name">買房頭期款</div>
+                <div class="tl-amount">目標 600 萬</div>
+                <div class="tl-year">2031</div>
+              </div>
+              <div class="tl-icon-wrap plan">
+                <span class="tl-icon">🏠</span>
+              </div>
+              <div class="tl-age" style="background:#FFF3E6;color:#F0A868;">34 歲</div>
+            </div>
+
+            <div class="tl-connector" style="background:linear-gradient(to right, #F0A868, #FF7BAC);"></div>
+
+            <!-- 生小孩 -->
+            <div class="tl-node" onclick="selectNode(3)">
+              <div class="tl-info">
+                <div class="tl-name">生小孩</div>
+                <div class="tl-amount">目標 150 萬</div>
+                <div class="tl-year">2034</div>
+              </div>
+              <div class="tl-icon-wrap" style="border-color:#FF7BAC;background:#FFF0F5;">
+                <span class="tl-icon">👶</span>
+              </div>
+              <div class="tl-age" style="background:#FFF0F5;color:#FF7BAC;">37 歲</div>
+            </div>
+
+            <div class="tl-connector" style="background:linear-gradient(to right, #FF7BAC, #7B6AA0);"></div>
+
+            <!-- 財務自由 FIRE -->
+            <div class="tl-node" onclick="selectNode(4)">
+              <div class="tl-info">
+                <div class="tl-name">財務自由 FIRE</div>
+                <div class="tl-amount">目標 2,500 萬</div>
+                <div class="tl-year">2045</div>
+              </div>
+              <div class="tl-icon-wrap long">
+                <span class="tl-icon">☕</span>
+              </div>
+              <div class="tl-age" style="background:#F3EFF8;color:#7B6AA0;">48 歲</div>
+            </div>
+
+            <div class="tl-connector" style="background:linear-gradient(to right, #7B6AA0, #C48B00);"></div>
+
+            <!-- 快樂退休 -->
+            <div class="tl-node" onclick="selectNode(5)">
+              <div class="tl-info">
+                <div class="tl-name">快樂退休</div>
+                <div class="tl-amount">目標 1,200 萬</div>
+                <div class="tl-year">2055</div>
+              </div>
+              <div class="tl-icon-wrap" style="border-color:#C48B00;background:#FFF8E1;">
+                <span class="tl-icon">🌴</span>
+              </div>
+              <div class="tl-age" style="background:#FFF8E1;color:#C48B00;">58 歲</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Node detail panel -->
+        <div id="node-detail" style="display:none;margin-top:16px;padding:16px;background:var(--bg);border-radius:12px;border:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <div id="nd-title" style="font-size:15px;font-weight:700;color:var(--text);"></div>
+              <div id="nd-sub" style="font-size:12px;color:var(--text-2);margin-top:2px;"></div>
+            </div>
+            <button onclick="document.getElementById('node-detail').style.display='none'" style="background:transparent;font-size:18px;color:var(--text-3);cursor:pointer;">✕</button>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:12px;">
+            <div style="flex:1;background:var(--card);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:11px;color:var(--text-2);margin-bottom:4px;">目標金額</div>
+              <div id="nd-target" style="font-size:18px;font-weight:800;color:var(--text);"></div>
+            </div>
+            <div style="flex:1;background:var(--card);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:11px;color:var(--text-2);margin-bottom:4px;">距離達成</div>
+              <div id="nd-years" style="font-size:18px;font-weight:800;color:var(--primary);"></div>
+            </div>
+            <div style="flex:1;background:var(--card);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:11px;color:var(--text-2);margin-bottom:4px;">每月需存</div>
+              <div id="nd-monthly" style="font-size:18px;font-weight:800;color:var(--text);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION B: 財務壓力分析 -->
+      <div class="section-card">
+        <div class="section-title">人生階段財務壓力分析</div>
+        <div class="section-sub">每月需存金額 ÷ 每月可支配收入</div>
+
+        <svg id="area-chart" width="100%" height="180" viewBox="0 0 700 180" preserveAspectRatio="none" style="display:block;">
+          <defs>
+            <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3EC193" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#3EC193" stop-opacity="0.05"/>
+            </linearGradient>
+            <!-- Phase backgrounds -->
+            <linearGradient id="ph1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3EC193" stop-opacity="0.06"/>
+              <stop offset="100%" stop-color="#3EC193" stop-opacity="0.02"/>
+            </linearGradient>
+            <linearGradient id="ph2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FF7B7B" stop-opacity="0.08"/>
+              <stop offset="100%" stop-color="#FF7B7B" stop-opacity="0.02"/>
+            </linearGradient>
+            <linearGradient id="ph3" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FFB84C" stop-opacity="0.08"/>
+              <stop offset="100%" stop-color="#FFB84C" stop-opacity="0.02"/>
+            </linearGradient>
+            <linearGradient id="ph4" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3EC193" stop-opacity="0.06"/>
+              <stop offset="100%" stop-color="#3EC193" stop-opacity="0.02"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Phase backgrounds -->
+          <rect x="0" y="0" width="175" height="160" fill="url(#ph1)" rx="0"/>
+          <rect x="175" y="0" width="175" height="160" fill="url(#ph2)" rx="0"/>
+          <rect x="350" y="0" width="175" height="160" fill="url(#ph3)" rx="0"/>
+          <rect x="525" y="0" width="175" height="160" fill="url(#ph4)" rx="0"/>
+
+          <!-- Grid lines -->
+          <line x1="0" y1="40" x2="700" y2="40" stroke="#E4EBE6" stroke-width="1"/>
+          <line x1="0" y1="80" x2="700" y2="80" stroke="#E4EBE6" stroke-width="1"/>
+          <line x1="0" y1="120" x2="700" y2="120" stroke="#E4EBE6" stroke-width="1"/>
+
+          <!-- Y-axis labels -->
+          <text x="8" y="38" font-size="10" fill="#A0AEB0" font-family="Inter, sans-serif">75%</text>
+          <text x="8" y="78" font-size="10" fill="#A0AEB0" font-family="Inter, sans-serif">50%</text>
+          <text x="8" y="118" font-size="10" fill="#A0AEB0" font-family="Inter, sans-serif">25%</text>
+
+          <!-- Area fill -->
+          <path d="M30,130 C80,120 120,110 140,100 C160,90 170,60 210,45 C240,35 260,55 290,70 C320,85 340,95 370,85 C400,75 420,60 450,55 C480,50 500,65 530,70 C560,75 580,80 610,85 C640,90 660,100 670,110 L670,160 L30,160 Z"
+                fill="url(#areaGrad)"/>
+
+          <!-- Line -->
+          <path d="M30,130 C80,120 120,110 140,100 C160,90 170,60 210,45 C240,35 260,55 290,70 C320,85 340,95 370,85 C400,75 420,60 450,55 C480,50 500,65 530,70 C560,75 580,80 610,85 C640,90 660,100 670,110"
+                fill="none" stroke="#3EC193" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Current marker -->
+          <circle cx="140" cy="100" r="5" fill="#3EC193" stroke="#fff" stroke-width="2"/>
+          <text x="130" y="92" font-size="10" fill="#3EC193" font-family="Inter, sans-serif" font-weight="600">現在</text>
+
+          <!-- Stress peak label -->
+          <circle cx="450" cy="55" r="5" fill="#FF7B7B" stroke="#fff" stroke-width="2"/>
+          <text x="438" y="47" font-size="10" fill="#FF7B7B" font-family="Inter, sans-serif" font-weight="600">壓力高峰</text>
+
+          <!-- Age X-axis -->
+          <text x="25" y="175" font-size="10" fill="#A0AEB0" font-family="Inter, sans-serif">20歲</text>
+          <text x="162" y="175" font-size="10" fill="#A0AEB0" font-family="Inter, sans-serif">30歲</text>
+          <text x="337" y="175" font-size="10" fill="#A0AEB0" font-family="Inter, sans-serif">40歲</text>
+          <text x="512" y="175" font-size="10" fill="#A0AEB0" font-family="Inter, sans-serif">50歲</text>
+          <text x="650" y="175" font-size="10" fill="#A0AEB0" font-family="Inter, sans-serif">60+</text>
+
+          <!-- Phase dividers -->
+          <line x1="175" y1="0" x2="175" y2="160" stroke="#E4EBE6" stroke-width="1" stroke-dasharray="4,3"/>
+          <line x1="350" y1="0" x2="350" y2="160" stroke="#E4EBE6" stroke-width="1" stroke-dasharray="4,3"/>
+          <line x1="525" y1="0" x2="525" y2="160" stroke="#E4EBE6" stroke-width="1" stroke-dasharray="4,3"/>
+        </svg>
+
+        <div class="phase-labels">
+          <div class="phase-label">
+            <span class="phase-badge" style="background:#E9FAF4;color:#249870;">🟢 輕鬆穩定</span>
+            <div style="font-size:10px;color:var(--text-3);margin-top:3px;">20–30 歲 累積期</div>
+          </div>
+          <div class="phase-label">
+            <span class="phase-badge" style="background:#FDEAEA;color:#E57373;">🔴 壓力較高</span>
+            <div style="font-size:10px;color:var(--text-3);margin-top:3px;">30–40 歲 衝刺期</div>
+          </div>
+          <div class="phase-label">
+            <span class="phase-badge" style="background:#FFF3E6;color:#F0A868;">🟡 穩定成長</span>
+            <div style="font-size:10px;color:var(--text-3);margin-top:3px;">40–50 歲 平衡期</div>
+          </div>
+          <div class="phase-label">
+            <span class="phase-badge" style="background:#E9FAF4;color:#249870;">🟢 財務自由</span>
+            <div style="font-size:10px;color:var(--text-3);margin-top:3px;">50 歲以上 享受期</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION C: 模擬不同人生劇本 -->
+      <div class="section-card">
+        <div class="section-title">模擬不同人生劇本</div>
+        <div class="section-sub">切換劇本，即時預覽你的財務未來</div>
+
+        <div class="scenario-scroll">
+          <!-- 先留學（目前使用中） -->
+          <div class="scenario-card active" onclick="selectScenario(this, 0)">
+            <div class="sc-header">
+              <span class="sc-emoji">✈️</span>
+              <span class="sc-title">先留學</span>
+            </div>
+            <div class="sc-desc">拓展視野與經驗，再規劃其他目標</div>
+            <div class="sc-order">現在 → 留學 → 買房 → 小孩 → FIRE</div>
+            <div class="sc-stats">
+              <div class="sc-stat-row">
+                <span class="sc-stat-label">每月需存</span>
+                <span class="sc-stat-val good">$22,500</span>
+              </div>
+              <div class="sc-stat-row">
+                <span class="sc-stat-label">財務壓力</span>
+                <span class="sc-stat-val good">中等</span>
+              </div>
+              <div class="sc-stat-row">
+                <span class="sc-stat-label">夢想完成率</span>
+                <span class="sc-stat-val good">92%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 先買房 -->
+          <div class="scenario-card" onclick="selectScenario(this, 1)">
+            <div class="sc-header">
+              <span class="sc-emoji">🏠</span>
+              <span class="sc-title">先買房</span>
+            </div>
+            <div class="sc-desc">穩定優先，先建立家的基地</div>
+            <div class="sc-order">現在 → 買房 → 留學 → 小孩 → FIRE</div>
+            <div class="sc-stats">
+              <div class="sc-stat-row">
+                <span class="sc-stat-label">每月需存</span>
+                <span class="sc-stat-val warn">$28,000</span>
+              </div>
+              <div class="sc-stat-row">
+                <span class="sc-stat-label">財務壓力</span>
+                <span class="sc-stat-val warn">偏高</span>
+              </div>
+              <div class="sc-stat-row">
+                <span class="sc-stat-label">夢想完成率</span>
+                <span class="sc-stat-val warn">78%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 先成家 -->
+          <div class="scenario-card" onclick="selectScenario(this, 2)">
+            <div class="sc-header">
+              <span class="sc-emoji">👶</span>
+              <span class="sc-title">先成家</span>
+            </div>
+            <div class="sc-desc">先組織家庭，再逐步實現其他夢想</div>
+            <div class="sc-order">現在 → 小孩 → 買房 → 留學 → FIRE</div>
+            <div class="sc-stats">
+              <div class="sc-stat-row">
+                <span class="sc-stat-label">每月需存</span>
+                <span class="sc-stat-val warn">$31,000</span>
+              </div>
+              <div class="sc-stat-row">
+                <span class="sc-stat-label">財務壓力</span>
+                <span class="sc-stat-val" style="color:#FF7B7B;">高</span>
+              </div>
+              <div class="sc-stat-row">
+                <span class="sc-stat-label">夢想完成率</span>
+                <span class="sc-stat-val warn">71%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- FIRE 優先 -->
+          <div class="scenario-card" onclick="selectScenario(this, 3)">
+            <div class="sc-header">
+              <span class="sc-emoji">🔥</span>
+              <span class="sc-title">FIRE 優先</span>
+            </div>
+            <div class="sc-desc">財務自由優先，延後消費目標</div>
+            <div class="sc-order">現在 → 投資 → FIRE → 延後其他</div>
+            <div class="sc-stats">
+              <div class="sc-stat-row">
+                <span class="sc-stat-label">每月需存</span>
+                <span class="sc-stat-val good">$35,000</span>
+              </div>
+              <div class="sc-stat-row">
+                <span class="sc-stat-label">財務壓力</span>
+                <span class="sc-stat-val warn">中高</span>
+              </div>
+              <div class="sc-stat-row">
+                <span class="sc-stat-label">夢想完成率</span>
+                <span class="sc-stat-val good">85%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendation -->
+        <div style="margin-top:14px;padding:12px 16px;background:var(--primary-s);border-radius:10px;border-left:3px solid var(--primary);">
+          <div style="font-size:12px;font-weight:700;color:var(--primary-d);margin-bottom:3px;">💡 小森建議</div>
+          <div style="font-size:12px;color:var(--text-2);">若晚 1 年留學出發，每月負擔可降低約 <strong style="color:var(--primary);">$3,200</strong>，財務壓力下降 <strong style="color:var(--primary);">28%</strong>，且不影響 FIRE 目標。</div>
+        </div>
+      </div>
+
+    </div><!-- /content-main -->
+
+    <!-- RIGHT SIDEBAR -->
+    <div class="content-sidebar">
+
+      <!-- 人生藍圖總覽 -->
+      <div class="rcard">
+        <div class="rcard-title">人生藍圖總覽</div>
+        <div class="donut-wrap">
+          <svg width="76" height="76" viewBox="0 0 76 76">
+            <circle cx="38" cy="38" r="28" fill="none" stroke="#E4EBE6" stroke-width="12"/>
+            <!-- Done: 1/6 -->
+            <circle cx="38" cy="38" r="28" fill="none" stroke="#3EC193" stroke-width="12"
+                    stroke-dasharray="29 147" stroke-dashoffset="44" stroke-linecap="round"/>
+            <!-- In progress: 1/6 -->
+            <circle cx="38" cy="38" r="28" fill="none" stroke="#6BADE0" stroke-width="12"
+                    stroke-dasharray="29 147" stroke-dashoffset="15" stroke-linecap="round"/>
+            <!-- Planned: 3/6 -->
+            <circle cx="38" cy="38" r="28" fill="none" stroke="#F0A868" stroke-width="12"
+                    stroke-dasharray="88 88" stroke-dashoffset="-13" stroke-linecap="round"/>
+            <!-- Long-term: 1/6 -->
+            <circle cx="38" cy="38" r="28" fill="none" stroke="#7B6AA0" stroke-width="12"
+                    stroke-dasharray="29 147" stroke-dashoffset="-101" stroke-linecap="round"/>
+            <text x="38" y="42" text-anchor="middle" font-size="14" font-weight="800" fill="#2D3436" font-family="Inter, sans-serif">6</text>
+            <text x="38" y="52" text-anchor="middle" font-size="9" fill="#A0AEB0" font-family="Inter, sans-serif">目標</text>
+          </svg>
+          <div class="donut-legend">
+            <div class="dl-item">
+              <div class="dl-dot" style="background:#3EC193;"></div>
+              <span class="dl-label">進行中</span>
+              <span class="dl-val">1</span>
+            </div>
+            <div class="dl-item">
+              <div class="dl-dot" style="background:#6BADE0;"></div>
+              <span class="dl-label">規劃中</span>
+              <span class="dl-val">1</span>
+            </div>
+            <div class="dl-item">
+              <div class="dl-dot" style="background:#F0A868;"></div>
+              <span class="dl-label">即將到來</span>
+              <span class="dl-val">3</span>
+            </div>
+            <div class="dl-item">
+              <div class="dl-dot" style="background:#7B6AA0;"></div>
+              <span class="dl-label">長期目標</span>
+              <span class="dl-val">1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 每月建議存下 -->
+      <div class="rcard">
+        <div class="rcard-title">為了實現所有夢想</div>
+        <div class="saving-card">
+          <div class="saving-label">每月建議存下</div>
+          <div style="display:flex;align-items:baseline;gap:4px;">
+            <div id="tl-saving-amount" class="saving-amount">22,500</div>
+            <div class="saving-unit">元</div>
+          </div>
+        </div>
+        <div class="compare-row">
+          <span class="compare-label">目前每月可存</span>
+          <span id="tl-monthly-income" class="compare-val">24,000 元</span>
+        </div>
+        <div class="compare-row">
+          <span class="compare-label">剩餘空間</span>
+          <span id="tl-surplus" class="compare-val pos">+1,500 元</span>
+        </div>
+        <div style="margin-top:8px;">
+          <div class="progress-label">
+            <span style="color:var(--text-2);font-size:11px;">總目標金額</span>
+            <span id="tl-total-goal" style="font-size:11px;font-weight:600;">8,430 萬</span>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar">
+              <div id="tl-progress-fill" class="progress-fill" style="width:10%;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);margin-top:3px;">
+              <span id="tl-fund-text">已準備 843 萬</span>
+              <span id="tl-pct-text">10%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 鼓勵卡 -->
+      <div class="cheer-card">
+        <div class="cheer-emoji">🌱</div>
+        <div class="cheer-text">加油！你正在朝夢想前進<br>每一步都算數</div>
+      </div>
+
+    </div><!-- /content-sidebar -->
+
+  </div><!-- /content-wrap -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+const nodes = [
+  { title: "現在 😊", sub: "努力工作存第一桶金", target: "—", years: "今天", monthly: "$22,500" },
+  { title: "出國留學 ✈️", sub: "語言學校 + 海外工作體驗", target: "80 萬", years: "約 5 年", monthly: "$10,500" },
+  { title: "買房頭期款 🏠", sub: "買房頭期 + 裝潢準備", target: "600 萬", years: "約 8 年", monthly: "$5,800" },
+  { title: "生小孩 👶", sub: "第一胎 + 育兒準備", target: "150 萬", years: "約 11 年", monthly: "$2,200" },
+  { title: "財務自由 FIRE ☕", sub: "半退休生活 + 環遊世界", target: "2,500 萬", years: "約 22 年", monthly: "$8,500" },
+  { title: "快樂退休 🌴", sub: "享受生活追求熱愛", target: "1,200 萬", years: "約 32 年", monthly: "$2,800" },
+];
+
+function selectNode(i) {
+  const d = nodes[i];
+  document.getElementById('nd-title').textContent = d.title;
+  document.getElementById('nd-sub').textContent = d.sub;
+  document.getElementById('nd-target').textContent = d.target;
+  document.getElementById('nd-years').textContent = d.years;
+  document.getElementById('nd-monthly').textContent = d.monthly;
+  document.getElementById('node-detail').style.display = 'block';
+}
+
+function selectScenario(el, idx) {
+  document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function openScenario() {
+  const el = document.querySelector('.scenario-scroll');
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
+
+<script>
+/* ── localStorage data binding ── */
+const PROFILE_KEY = 'leafin_profile';
+const GOALS_KEY   = 'leafin_goals';
+
+function getProfile() { try { return JSON.parse(localStorage.getItem(PROFILE_KEY)); } catch { return null; } }
+function getGoals()   { try { return JSON.parse(localStorage.getItem(GOALS_KEY));   } catch { return null; } }
+
+function fmtMoney(n) {
+  if (!n && n !== 0) return '—';
+  if (Math.abs(n) >= 10000000) return (n / 10000).toFixed(0) + ' 萬';
+  if (Math.abs(n) >= 10000)    return (n / 10000).toFixed(1) + ' 萬';
+  return n.toLocaleString();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const p     = getProfile();
+  const goals = getGoals();
+
+  if (p) {
+    // "現在" timeline node
+    document.getElementById('tl-now-age').textContent    = (p.age || 29) + ' 歲';
+    document.getElementById('tl-now-amount').textContent = '月存 $' + (p.monthly || 0).toLocaleString();
+    document.getElementById('tl-now-year').textContent   = new Date().getFullYear();
+
+    // Topbar avatar: first char of name
+    document.getElementById('tl-avatar').textContent = (p.name || '我').charAt(0);
+
+    // Sidebar: recommended monthly savings
+    document.getElementById('tl-saving-amount').textContent = (p.monthly || 0).toLocaleString();
+
+    // Monthly income display
+    document.getElementById('tl-monthly-income').textContent = (p.income || 0).toLocaleString() + ' 元';
+
+    // Surplus = income - monthly savings
+    const surplus = (p.income || 0) - (p.monthly || 0);
+    const surplusEl = document.getElementById('tl-surplus');
+    surplusEl.textContent = (surplus >= 0 ? '+' : '') + surplus.toLocaleString() + ' 元';
+    surplusEl.style.color = surplus >= 0 ? 'var(--primary)' : 'var(--danger, #FF7B7B)';
+  }
+
+  // Compute goal totals
+  let totalGoal = 0;
+  if (goals && goals.length > 0) {
+    totalGoal = goals.reduce((s, g) => s + (g.target || 0), 0);
+  } else {
+    totalGoal = 84300000; // 8,430 萬 default
+  }
+
+  const fund = (p != null && p.fund != null) ? p.fund : 8430000;
+  const pct  = totalGoal > 0 ? Math.min(100, Math.round(fund / totalGoal * 100)) : 0;
+
+  document.getElementById('tl-total-goal').textContent    = fmtMoney(totalGoal);
+  document.getElementById('tl-fund-text').textContent     = '已準備 ' + fmtMoney(fund);
+  document.getElementById('tl-pct-text').textContent      = pct + '%';
+  document.getElementById('tl-progress-fill').style.width = pct + '%';
+});
+</script>
+</body>
+</html>
