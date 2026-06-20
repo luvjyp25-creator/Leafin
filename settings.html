@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>設定 — Leafin 小森理財</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F0F4EC; --card:#FFFFFF; --border:#E4EBE6; --shadow-sm:0 2px 8px rgba(0,0,0,0.05);
+  --primary:#3EC193; --primary-s:#E9FAF4; --primary-d:#249870;
+  --text:#2D3436; --text-2:#6B7B7D; --text-3:#A0AEB0;
+  --sidebar-w:210px; --r:16px; --danger:#FF7B7B;
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Inter',-apple-system,'PingFang TC','Microsoft JhengHei',sans-serif; background:var(--bg); color:var(--text); font-size:13px; line-height:1.5; }
+button { font-family:inherit; cursor:pointer; border:none; }
+.app { display:flex; height:100vh; overflow:hidden; }
+.sidebar { width:var(--sidebar-w); min-width:var(--sidebar-w); background:var(--card); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:24px 16px; gap:6px; overflow-y:auto; }
+.logo { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.logo-text { display:flex; flex-direction:column; gap:1px; }
+.logo-name { font-size:20px; font-weight:700; color:var(--text); letter-spacing:-0.3px; line-height:1.1; }
+.logo-sub { font-size:11px; color:var(--text-2); }
+.nav-group { display:flex; flex-direction:column; gap:2px; margin-bottom:4px; }
+.nav-head { font-size:11px; font-weight:700; color:var(--primary); letter-spacing:1px; padding:4px 10px; margin-top:8px; }
+.nav-item { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:8px; font-size:13px; color:var(--text); cursor:pointer; text-decoration:none; transition:background .15s,color .15s; }
+.nav-item:hover { background:var(--bg); }
+.nav-item.active { background:var(--primary-s); color:var(--primary); font-weight:500; }
+.nav-item .ni { flex-shrink:0; display:flex; align-items:center; }
+.nav-spacer { flex:1; }
+.nav-foot { display:flex; flex-direction:column; gap:2px; border-top:1px solid var(--bg); padding-top:8px; }
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+.topbar { background:var(--card); border-bottom:1px solid var(--border); padding:0 28px; height:60px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.page-title { font-size:17px; font-weight:700; color:var(--text); }
+.page-sub { font-size:12px; color:var(--text-2); }
+.avatar { width:32px; height:32px; border-radius:50%; background:var(--primary-s); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--primary); }
+.scroll-area { flex:1; overflow-y:auto; padding:24px 28px; display:flex; flex-direction:column; gap:18px; max-width:640px; }
+.card { background:var(--card); border-radius:var(--r); border:1px solid var(--border); box-shadow:var(--shadow-sm); padding:20px 22px; }
+.card-title { font-size:14px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.card-sub { font-size:11px; color:var(--text-2); margin-bottom:16px; }
+.field { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.field label { font-size:12px; font-weight:600; color:var(--text); }
+.field input, .field select { height:40px; border:1.5px solid var(--border); border-radius:9px; padding:0 12px; font-size:13px; font-family:inherit; color:var(--text); outline:none; transition:border-color .15s; background:var(--card); width:100%; }
+.field input:focus, .field select:focus { border-color:var(--primary); }
+.row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.btn-primary { height:42px; padding:0 20px; background:var(--primary); color:#fff; border-radius:10px; font-size:13px; font-weight:700; transition:background .15s; }
+.btn-primary:hover { background:var(--primary-d); }
+.btn-outline { height:38px; padding:0 16px; background:var(--card); color:var(--text); border:1.5px solid var(--border); border-radius:9px; font-size:12px; font-weight:600; transition:border-color .15s; }
+.btn-outline:hover { border-color:var(--primary); color:var(--primary); }
+.btn-danger { height:38px; padding:0 16px; background:#fff; color:var(--danger); border:1.5px solid #F5C6C6; border-radius:9px; font-size:12px; font-weight:600; }
+.btn-danger:hover { background:#FFF2F2; }
+.btn-row { display:flex; gap:10px; flex-wrap:wrap; }
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--text); color:#fff; padding:10px 20px; border-radius:10px; font-size:13px; opacity:0; pointer-events:none; transition:all .25s; z-index:100; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.hint { font-size:11px; color:var(--text-3); margin-top:-8px; margin-bottom:14px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div style="color:var(--primary);display:flex;align-items:center;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3EC193" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22C4 16 8 10 14 6 18 3 22 2 22 2c0 4-1 8-5 12-4 4-10 6-15 8Z"/><line x1="2" y1="22" x2="13" y2="11"/></svg>
+    </div>
+    <div class="logo-text"><div class="logo-name">Leafin</div><div class="logo-sub">小森理財</div></div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-head">規劃未來</div>
+    <a class="nav-item" href="dashboard.html"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>總覽</a>
+    <a class="nav-item" href="goals.html"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg></span>我的夢想任務</a>
+    <a class="nav-item" href="timeline.html"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="12" x2="22" y2="12"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></span>人生時間軸</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-head">看現在</div>
+    <a class="nav-item" href="expenses.html"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>收支與花費</a>
+    <a class="nav-item" href="assets.html"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span>資產與負債</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-head">想看看</div>
+    <a class="nav-item" href="simulator.html"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>未來模擬</a>
+    <a class="nav-item" href="healthcheck.html"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>財務小健檢</a>
+  </div>
+
+  <div class="nav-spacer"></div>
+  <div class="nav-foot">
+    <a class="nav-item active" href="settings.html"><span class="ni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>設定</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">⚙️ 設定</div>
+      <div class="page-sub">個人資料與財務假設，全站共用</div>
+    </div>
+    <div class="avatar" id="set-avatar">我</div>
+  </div>
+
+  <div class="scroll-area">
+
+    <!-- 個人資料 -->
+    <div class="card">
+      <div class="card-title">個人資料</div>
+      <div class="card-sub">引導時填過的資料會自動帶入，可在此修改；存檔後全站同步。</div>
+      <div class="field">
+        <label>名字</label>
+        <input type="text" id="set-name" placeholder="例：小葉" maxlength="20">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>年齡</label>
+          <input type="number" id="set-age" placeholder="例：28" min="16" max="90">
+        </div>
+        <div class="field">
+          <label>人生階段</label>
+          <select id="set-lifestyle">
+            <option value="單身">單身</option>
+            <option value="穩定交往">穩定交往</option>
+            <option value="已婚">已婚</option>
+            <option value="已婚有小孩">已婚有小孩</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>月收入（含獎金）</label>
+          <input type="number" id="set-income" placeholder="例：48500" min="0">
+        </div>
+        <div class="field">
+          <label>每月可存金額</label>
+          <input type="number" id="set-monthly" placeholder="例：22500" min="0">
+        </div>
+      </div>
+      <button class="btn-primary" onclick="saveProfile()">儲存個人資料 ✓</button>
+    </div>
+
+    <!-- 財務假設 -->
+    <div class="card">
+      <div class="card-title">財務假設</div>
+      <div class="card-sub">用於未來模擬與財務健檢的 FIRE 目標計算（FIRE 目標 = 月退休支出 × 12 ÷ 提領率）。</div>
+      <div class="row2">
+        <div class="field">
+          <label>FIRE 提領率</label>
+          <select id="set-wr">
+            <option value="3">3%（保守 · 33 倍）</option>
+            <option value="4">4%（標準 · 25 倍）</option>
+            <option value="5">5%（積極 · 20 倍）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>預估月退休支出</label>
+          <input type="number" id="set-retire-exp" placeholder="例：60000" min="0">
+        </div>
+      </div>
+      <button class="btn-primary" onclick="saveAssumptions()">儲存財務假設 ✓</button>
+    </div>
+
+    <!-- 資料管理 -->
+    <div class="card">
+      <div class="card-title">資料管理</div>
+      <div class="card-sub">你的資料只存在這台裝置的瀏覽器（localStorage）。建議定期匯出備份。</div>
+      <div class="btn-row">
+        <button class="btn-outline" onclick="exportData()">⬇ 匯出備份（JSON）</button>
+        <button class="btn-outline" onclick="document.getElementById('set-import-file').click()">⬆ 匯入備份</button>
+        <input type="file" id="set-import-file" accept="application/json,.json" style="display:none" onchange="importData(this.files[0])">
+        <button class="btn-danger" onclick="clearData()">🗑 清除所有資料</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<div class="toast" id="set-toast"></div>
+
+<script>
+const LS_KEYS = ['leafin_profile','leafin_goals','leafin_assets','leafin_expenses','leafin_expanded_groups','leafin_onboarded'];
+
+function toast(msg) {
+  const t = document.getElementById('set-toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function loadProfile() {
+  try { return JSON.parse(localStorage.getItem('leafin_profile')) || {}; } catch { return {}; }
+}
+
+/* 帶入引導時填過的資料 */
+(function prefill() {
+  const p = loadProfile();
+  if (p.name != null)      document.getElementById('set-name').value = p.name;
+  if (p.age != null)       document.getElementById('set-age').value = p.age;
+  if (p.lifestyle)         document.getElementById('set-lifestyle').value = p.lifestyle;
+  if (p.income != null)    document.getElementById('set-income').value = p.income;
+  if (p.monthly != null)   document.getElementById('set-monthly').value = p.monthly;
+  document.getElementById('set-wr').value = String(p.withdrawRate || 4);
+  if (p.retireExpense != null) document.getElementById('set-retire-exp').value = p.retireExpense;
+  document.getElementById('set-avatar').textContent = (p.name || '我').charAt(0);
+})();
+
+function saveProfile() {
+  const p = loadProfile();
+  const name = document.getElementById('set-name').value.trim();
+  if (!name) { toast('請填寫名字'); return; }
+  p.name      = name;
+  p.age       = parseInt(document.getElementById('set-age').value) || p.age || 0;
+  p.lifestyle = document.getElementById('set-lifestyle').value;
+  p.income    = parseFloat(document.getElementById('set-income').value) || 0;
+  p.monthly   = parseFloat(document.getElementById('set-monthly').value) || 0;
+  localStorage.setItem('leafin_profile', JSON.stringify(p));
+  document.getElementById('set-avatar').textContent = name.charAt(0);
+  toast('已儲存個人資料 ✓');
+}
+
+function saveAssumptions() {
+  const p = loadProfile();
+  p.withdrawRate  = parseFloat(document.getElementById('set-wr').value) || 4;
+  const exp = parseFloat(document.getElementById('set-retire-exp').value);
+  p.retireExpense = isNaN(exp) ? (p.retireExpense || 60000) : exp;
+  localStorage.setItem('leafin_profile', JSON.stringify(p));
+  toast('已儲存財務假設 ✓');
+}
+
+function exportData() {
+  const out = {};
+  LS_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v != null) out[k] = v; });
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'leafin-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已匯出備份 ✓');
+}
+
+function importData(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      let n = 0;
+      LS_KEYS.forEach(k => { if (data[k] != null) { localStorage.setItem(k, data[k]); n++; } });
+      if (n === 0) { toast('檔案中沒有可匯入的資料'); return; }
+      toast('已匯入 ' + n + ' 項資料，重新整理中…');
+      setTimeout(() => location.reload(), 900);
+    } catch { toast('檔案格式錯誤，無法匯入'); }
+  };
+  reader.readAsText(file);
+}
+
+function clearData() {
+  if (!confirm('確定要清除所有資料嗎？此動作無法復原（建議先匯出備份）。')) return;
+  LS_KEYS.forEach(k => localStorage.removeItem(k));
+  toast('已清除所有資料，重新整理中…');
+  setTimeout(() => location.reload(), 900);
+}
+</script>
+</body>
+</html>
