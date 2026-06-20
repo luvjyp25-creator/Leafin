@@ -261,6 +261,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .type-btn.active-inc{background:#E9FAF4;border-color:var(--primary);color:var(--primary);}
 .type-btn.active-exp{background:#FDEAEA;border-color:var(--danger);color:var(--danger);}
 </style>
+<script src="leafin-sync.js"></script>
 </head>
 <body>
 <div class="app">
@@ -349,6 +350,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
       <div class="icon-btn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       </div>
+      <span class="sync-indicator" id="sync-indicator" title="雲端同步狀態" style="font-size:11px;color:var(--text-3);margin-right:6px;"></span>
       <div class="avatar" onclick="location.href='settings.html'" title="設定">P</div>
     </div>
   </div>

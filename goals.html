@@ -276,6 +276,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .ni{flex-shrink:0;display:flex;align-items:center}
 .ni svg{stroke:currentColor}
 .nav-item.active .ni svg{stroke:var(--mint)}</style>
+<script src="leafin-sync.js"></script>
 </head>
 <body>
 <div class="app">
@@ -310,6 +311,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
   <header class="topbar">
     <div class="topbar-title-row">
       <span class="topbar-h1">我的夢想任務</span>
+      <span class="sync-indicator" id="sync-indicator" title="雲端同步狀態" style="font-size:11px;color:var(--text-3);margin-left:8px;"></span>
     </div>
     <div class="topbar-sub">選擇你的夢想，設定目標時間與預算</div>
   </header>
