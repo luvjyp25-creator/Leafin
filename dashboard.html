@@ -599,7 +599,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   overflow: hidden;
   display: flex;
   align-items: center;
-  min-height: 210px;
+  min-height: 214px;
   margin-bottom: 18px;
   border-radius: 20px;
   border: 1px solid var(--border);
@@ -611,11 +611,10 @@ button { font-family: inherit; cursor: pointer; border: none; }
   content: '';
   position: absolute;
   top: 0; right: 0; bottom: 0;
-  left: 0;
-  width: auto;
-  background: url('images/hero-wide-v2.png') center 36% / cover no-repeat;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 34%);
-  mask-image: linear-gradient(to right, transparent 0%, #000 34%);
+  aspect-ratio: 1568 / 682;   /* 永遠維持圖片比例：整張完整顯示、右邊路標+城市不被裁 */
+  background: url('images/hero-scene-wide-v5.png') right center / cover no-repeat;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 36%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 36%);
   pointer-events: none;
 }
 .hero-left {
@@ -1011,13 +1010,6 @@ button { font-family: inherit; cursor: pointer; border: none; }
           <div class="hero-title">你的未來，不該只是一串數字 <span class="leaf">🌿</span></div>
           <div class="hero-sub">不論是買房、旅行、FIRE，或是提早過上想要的生活，<br>Leafin 幫你把夢想變成可追蹤的財務計畫，每一步都更靠近目標。</div>
           <button class="hero-cta" id="hero-cta" onclick="openOnboarding()">🧭 建立我的人生導航（1 分鐘）</button>
-        </div>
-        <div class="signpost">
-          <div class="post"></div>
-          <div class="sign dir-r">🏠 買房成家</div>
-          <div class="sign dir-l">✈️ 環遊世界</div>
-          <div class="sign dir-r">🏝️ 提早退休</div>
-          <div class="sign dir-l">🪙 財務自由</div>
         </div>
       </section>
 
