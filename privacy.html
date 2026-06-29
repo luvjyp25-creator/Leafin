@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>隱私權政策 — Leafin</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F9FB; --card:#FFFFFF; --border:#E4EBE6;
+    --primary:#3EC193; --primary-d:#249870;
+    --text:#2D3436; --text-2:#6B7B7D; --text-3:#A0AEB0;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Inter',-apple-system,'PingFang TC','Microsoft JhengHei',sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.75; font-size:15px;
+    padding:32px 18px calc(48px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+  .logo{display:flex;align-items:center;gap:10px;margin-bottom:24px;text-decoration:none;}
+  .logo-mark{width:34px;height:34px;border-radius:9px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .logo-name{font-size:20px;font-weight:700;color:var(--text);letter-spacing:-.3px;}
+  .logo-sub{font-size:9px;font-style:italic;color:var(--text-2);line-height:1.2;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px 28px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+  h1{font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px;}
+  .updated{font-size:13px;color:var(--text-3);margin-bottom:24px;}
+  h2{font-size:17px;font-weight:700;color:var(--primary-d);margin:26px 0 8px;}
+  p{margin-bottom:10px;color:var(--text);}
+  ul{margin:0 0 10px 1.2em;}
+  li{margin-bottom:6px;}
+  .muted{color:var(--text-2);font-size:14px;}
+  a{color:var(--primary-d);}
+  .back{display:inline-block;margin-top:28px;font-size:14px;font-weight:600;color:var(--primary-d);text-decoration:none;}
+  .back:hover{text-decoration:underline;}
+  strong{font-weight:700;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="logo" href="dashboard.html">
+    <span class="logo-mark">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22C4 16 8 10 14 6 18 3 22 2 22 2c0 4-1 8-5 12-4 4-10 6-15 8Z"/><line x1="2" y1="22" x2="13" y2="11"/></svg>
+    </span>
+    <span>
+      <div class="logo-name">Leafin</div>
+      <div class="logo-sub">Every leaf starts small and grows</div>
+    </span>
+  </a>
+
+  <div class="card">
+    <h1>隱私權政策</h1>
+    <div class="updated">最後更新：2026 年 6 月 29 日</div>
+
+    <p>Leafin（小森理財，以下稱「本服務」）是一款協助你規劃個人財務與人生目標的工具。我們非常重視你的隱私。本頁說明本服務如何處理你的資料。</p>
+
+    <h2>1. 核心原則：你的資料存在你自己手上</h2>
+    <p>本服務<strong>沒有後端伺服器</strong>，也<strong>不會把你的財務資料上傳到任何屬於我們的伺服器</strong>。你輸入的收支、資產、負債、夢想目標等資料，預設只儲存在<strong>你自己瀏覽器的本機儲存空間（localStorage）</strong>。</p>
+
+    <h2>2. 我們蒐集哪些資料</h2>
+    <ul>
+      <li><strong>財務與個人設定資料</strong>（姓名暱稱、年齡、收支、資產、目標等）：僅存於你的瀏覽器本機，除非你啟用下方的雲端同步，否則不會離開你的裝置。</li>
+      <li><strong>本服務不使用</strong>廣告追蹤、分析工具或追蹤式 cookie，也不會建立使用者分析檔。</li>
+    </ul>
+
+    <h2>3. Google 登入與雲端同步（選用）</h2>
+    <p>登入為<strong>選用功能</strong>；不登入也能完整使用本服務（資料存在本機）。若你選擇以 Google 登入以跨裝置同步：</p>
+    <ul>
+      <li>我們會向 Google 取得你的<strong>電子郵件、名稱與大頭貼</strong>，僅用於在介面上顯示你已登入的身分。</li>
+      <li>我們使用 Google Drive 的 <code>drive.appdata</code>（應用程式資料夾）權限，把你的資料同步檔存放在<strong>你自己的 Google Drive 專屬應用程式資料夾</strong>中。這份檔案只存在你的 Google Drive，我們<strong>無法瀏覽你 Drive 內的其他檔案</strong>，也不會把這份資料留存在任何 Leafin 伺服器。</li>
+      <li>你可以隨時在本服務「設定」頁登出，或到你的 <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Google 帳號權限頁面</a>移除對本服務的授權。</li>
+    </ul>
+
+    <h2>4. 第三方服務</h2>
+    <p>為了正常運作，本服務在你的瀏覽器中載入下列第三方資源；它們在提供服務時可能取得你的 IP 位址等基本連線資訊，並依其各自的隱私權政策處理：</p>
+    <ul>
+      <li><strong>Google Fonts</strong>（字型）與 <strong>Google Identity Services</strong>（登入）。</li>
+      <li><strong>jsDelivr CDN</strong> 上的 SheetJS（xlsx）函式庫，用於匯入 Excel / CSV 檔案。</li>
+    </ul>
+
+    <h2>5. Cookie 與登入狀態</h2>
+    <p>本服務不使用追蹤式 cookie。登入狀態以瀏覽器的 <code>sessionStorage</code> 暫存，關閉分頁或一段時間後即失效，需要時請重新登入。</p>
+
+    <h2>6. 如何刪除你的資料</h2>
+    <ul>
+      <li><strong>本機資料</strong>：清除本網站的瀏覽器資料（或在設定頁使用清除功能）即可刪除。</li>
+      <li><strong>雲端同步檔</strong>：在你的 Google Drive 刪除應用程式資料，或在設定頁登出並移除 Google 授權。</li>
+    </ul>
+
+    <h2>7. 兒童隱私</h2>
+    <p>本服務並非針對 13 歲以下兒童設計，我們不會在知情的情況下蒐集兒童的個人資料。</p>
+
+    <h2>8. 政策變更</h2>
+    <p>若本政策有更新，我們會修改本頁上方的「最後更新」日期。</p>
+
+    <h2>9. 聯絡我們</h2>
+    <p class="muted">如對本隱私權政策有任何疑問，請來信：<a href="mailto:luvjyp25@gmail.com">luvjyp25@gmail.com</a></p>
+
+    <a class="back" href="dashboard.html">← 返回 Leafin</a>
+  </div>
+</div>
+</body>
+</html>

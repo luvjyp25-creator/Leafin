@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>設定 — Leafin 小森理財</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -169,7 +170,7 @@ button { font-family:inherit; cursor:pointer; border:none; }
     <!-- 帳號與雲端同步 -->
     <div class="card" id="acct-section">
       <div class="card-title">帳號與雲端同步</div>
-      <div class="card-sub">登入 Google，把資料同步到你自己的 Google Drive，跨裝置都能用。Leafin 不會儲存你的任何資料。</div>
+      <div class="card-sub">登入 Google，把資料同步到你自己的 Google Drive，跨裝置都能用。Leafin 不會儲存你的任何資料。詳見<a href="privacy.html" style="color:var(--primary-d);">隱私權政策</a>。</div>
 
       <div id="acct-unconfigured" style="display:none;font-size:12px;color:#A07000;background:#FFF8E1;border-radius:8px;padding:10px 12px;margin-bottom:10px;">
         ⚙ 尚未設定雲端同步。請依 <a href="docs/setup-google-signin.md" style="color:var(--primary);">設定說明</a> 取得 Google Client ID 後填入 <code>leafin-sync.js</code>。在那之前，網站仍可正常使用（資料存在本機，可用下方「手動備份」跨裝置）。
@@ -206,6 +207,12 @@ button { font-family:inherit; cursor:pointer; border:none; }
         <input type="file" id="set-import-file" accept="application/json,.json" style="display:none" onchange="importData(this.files[0])">
         <button class="btn-danger" onclick="clearData()">🗑 清除所有資料</button>
       </div>
+    </div>
+
+    <div style="text-align:center;font-size:11px;color:var(--text-3);padding:4px 0 8px;">
+      <a href="privacy.html" style="color:var(--text-2);text-decoration:none;">隱私權政策</a>
+      <span style="margin:0 6px;">·</span>
+      Leafin — Every leaf starts small and grows
     </div>
 
   </div>
