@@ -618,7 +618,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
             </div>
             <div class="qf-input-wrap">
               <span class="qf-currency">$</span>
-              <input id="qf-income" class="qf-input" type="number" value="48500" oninput="calcResult()">
+              <input id="qf-income" class="qf-input" type="number" value="" placeholder="例：48500" oninput="calcResult()">
             </div>
           </div>
           <div class="qf-field">
@@ -628,7 +628,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
             </div>
             <div class="qf-input-wrap">
               <span class="qf-currency">$</span>
-              <input id="qf-expense" class="qf-input" type="number" value="26200" oninput="calcResult()">
+              <input id="qf-expense" class="qf-input" type="number" value="" placeholder="例：26200" oninput="calcResult()">
             </div>
           </div>
           <div class="qf-field">
@@ -761,16 +761,8 @@ const CAT_ICONS = {
   '其他':        { icon:'📋', bg:'#F0F4EC', fill:'#A0AEB0' },
 };
 
-const DEFAULT_TX = [
-  { id:'d1', date:'2026/05/30', name:'薪資入帳',    category:'收入',         type:'income',  amount:48500 },
-  { id:'d2', date:'2026/05/30', name:'超市採購',    category:'飲食',         type:'expense', amount:1280  },
-  { id:'d3', date:'2026/05/28', name:'悠遊卡加值',  category:'交通',         type:'expense', amount:500   },
-  { id:'d4', date:'2026/05/28', name:'咖啡廳',      category:'娛樂 / 社交',  type:'expense', amount:180   },
-  { id:'d5', date:'2026/05/28', name:'Netflix',    category:'通訊 / 訂閱', type:'expense', amount:390   },
-  { id:'d6', date:'2026/05/25', name:'房租',        category:'居住',         type:'expense', amount:8000  },
-  { id:'d7', date:'2026/05/22', name:'聚餐',        category:'娛樂 / 社交',  type:'expense', amount:1200  },
-  { id:'d8', date:'2026/05/22', name:'ETF 定期定額',category:'投資',         type:'expense', amount:10000 },
-];
+// 新使用者沒有記錄時 → 空陣列（顯示空狀態）。示範資料改由首頁 ?demo=1 載入，不再寫死在此當 fallback。
+const DEFAULT_TX = [];
 
 function loadExpenses() {
   try { const d = JSON.parse(localStorage.getItem(EXPENSE_KEY)); return d && d.transactions ? d : null; }

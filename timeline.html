@@ -990,15 +990,15 @@ document.addEventListener('DOMContentLoaded', () => {
   renderScenarios(p, goals);
   renderBlueprint(goals);
 
-  if (p) {
-    document.getElementById('tl-avatar').textContent = (p.name || '我').charAt(0);
-    document.getElementById('tl-saving-amount').textContent = (p.monthly || 0).toLocaleString();
-    document.getElementById('tl-monthly-income').textContent = (p.income || 0).toLocaleString() + ' 元';
-    const surplus = (p.income || 0) - (p.monthly || 0);
-    const surplusEl = document.getElementById('tl-surplus');
-    surplusEl.textContent = (surplus >= 0 ? '+' : '') + surplus.toLocaleString() + ' 元';
-    surplusEl.style.color = surplus >= 0 ? 'var(--primary)' : '#FF7B7B';
-  }
+  // 一律以 profile 計算（無 profile 時以 0 呈現，不再保留靜態示範數字）
+  const pp = p || {};
+  document.getElementById('tl-avatar').textContent = (pp.name || '我').charAt(0);
+  document.getElementById('tl-saving-amount').textContent = (pp.monthly || 0).toLocaleString();
+  document.getElementById('tl-monthly-income').textContent = (pp.income || 0).toLocaleString() + ' 元';
+  const surplus = (pp.income || 0) - (pp.monthly || 0);
+  const surplusEl = document.getElementById('tl-surplus');
+  surplusEl.textContent = (surplus >= 0 ? '+' : '') + surplus.toLocaleString() + ' 元';
+  surplusEl.style.color = surplus >= 0 ? 'var(--primary)' : '#FF7B7B';
 
   // 目標總額 / 已準備（= 目標 current 加總，與 goals 頁一致，不再用 profile.fund）
   const totalGoal    = (goals && goals.length) ? goals.reduce((s, g) => s + (g.target  || 0), 0) : 0;

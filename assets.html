@@ -612,10 +612,10 @@ button { font-family: inherit; cursor: pointer; border: none; }
     <div style="background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:16px 20px;display:flex;gap:14px;align-items:flex-start;">
       <div style="font-size:28px;">🌱</div>
       <div>
-        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px;">你的資產正在穩定成長</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px;">讓資產持續累積</div>
         <div style="font-size:12px;color:var(--text-2);line-height:1.7;">
-          依目前每月投入 <strong>$22,500</strong>、ETF 年報酬 8%，預計 <strong style="color:var(--primary);">5 年後</strong>淨資產將轉為正數。<br>
-          若能提升投資比例至收入 30%，提早 1–2 年達到財務平衡。
+          把現金、投資、保單與貸款都記錄下來，Leafin 會幫你算出淨資產與每月變化。<br>
+          每月固定記錄一次，就能清楚看到自己的財務成長軌跡。
         </div>
       </div>
     </div>
@@ -890,17 +890,10 @@ const LIAB_COLORS = ['#FF7B7B','#F0A868','#C48B00','#8B5CF6','#6BADE0'];
 const LIAB_CATS = ['房貸','車貸','學貸','信用卡','信用貸款','分期付款','其他負債'];
 const DEFAULT_RATES = { TWD:1, USD:31.5, JPY:0.21, EUR:34, BTC:3000000, ETH:100000, OTHER:1 };
 
+// 新使用者沒有資產/負債時 → 空結構（顯示空狀態）。示範資料改由首頁 ?demo=1 載入，不再寫死在此當 fallback。
 const DEFAULT_DATA = {
-  assets: [
-    { id:'a1', name:'玉山銀行 / 台新銀行', sub:'現金 / 活期儲蓄', category:'現金 / 儲蓄', amount:657000, delta:22300 },
-    { id:'a2', name:'0050 / VOO 定期定額', sub:'ETF · 報酬率 +8.2%', category:'ETF / 基金', amount:768000, delta:12000 },
-    { id:'a3', name:'台積電 / 聯發科',     sub:'台灣股票 · 2 支',   category:'台灣股票',   amount:256000, delta:-3200 },
-    { id:'a4', name:'儲蓄型保單',           sub:'南山人壽 · 繳費中', category:'保單',       amount:146000, delta:500 },
-  ],
-  liabilities: [
-    { id:'l1', name:'房貸（目標買房規劃）', sub:'預計 2031 年起 · 月付 $22,000', category:'房貸', debtType:'房屋貸款', amount:4800000, paidPct:0,  monthly:22000, totalAmt:4800000, totalTerms:360, remainingAmt:4800000, startMonth:'2031-01', recurring:true },
-    { id:'l2', name:'就學貸款',             sub:'已還 28% · 月付 $3,200',        category:'學貸', debtType:'就學貸款', amount:720000,  paidPct:28, monthly:3200,  totalAmt:1000000, totalTerms:120, remainingAmt:720000,  startMonth:'2022-09', recurring:true },
-  ]
+  assets: [],
+  liabilities: []
 };
 
 function loadData() {
@@ -1275,7 +1268,11 @@ function renderLiabilities(liabs, total, prevSnap) {
 function renderLiabHealth(liabs) {
   const card = document.getElementById('liab-health-card');
   if (!card) return;
-  const avg = liabs.length ? Math.round(liabs.reduce((s,l) => s+(l.paidPct||0),0)/liabs.length) : 0;
+  if (!liabs.length) {
+    card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><div style="font-size:12px;font-weight:700;color:var(--primary-d);">負債健康度</div><div style="font-size:16px;font-weight:800;color:var(--primary);">—</div></div><div style="height:6px;background:#C8EEE0;border-radius:3px;overflow:hidden;"><div style="width:0%;height:100%;background:var(--primary);border-radius:3px;"></div></div><div style="font-size:11px;color:var(--primary-d);margin-top:6px;">目前沒有負債記錄 🌱</div>`;
+    return;
+  }
+  const avg = Math.round(liabs.reduce((s,l) => s+(l.paidPct||0),0)/liabs.length);
   const score = Math.min(100, 60 + avg * 0.4).toFixed(0);
   card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><div style="font-size:12px;font-weight:700;color:var(--primary-d);">負債健康度</div><div style="font-size:16px;font-weight:800;color:var(--primary);">${score} 分</div></div><div style="height:6px;background:#C8EEE0;border-radius:3px;overflow:hidden;"><div style="width:${score}%;height:100%;background:var(--primary);border-radius:3px;"></div></div><div style="font-size:11px;color:var(--primary-d);margin-top:6px;">${avg>30?'還款進度良好，繼續加油 💚':'持續還款，慢慢就會看到成果 🌱'}</div>`;
 }

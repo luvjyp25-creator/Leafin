@@ -659,7 +659,30 @@ function leafinHealthScore(profile, expenses, assets) {
   const expenses = get('leafin_expenses');
   const assets   = get('leafin_assets');
 
-  if (!profile && !expenses && !assets) return; // no data → keep hardcoded values
+  // 把「存在但空」也視為無資料（例如只開過資產頁、被自動存了空結構）
+  const hasProfile  = !!(profile && profile.name);
+  const hasExpenses = !!(expenses && expenses.transactions && expenses.transactions.length);
+  const hasAssets   = !!(assets && ((assets.assets && assets.assets.length) || (assets.liabilities && assets.liabilities.length)));
+
+  if (!hasProfile && !hasExpenses && !hasAssets) {
+    // 沒有任何資料 → 顯示空狀態，不再顯示寫死的示範分數（80 分等）
+    const sa = document.querySelector('.scroll-area');
+    if (sa) {
+      const hero = sa.querySelector('.page-hero');
+      Array.from(sa.children).forEach(ch => {
+        if (ch !== hero && ch.tagName !== 'STYLE') ch.style.display = 'none';
+      });
+      const empty = document.createElement('div');
+      empty.style.cssText = 'background:var(--card);border:1px solid var(--border);border-radius:16px;padding:44px 28px;text-align:center;margin-top:16px;';
+      empty.innerHTML =
+        '<div style="font-size:42px;margin-bottom:12px;">🩺</div>' +
+        '<div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px;">還沒有足夠資料可以體檢</div>' +
+        '<div style="font-size:13px;color:var(--text-2);line-height:1.7;max-width:420px;margin:0 auto 20px;">先到「總覽」完成人生導航設定，並記錄你的收支與資產，這裡就會自動算出你的財務健康分數與六大面向建議。</div>' +
+        '<a href="dashboard.html" style="display:inline-block;background:var(--primary);color:#fff;font-size:14px;font-weight:700;padding:11px 24px;border-radius:12px;text-decoration:none;">前往總覽開始設定 →</a>';
+      sa.appendChild(empty);
+    }
+    return;
+  }
 
   // --- Scoring (共用公式) ---
   const H = leafinHealthScore(profile, expenses, assets);

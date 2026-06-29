@@ -614,7 +614,8 @@ const PROFILE_KEY = 'leafin_profile';
 const GOALS_KEY   = 'leafin_goals';
 
 function defaultProfile() {
-  return { name:'小葉', age:29, lifestyle:'單身', income:48500, monthly:22500, fund:8430000 };
+  // 中性預設（非特定人物）：尚未完成引導/設定的新使用者看到的起點
+  return { name:'', age:30, lifestyle:'單身', income:0, monthly:0, fund:0 };
 }
 function loadProfile() {
   try { return JSON.parse(localStorage.getItem(PROFILE_KEY)) || defaultProfile(); }
@@ -691,11 +692,12 @@ let GOALS = [];
 let activeIdx = -1;
 
 function loadGoals() {
+  // 新使用者沒有目標時 → 空陣列（顯示空狀態），不再灌入示範目標
   try {
     const saved = JSON.parse(localStorage.getItem(GOALS_KEY));
-    GOALS = (saved && saved.length) ? saved : JSON.parse(JSON.stringify(DEFAULT_GOALS));
+    GOALS = (saved && saved.length) ? saved : [];
   } catch {
-    GOALS = JSON.parse(JSON.stringify(DEFAULT_GOALS));
+    GOALS = [];
   }
 }
 
