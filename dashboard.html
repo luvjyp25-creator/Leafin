@@ -1884,11 +1884,15 @@ function bindBalance(expenses, profile) {
   // 「本月」結餘：從 transactions 算當月（transactions 為單一真實來源；
   // expenses.income/expense 是歷來總和，不可當本月用）
   const txs = Array.isArray(expenses.transactions) ? expenses.transactions : [];
+  const ymOf = d => String(d || '').replace(/-/g, '/').slice(0, 7);
   const now = new Date();
   const curYM = now.getFullYear() + '/' + String(now.getMonth() + 1).padStart(2, '0');
+  // 本月有資料就用本月，否則用「最近一個有資料的月份」（資料到上月為止時不顯示一片空白）
+  const monthsWithData = [...new Set(txs.map(t => ymOf(t.date)).filter(m => /^\d{4}\/\d{2}$/.test(m)))].sort();
+  const useYM = monthsWithData.includes(curYM) ? curYM : (monthsWithData[monthsWithData.length - 1] || curYM);
   let mInc = 0, mExp = 0;
   txs.forEach(t => {
-    if (String(t.date || '').replace(/-/g, '/').slice(0, 7) !== curYM) return;
+    if (ymOf(t.date) !== useYM) return;
     const amt = Number(t.amount) || 0;
     if (t.type === 'income') mInc += amt;
     else if (t.type === 'expense') mExp += amt;
@@ -2166,11 +2170,16 @@ function bindReminders(profile, goals, assets, expenses) {
 /* ── 11. 底部三卡（今日小提醒 / 本月表現 / 本月儲蓄）── */
 function bindFooter(profile, goals, expenses) {
   const txs = (expenses && expenses.transactions) || [];
+  const ymOf = d => String(d||'').replace(/-/g,'/').slice(0,7);
   const now = new Date();
-  const ym = now.getFullYear() + '/' + String(now.getMonth() + 1).padStart(2, '0');
-  const last = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lastYM = last.getFullYear() + '/' + String(last.getMonth() + 1).padStart(2, '0');
-  const sum = (m, type) => txs.filter(t => String(t.date||'').replace(/-/g,'/').slice(0,7) === m && t.type === type).reduce((s,t) => s + (Number(t.amount)||0), 0);
+  const curYM = now.getFullYear() + '/' + String(now.getMonth() + 1).padStart(2, '0');
+  // 顯示月份：本月有資料就用本月，否則用「最近一個有資料的月份」（資料到上月為止時，不會顯示一片空白/↓100%）
+  const monthsWithData = [...new Set(txs.map(t => ymOf(t.date)).filter(m => /^\d{4}\/\d{2}$/.test(m)))].sort();
+  const ym = monthsWithData.includes(curYM) ? curYM : (monthsWithData[monthsWithData.length - 1] || curYM);
+  const [yy, mm] = ym.split('/').map(Number);
+  const prevD = new Date(yy, mm - 2, 1);
+  const lastYM = prevD.getFullYear() + '/' + String(prevD.getMonth() + 1).padStart(2, '0');
+  const sum = (m, type) => txs.filter(t => ymOf(t.date) === m && t.type === type).reduce((s,t) => s + (Number(t.amount)||0), 0);
   const mInc = sum(ym,'income'), mExp = sum(ym,'expense'), lInc = sum(lastYM,'income'), lExp = sum(lastYM,'expense');
   const bal = mInc - mExp;
 

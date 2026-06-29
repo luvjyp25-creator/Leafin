@@ -991,15 +991,40 @@ document.addEventListener('DOMContentLoaded', () => {
   renderScenarios(p, goals);
   renderBlueprint(goals);
 
-  // 一律以 profile 計算（無 profile 時以 0 呈現，不再保留靜態示範數字）
+  // 一律以 profile + 目標計算（無資料時以 0 呈現，不再保留靜態示範數字）
   const pp = p || {};
   document.getElementById('tl-avatar').textContent = (pp.name || '我').charAt(0);
-  document.getElementById('tl-saving-amount').textContent = (pp.monthly || 0).toLocaleString();
-  document.getElementById('tl-monthly-income').textContent = (pp.income || 0).toLocaleString() + ' 元';
-  const surplus = (pp.income || 0) - (pp.monthly || 0);
+
+  // 每月建議存下 = 為了如期達成所有夢想，每月需存（各目標「剩餘 ÷ 距期限月數」加總）
+  const _now = new Date();
+  const requiredMonthly = Math.round((goals || []).reduce((sum, g) => {
+    const remaining = Math.max(0, (g.target || 0) - (g.current || 0));
+    if (remaining <= 0 || !g.targetDate) return sum;
+    const parts = String(g.targetDate).split('/');
+    const y = parseInt(parts[0]), mo = parts[1] ? parseInt(parts[1]) : 12;
+    const monthsLeft = Math.max(1, Math.round((new Date(y, mo - 1, 1) - _now) / (30.4 * 86400000)));
+    return sum + remaining / monthsLeft;
+  }, 0));
+  const canSave = pp.monthly || 0; // 你設定的每月可存
+
+  document.getElementById('tl-saving-amount').textContent = requiredMonthly.toLocaleString();
+  document.getElementById('tl-monthly-income').textContent = canSave.toLocaleString() + ' 元';
+
+  // 缺口 / 餘裕 = 每月可存 − 每月建議存下
+  const gap = canSave - requiredMonthly;
   const surplusEl = document.getElementById('tl-surplus');
-  surplusEl.textContent = (surplus >= 0 ? '+' : '') + surplus.toLocaleString() + ' 元';
-  surplusEl.style.color = surplus >= 0 ? 'var(--primary)' : '#FF7B7B';
+  const surplusLbl = surplusEl ? surplusEl.previousElementSibling : null;
+  if (surplusEl) {
+    if (gap >= 0) {
+      if (surplusLbl) surplusLbl.textContent = '每月餘裕';
+      surplusEl.textContent = '+' + gap.toLocaleString() + ' 元';
+      surplusEl.style.color = 'var(--primary)';
+    } else {
+      if (surplusLbl) surplusLbl.textContent = '每月缺口';
+      surplusEl.textContent = '-' + Math.abs(gap).toLocaleString() + ' 元';
+      surplusEl.style.color = '#FF7B7B';
+    }
+  }
 
   // 目標總額 / 已準備（= 目標 current 加總，與 goals 頁一致，不再用 profile.fund）
   const totalGoal    = (goals && goals.length) ? goals.reduce((s, g) => s + (g.target  || 0), 0) : 0;
