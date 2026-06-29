@@ -1263,7 +1263,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
           <div class="sav-body">
             <div class="sav-left">
               <div class="sav-sub">本月建議存下</div>
-              <div class="sav-amt" id="dash-savings-amt">NT$22,500</div>
+              <div class="sav-amt" id="dash-savings-amt">NT$0</div>
             </div>
             <!-- Plant illustration (from Pencil) -->
             <div class="illus">
@@ -2087,7 +2087,7 @@ function bindGoalsRow(goals) {
 function bindSavings(profile, goals) {
   const el = document.getElementById('dash-savings-amt');
   const monthly = (profile && profile.monthly) || 0;
-  if (el && profile) el.textContent = 'NT$' + monthly.toLocaleString();
+  if (el) el.textContent = 'NT$' + monthly.toLocaleString();
 
   const tip = document.getElementById('dash-savings-tip');
   if (!tip) return;
