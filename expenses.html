@@ -341,13 +341,13 @@ button { font-family: inherit; cursor: pointer; border: none; }
     </div>
     <div class="topbar-right">
       <input type="file" id="import-file-input" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleImportFile(this)">
+      <button onclick="exportCSV()" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:500;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        匯出
+      </button>
       <button onclick="document.getElementById('import-file-input').click()" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:500;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         匯入
-      </button>
-      <button onclick="exportCSV()" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:500;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        匯出 CSV
       </button>
       <div class="icon-btn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -1218,6 +1218,34 @@ function autoDetectHeaderRow(rows) {
 
 let rawImportRows = []; /* 原始 rows，給欄位對應用 */
 
+/* ── 月份矩陣匯入：彙總列辨識 + 自動分類 + 自動轉置（支援兩種排法）── */
+const WIDE_SUMMARY_RE = /^(月份|月|日期|date|總收入|總支出|本月結餘|結餘|淨收入|收支|儲蓄率|存款率|備註|note|remark|合計|小計|total)$/i;
+const WIDE_INCOME_RE  = /(薪水|薪資|薪|獎金|花紅|bonus|其他收入|收入|salary|income|profit)/i;
+function lf_isMonthCell(v){ return /^\s*\d{4}[-/.]\d{1,2}\s*$/.test(String(v||'')); }
+/* 類別欄自動分類：彙總列→略過、薪資類→收入、其餘→支出 */
+function classifyWideCol(name){
+  const n = String(name||'').trim();
+  if (!n) return 'skip';
+  if (WIDE_SUMMARY_RE.test(n)) return 'skip';   // 總收入/總支出/結餘/儲蓄率/備註… 一律略過
+  if (WIDE_INCOME_RE.test(n))  return 'income'; // 薪水/其他收入/獎金…
+  return 'expense';                             // 其餘類別（含投資）視為支出
+}
+/* 若「月份」在第一列（橫向標題）而非第一欄 → 自動轉置成「月份在第一欄」的標準排法 */
+function lf_transposeIfNeeded(rows){
+  if (!rows.length) return rows;
+  const firstRow = rows[0] || [];
+  const firstCol = rows.map(r => (r||[])[0]);
+  const rowMonths = firstRow.slice(1).filter(lf_isMonthCell).length;
+  const colMonths = firstCol.slice(1).filter(lf_isMonthCell).length;
+  if (rowMonths >= 2 && rowMonths > colMonths) {
+    const w = Math.max(...rows.map(r => (r||[]).length));
+    const out = [];
+    for (let c = 0; c < w; c++) out.push(rows.map(r => ((r||[])[c] !== undefined ? r[c] : '')));
+    return out;
+  }
+  return rows;
+}
+
 function parseAndPreview(content, type) {
   let rows = [];
   if (type === 'csv') {
@@ -1230,6 +1258,7 @@ function parseAndPreview(content, type) {
     } catch(e) { alert('無法讀取 Excel 檔案：' + e.message); return; }
   }
   if (!rows.length) { alert('檔案是空的'); return; }
+  rows = lf_transposeIfNeeded(rows);   // 兩種排法都先轉成「月份在第一欄」
   rawImportRows = rows;
   showColMapModal(rows);
 }
@@ -1249,7 +1278,7 @@ let currentImportFmt = 'long'; // 'long' | 'wide'
 function detectIsWideFormat(rows) {
   // 若資料列的第一欄大多是 YYYY-MM 格式 → 橫向
   const dataRows = rows.slice(1, Math.min(rows.length, 6));
-  const matches = dataRows.filter(r => /^\d{4}-\d{2}$/.test(String(r[0] || '').trim()));
+  const matches = dataRows.filter(r => lf_isMonthCell(r[0]));
   return matches.length >= Math.min(dataRows.length, 2);
 }
 
@@ -1300,7 +1329,7 @@ function renderWideMapTable(rows) {
 
   for (let i = 1; i < headers.length; i++) {
     const h = headers[i];
-    const isIncome = /收入|薪|income|salary|profit/i.test(h);
+    const def = classifyWideCol(h); // 'skip' | 'income' | 'expense'（彙總列自動略過）
     html += `
         <tr>
           <td><strong>${h || '（空白）'}</strong></td>
@@ -1309,9 +1338,9 @@ function renderWideMapTable(rows) {
             style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;font-family:inherit;"></td>
           <td>
             <select id="wm-type-${i}" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:4px 6px;font-size:12px;font-family:inherit;">
-              <option value="skip">略過</option>
-              <option value="income" ${isIncome?'selected':''}>收入</option>
-              <option value="expense" ${!isIncome?'selected':''}>支出</option>
+              <option value="skip" ${def==='skip'?'selected':''}>略過</option>
+              <option value="income" ${def==='income'?'selected':''}>收入</option>
+              <option value="expense" ${def==='expense'?'selected':''}>支出</option>
             </select>
           </td>
         </tr>`;
@@ -1446,6 +1475,7 @@ function applyWideMap() {
     const name = nameEl.value.trim();
     const type = typeEl.value;
     if (type === 'skip' || !name) continue;
+    if (WIDE_SUMMARY_RE.test(name)) continue; // 保險：彙總列（總收入/總支出/結餘/儲蓄率/備註）一律不匯入
     colDefs.push({ idx: i, name, type });
   }
 
