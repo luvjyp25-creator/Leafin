@@ -142,7 +142,7 @@ body{font-family:-apple-system,'PingFang TC','Microsoft JhengHei',sans-serif;bac
 }
 
 /* ── 3-col: 左右放寬，中間留空間但不過大 ── */
-.goals-layout{flex:1;display:grid;grid-template-columns:285px 1fr 228px;gap:12px;padding:14px;overflow:hidden;min-height:0}
+.goals-layout{flex:1;display:grid;grid-template-columns:270px 1fr 300px;gap:12px;padding:14px;overflow:hidden;min-height:0}
 
 /* LEFT */
 .left-col{background:var(--card);border-radius:var(--r);border:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
@@ -249,7 +249,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .stats-top{display:flex;justify-content:space-between}
 .stat-block{display:flex;flex-direction:column;gap:3px}
 .stat-block .lbl{font-size:11px;color:#5BA88C}
-.stat-block .val{font-size:20px;font-weight:700;color:var(--text);line-height:1.1}
+.stat-block .val{font-size:17px;font-weight:700;color:var(--text);line-height:1.1;white-space:nowrap}
 .achieve-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
 .achieve-label{font-size:12px;color:var(--mint-d)}
 .achieve-val{font-size:15px;font-weight:700;color:var(--mint-d)}
@@ -1147,7 +1147,7 @@ function renderRightColumn() {
   const elMonthly = document.getElementById('rc-monthly-needed');
   const elProb    = document.getElementById('rc-prob');
   const elBar     = document.getElementById('rc-prob-bar');
-  if (elAssets)  elAssets.textContent  = fmtAmtShort(totalAccum) + ' / ' + fmtAmtShort(totalTarget);
+  if (elAssets)  elAssets.textContent  = (totalAccum > 0 ? fmtAmtShort(totalAccum) : '0') + ' / ' + fmtAmtShort(totalTarget);
   if (elMonthly) elMonthly.textContent = totalPMT > 0 ? totalPMT.toLocaleString() + ' 元' : '—';
   if (elProb)    elProb.textContent    = weightedPct + '%';
   if (elBar)     elBar.style.width     = weightedPct + '%';
