@@ -788,9 +788,26 @@ function saveExpenses(transactions) {
 const isInvestTx = t => t.type === 'expense' && t.category === '投資';
 const isSpendTx  = t => t.type === 'expense' && t.category !== '投資';
 
+/* 顯示月份：本月有資料就用本月，否則用「最近一個有資料的月份」
+   （匯入歷史資料後，本月若還沒記帳就不會看到一片空白的 $0）*/
+function viewYM(transactions){
+  const cur = new Date().toISOString().slice(0,7);
+  const has = ym => (transactions||[]).some(t => String(t.date).replace(/\//g,'-').startsWith(ym));
+  if (has(cur)) return cur;
+  const months = (transactions||[]).map(t => String(t.date).replace(/\//g,'-').slice(0,7))
+    .filter(s => /^\d{4}-\d{2}$/.test(s)).sort();
+  return months.length ? months[months.length-1] : cur;
+}
+/* 類別正規化：把「X/Y」「X／Y」統一成內建的「X / Y」，避免匯入名稱對不上預設分類 */
+function canonCat(c){
+  const n = String(c||'').trim();
+  const m = n.match(/^(.+?)\s*[/／]\s*(.+)$/);
+  return m ? (m[1].trim() + ' / ' + m[2].trim()) : n;
+}
+
 function renderAll(transactions) {
-  // Filter to current month for KPI
-  const curYM = new Date().toISOString().slice(0,7);
+  // 以「顯示月份」統計 KPI（本月無資料時自動回退到最近有資料的月份）
+  const curYM = viewYM(transactions);
   const curTxs = transactions.filter(t => t.date.replace(/\//g,'-').startsWith(curYM));
   const income  = curTxs.filter(t => t.type === 'income').reduce((s,t) => s+t.amount, 0);
   // 「支出」= 實際消費，不含投資；投資另計（見 isSpendTx / isInvestTx）
@@ -837,7 +854,7 @@ function renderAll(transactions) {
   }
 
   /* KPI 副標：用真實「比上月」差額取代原本寫死的假數字；儲蓄率卡揭露本月投資（投資全拆的獨立呈現點） */
-  const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth() - 1);
+  const dPrev = new Date(curYM + '-01T00:00:00'); dPrev.setMonth(dPrev.getMonth() - 1);
   const prevYM = dPrev.toISOString().slice(0, 7);
   const prevTxs = transactions.filter(t => t.date.replace(/\//g, '-').startsWith(prevYM));
   const pInc = prevTxs.filter(t => t.type === 'income').reduce((s,t) => s+t.amount, 0);
@@ -973,7 +990,7 @@ function renderCategories(transactions) {
   if (!container) return;
 
   /* 只統計「本月」支出（不含投資；投資於下方獨立呈現）—— 與 KPI／donut 同口徑，避免數字打架 */
-  const curYM = new Date().toISOString().slice(0, 7);
+  const curYM = viewYM(transactions);
   const inMonth = t => t.date.replace(/\//g, '-').startsWith(curYM);
   const expTx = transactions.filter(t => isSpendTx(t) && inMonth(t));
   const totalExp = expTx.reduce((s, t) => s + t.amount, 0);
@@ -987,7 +1004,7 @@ function renderCategories(transactions) {
   /* 依類別加總實際支出 */
   const actualSpend = {};
   expTx.forEach(t => {
-    const cat = t.category === '收入' ? '其他' : t.category;
+    const cat = canonCat(t.category === '收入' ? '其他' : t.category);
     actualSpend[cat] = (actualSpend[cat] || 0) + t.amount;
   });
 
@@ -1438,9 +1455,9 @@ function applyColMap() {
         if (/支出|expense|out|debit|-/.test(tv)) type = 'expense';
         if (/收入|income|in|credit|\+/.test(tv))  type = 'income';
       }
-      const cat = mapping.category !== undefined
+      const cat = canonCat(mapping.category !== undefined
         ? (String(r[mapping.category] || '').trim() || '其他')
-        : (type === 'income' ? '收入' : '其他');
+        : (type === 'income' ? '收入' : '其他'));
       let date = mapping.date !== undefined
         ? String(r[mapping.date] || today).replace(/[-年月]/g, '/').replace(/日/,'').trim()
         : today;
@@ -1496,8 +1513,8 @@ function applyWideMap() {
       result.push({
         id: 'imp_' + Math.random().toString(36).slice(2),
         date: dateStr,
-        name: col.name,
-        category: col.name,
+        name: canonCat(col.name),
+        category: canonCat(col.name),
         type: col.type,
         amount: Math.abs(amt),
       });
