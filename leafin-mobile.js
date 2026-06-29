@@ -125,11 +125,18 @@
   }
   .results-area { overflow: visible !important; padding: 20px 16px; }
 
-  /* Hero 區：圖縮小、文字優先 */
+  /* Hero 區：文字優先 */
   .hero { min-height: 0; }
-  .hero-left { max-width: none; padding: 20px 18px; }
+  .hero-left { width: 100%; max-width: none; min-width: 0; flex-shrink: 1; padding: 20px 18px; }
   .hero-title { font-size: 21px; }
   .hero-sub { font-size: 13px; }
+  /* 手機上把 hero 插圖淡化成背景襯底，避免文字與圖重疊看不清 */
+  .hero::after, .page-hero::after { opacity: 0.22; }
+  /* 文字左半邊保持乾淨：把圖的實心區再往右推 */
+  .hero::after {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 28%, #000 92%);
+    mask-image: linear-gradient(to right, transparent 0%, transparent 28%, #000 92%);
+  }
 
   /* Modal：滿版自適應、可捲動 */
   [class*="modal"]:not([class*="overlay"]),
