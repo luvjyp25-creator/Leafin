@@ -1,2 +1,24 @@
 # Superpowers brainstorming visual-companion scratch files
 .superpowers/
+
+# 本機保留、不公開的開發 / 設計 / 報告檔（已從 repo 移除，仍存在本機）
+docs/
+dashboard-v1-brainstorm.html
+*.pen
+liflow-prd.md
+web104.docx
+web104.pdf
+
+# 設計 mockup / 參考截圖（dev 用）
+mockup-bg-*.png
+Screenshot*.png
+YQ8hH.png
+cover design.png
+crazy icon*.png
+exam1.png
+expense1.png
+future1.png
+invest1.png
+set goal1.png
+timeline1.png
+wqoyv.png
